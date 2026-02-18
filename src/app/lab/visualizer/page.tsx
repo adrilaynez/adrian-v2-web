@@ -7,7 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Send, LayoutGrid, Type, Terminal, Cpu, Info, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
-export default function VisualizerPage() {
+import { Suspense } from "react";
+
+function VisualizerContent() {
     const searchParams = useSearchParams();
     const modelType = searchParams.get("model") || "bigram";
 
@@ -199,7 +201,7 @@ export default function VisualizerPage() {
                                 </motion.div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-24 opacity-20">
-                                    <p className="text-sm italic italic">Esperando comando de generación...</p>
+                                    <p className="text-sm italic">Esperando comando de generación...</p>
                                 </div>
                             )}
                         </AnimatePresence>
@@ -210,3 +212,18 @@ export default function VisualizerPage() {
         </div>
     );
 }
+
+export default function VisualizerPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#0E1117] flex items-center justify-center">
+                <div className="text-slate-400 font-mono animate-pulse uppercase tracking-[0.3em] text-xs">
+                    Initializing Laboratory...
+                </div>
+            </div>
+        }>
+            <VisualizerContent />
+        </Suspense>
+    );
+}
+
