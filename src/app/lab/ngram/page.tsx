@@ -12,9 +12,13 @@ import { NgramTrainingInsights } from "@/components/lab/NgramTrainingInsights";
 import { HistoricalContextPanel } from "@/components/lab/HistoricalContextPanel";
 import { DatasetExplorerModal } from "@/components/lab/DatasetExplorerModal";
 import { ModelHero } from "@/components/lab/ModelHero";
+import { StepwisePrediction } from "@/components/lab/StepwisePrediction";
+import { GenerationPlayground } from "@/components/lab/GenerationPlayground";
 
 import { useNgramVisualization } from "@/hooks/useNgramVisualization";
 import { useNgramDatasetLookup } from "@/hooks/useNgramDatasetLookup";
+import { useNgramStepwise } from "@/hooks/useNgramStepwise";
+import { useNgramGeneration } from "@/hooks/useNgramGeneration";
 import { motion, AnimatePresence } from "framer-motion";
 import { FlaskConical, Database, Hash, Activity, Layers } from "lucide-react";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -22,6 +26,8 @@ import { useEffect, useState, useCallback, useRef } from "react";
 export default function NgramPage() {
     const viz = useNgramVisualization();
     const dataset = useNgramDatasetLookup();
+    const stepwise = useNgramStepwise(viz.contextSize);
+    const generation = useNgramGeneration(viz.contextSize);
 
     // Track last text for re-fetch on context size change
     const lastTextRef = useRef<string>("hello");
@@ -85,28 +91,32 @@ export default function NgramPage() {
     // Build hero stats from diagnostics/training
     const heroStats = diagnostics ? [
         {
+            label: "Unique Contexts",
+            value: training?.unique_contexts?.toLocaleString() ?? "?",
+            icon: Activity,
+            desc: "Observed n-grams",
+            color: "indigo"
+        },
+        {
             label: "Vocabulary",
             value: diagnostics.vocab_size?.toString() ?? "?",
             icon: Database,
             desc: "Unique characters",
+            color: "blue"
         },
         {
             label: "Context Space",
             value: diagnostics.estimated_context_space?.toLocaleString() ?? "?",
             icon: Hash,
             desc: `|V|^${diagnostics.context_size}`,
+            color: "purple"
         },
         {
-            label: "Sparsity",
-            value: diagnostics.sparsity != null ? `${(diagnostics.sparsity * 100).toFixed(1)}%` : "N/A",
-            icon: Activity,
-            desc: "Unseen contexts",
-        },
-        {
-            label: "Contexts Used",
-            value: diagnostics.observed_contexts?.toLocaleString() ?? "N/A",
-            icon: Layers,
-            desc: `${diagnostics.context_utilization != null ? (diagnostics.context_utilization * 100).toFixed(1) : "?"}% utilization`,
+            label: "Training Tokens",
+            value: training ? `${(training.total_tokens / 1000).toFixed(1)}k` : "?",
+            icon: FlaskConical,
+            desc: "Total tokens seen",
+            color: "emerald"
         },
     ] : undefined;
 
@@ -126,12 +136,7 @@ export default function NgramPage() {
                     customStats={heroStats}
                 />
 
-                {/* 2. HISTORICAL CONTEXT */}
-                {historicalContext && (
-                    <div className="max-w-5xl mx-auto px-6">
-                        <HistoricalContextPanel data={historicalContext} />
-                    </div>
-                )}
+
 
                 {/* 3. TRAINING INSIGHTS */}
                 {training && (
@@ -247,30 +252,37 @@ export default function NgramPage() {
                         </div>
                     </div>
 
-                    {/* Right: Stepwise + Generation (Coming Soon) */}
+                    {/* Right: Stepwise + Generation */}
                     <div className="space-y-8">
                         <div className="space-y-4">
                             <h3 className="text-xl font-bold text-white pl-1 border-l-2 border-violet-500">
                                 2. Stepwise Prediction
                             </h3>
-                            <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-8 text-center">
-                                <div className="text-white/20 text-sm font-mono uppercase tracking-widest mb-2">Coming Soon</div>
-                                <p className="text-white/40 text-xs">
-                                    N-Gram stepwise prediction requires a dedicated backend endpoint. Stay tuned.
-                                </p>
-                            </div>
+                            <p className="text-sm text-white/50 pl-1.5 mb-2">
+                                Watch the model predict a sequence character-by-character.
+                            </p>
+                            <StepwisePrediction
+                                onPredict={stepwise.predict}
+                                steps={stepwise.data?.steps ?? null}
+                                finalPrediction={stepwise.data?.final_prediction ?? null}
+                                loading={stepwise.loading}
+                                error={stepwise.error}
+                            />
                         </div>
 
                         <div className="space-y-4">
                             <h3 className="text-xl font-bold text-white pl-1 border-l-2 border-amber-500">
                                 3. Text Generation
                             </h3>
-                            <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-8 text-center">
-                                <div className="text-white/20 text-sm font-mono uppercase tracking-widest mb-2">Coming Soon</div>
-                                <p className="text-white/40 text-xs">
-                                    N-Gram text generation requires a dedicated backend endpoint. Stay tuned.
-                                </p>
-                            </div>
+                            <p className="text-sm text-white/50 pl-1.5 mb-2">
+                                Let the model hallucinate text by sampling from the distribution.
+                            </p>
+                            <GenerationPlayground
+                                onGenerate={generation.generate}
+                                generatedText={generation.data?.generated_text ?? null}
+                                loading={generation.loading}
+                                error={generation.error}
+                            />
                         </div>
                     </div>
                 </div>
@@ -279,6 +291,13 @@ export default function NgramPage() {
                 <ArchitectureDeepDive
                     data={architecture ?? null}
                 />
+
+                {/* 9. HISTORICAL CONTEXT (reflective conclusion) */}
+                {historicalContext && (
+                    <div className="max-w-5xl mx-auto px-6 mt-24">
+                        <HistoricalContextPanel data={historicalContext} collapsible />
+                    </div>
+                )}
 
                 {/* Footer Note */}
                 <motion.div

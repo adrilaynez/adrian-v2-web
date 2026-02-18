@@ -118,3 +118,26 @@ export function bigramDatasetLookup(
         { context, next_token }
     );
 }
+
+export function ngramStepwise(
+    text: string,
+    steps: number,
+    context_size: number
+): Promise<StepwiseResponse> {
+    return request<StepwiseResponse>(
+        "/api/v1/models/ngram/predict_stepwise",
+        { text, steps, context_size }
+    );
+}
+
+export function generateNgram(
+    start_char: string,
+    num_tokens: number,
+    temperature: number,
+    context_size: number
+): Promise<GenerateResponse> {
+    return request<GenerateResponse>(
+        "/api/v1/models/ngram/generate",
+        { start_char, num_tokens, temperature, context_size }
+    );
+}

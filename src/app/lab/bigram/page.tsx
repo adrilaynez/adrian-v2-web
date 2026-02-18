@@ -60,8 +60,7 @@ export default function BigramPage() {
                 {/* 1. HERO SECTION */}
                 <ModelHero trainingData={viz.data?.visualization.training} />
 
-                {/* 1.5 HISTORICAL CONTEXT */}
-                <HistoricalContextPanel data={viz.data?.historical_context} />
+
 
                 {/* 2. TRAINING INSIGHTS */}
                 <motion.div
@@ -162,6 +161,13 @@ export default function BigramPage() {
                 <ArchitectureDeepDive
                     data={viz.data?.visualization.architecture ?? null}
                 />
+
+                {/* 6. HISTORICAL CONTEXT (reflective conclusion) */}
+                {viz.data?.historical_context && (
+                    <div className="max-w-5xl mx-auto px-6 mt-24">
+                        <HistoricalContextPanel data={viz.data.historical_context} collapsible />
+                    </div>
+                )}
 
                 {/* Footer Note */}
                 <motion.div

@@ -43,17 +43,20 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
         const my = e.clientY - rect.top;
 
         const padding = 32;
-        const size = Math.min(rect.width, 600);
-        const cellSize = (size - padding * 2) / data.row_labels.length;
+        const rows = data.row_labels.length;
+        const cols = data.col_labels.length;
+        const canvasW = Math.min(rect.width, 800);
+        const cellW = (canvasW - padding * 2) / cols;
+        const cellH = rows === cols ? cellW : Math.min(Math.max(cellW, 20), 40);
 
-        const col = Math.floor((mx - padding) / cellSize);
-        const row = Math.floor((my - padding) / cellSize);
+        const col = Math.floor((mx - padding) / cellW);
+        const row = Math.floor((my - padding) / cellH);
 
         if (
             row >= 0 &&
-            row < data.row_labels.length &&
+            row < rows &&
             col >= 0 &&
-            col < data.col_labels.length
+            col < cols
         ) {
             const rowLabel = data.row_labels[row];
             const colLabel = data.col_labels[col];
@@ -67,28 +70,31 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
         if (!canvas || !container || !data) return;
 
         const { data: matrix, row_labels, col_labels } = data;
-        const n = row_labels.length;
+        const rows = row_labels.length;
+        const cols = col_labels.length;
         const dpr = window.devicePixelRatio || 1;
 
         const padding = 32;
-        const size = Math.min(container.clientWidth, 600);
-        const cellSize = (size - padding * 2) / n;
+        const canvasW = Math.min(container.clientWidth, 800);
+        const cellW = (canvasW - padding * 2) / cols;
+        const cellH = rows === cols ? cellW : Math.min(Math.max(cellW, 20), 40);
+        const totalH = padding * 2 + rows * cellH;
 
-        canvas.width = size * dpr;
-        canvas.height = size * dpr;
-        canvas.style.width = `${size}px`;
-        canvas.style.height = `${size}px`;
+        canvas.width = canvasW * dpr;
+        canvas.height = totalH * dpr;
+        canvas.style.width = `${canvasW}px`;
+        canvas.style.height = `${totalH}px`;
 
         const ctx = canvas.getContext("2d")!;
         ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, size, size);
+        ctx.clearRect(0, 0, canvasW, totalH);
 
         // Draw cells
-        for (let r = 0; r < n; r++) {
-            for (let c = 0; c < n; c++) {
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
                 const v = matrix[r][c];
-                const x = padding + c * cellSize;
-                const y = padding + r * cellSize;
+                const x = padding + c * cellW;
+                const y = padding + r * cellH;
 
                 // Color: black → emerald via opacity
                 const alpha = Math.pow(v, 0.5); // sqrt for better visibility
@@ -98,12 +104,14 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
                 ctx.fillStyle = dimmed
                     ? `rgba(16, 185, 129, ${alpha * 0.15})`
                     : `rgba(16, 185, 129, ${alpha * 0.9})`;
-                ctx.fillRect(x, y, cellSize - 0.5, cellSize - 0.5);
+                ctx.fillRect(x, y, cellW - 0.5, cellH - 0.5);
             }
         }
 
         // Labels
-        ctx.font = `${Math.min(cellSize * 0.7, 11)}px monospace`;
+        const colFontSize = Math.min(cellW * 0.7, 11);
+        const rowFontSize = Math.min(cellH * 0.7, 11);
+        ctx.font = `${colFontSize}px monospace`;
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
 
@@ -114,18 +122,19 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
             return "rgba(255,255,255,0.4)"; // Gray
         };
 
-        for (let c = 0; c < n; c++) {
+        for (let c = 0; c < cols; c++) {
             const char = col_labels[c];
-            const x = padding + c * cellSize + cellSize / 2;
+            const x = padding + c * cellW + cellW / 2;
             ctx.fillStyle = getLabelColor(char, highlightIdx === c);
             ctx.fillText(char === " " ? "␣" : char, x, padding - 4);
         }
 
+        ctx.font = `${rowFontSize}px monospace`;
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
-        for (let r = 0; r < n; r++) {
+        for (let r = 0; r < rows; r++) {
             const char = row_labels[r];
-            const y = padding + r * cellSize + cellSize / 2;
+            const y = padding + r * cellH + cellH / 2;
             ctx.fillStyle = getLabelColor(char, highlightIdx === r);
             ctx.fillText(
                 char === " " ? "␣" : char,
@@ -149,17 +158,20 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
         const my = e.clientY - rect.top;
 
         const padding = 32;
-        const size = Math.min(rect.width, 600);
-        const cellSize = (size - padding * 2) / data.row_labels.length;
+        const rows = data.row_labels.length;
+        const cols = data.col_labels.length;
+        const canvasW = Math.min(rect.width, 800);
+        const cellW = (canvasW - padding * 2) / cols;
+        const cellH = rows === cols ? cellW : Math.min(Math.max(cellW, 20), 40);
 
-        const col = Math.floor((mx - padding) / cellSize);
-        const row = Math.floor((my - padding) / cellSize);
+        const col = Math.floor((mx - padding) / cellW);
+        const row = Math.floor((my - padding) / cellH);
 
         if (
             row >= 0 &&
-            row < data.row_labels.length &&
+            row < rows &&
             col >= 0 &&
-            col < data.col_labels.length
+            col < cols
         ) {
             setTooltip({
                 x: e.clientX - rect.left,
