@@ -3,15 +3,19 @@
 import { ProjectCard } from "@/components/project-card";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import {
+    Brain,
+    FlaskConical,
+    Boxes,
+    Sparkles,
+    ArrowRight,
+    ExternalLink,
+} from "lucide-react";
 
 const projects = [
-    {
-        title: "Large Model Lab",
-        description: "An experimental platform for testing LLM inference optimization techniques, including quantization and speculative decoding.",
-        tags: ["Python", "PyTorch", "CUDA", "Streamlit"],
-        githubUrl: "https://github.com/adrilaynez/lm-lab",
-        demoUrl: "#",
-    },
     {
         title: "Distri-KV",
         description: "A distributed key-value store implemented in Go, featuring Raft consensus and sharding.",
@@ -68,7 +72,7 @@ export function ProjectsContent() {
             {/* Main Content */}
             <section className="container py-16 mx-auto max-w-screen-xl px-4">
 
-                {/* Featured Project - Nebula */}
+                {/* Flagship — LM-Lab */}
                 <div className="mb-24">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="h-px bg-border flex-1"></div>
@@ -82,14 +86,125 @@ export function ProjectsContent() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
                     >
-                        <ProjectCard
-                            title="Project NEBULA"
-                            description="A next-generation distributed knowledge graph engine designed for autonomous AI agents. Features self-healing mesh topology, millisecond-latency query resolution, and real-time neural indexing. (Simulated Case Study)"
-                            tags={["Rust", "WebAssembly", "Distributed Systems", "Graph Neural Networks"]}
-                            demoUrl="/projects/nebula"
-                            featured={true}
-                            image="/nebula-preview.png" // Placeholder
-                        />
+                        <Card className="relative overflow-hidden border-emerald-500/20 bg-gradient-to-br from-black via-emerald-950/20 to-black group hover:border-emerald-500/30 transition-all duration-700">
+                            {/* Animated background grid */}
+                            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:32px_32px] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                            {/* Floating orb */}
+                            <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-emerald-500/[0.06] blur-[100px] group-hover:bg-emerald-500/[0.12] transition-all duration-1000" />
+                            <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-violet-500/[0.04] blur-[80px] group-hover:bg-violet-500/[0.08] transition-all duration-1000" />
+
+                            <div className="relative z-10 p-8 md:p-12">
+                                {/* Top badges */}
+                                <div className="flex items-center gap-2 mb-6 flex-wrap">
+                                    <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-mono text-[10px] uppercase tracking-widest">
+                                        Featured
+                                    </Badge>
+                                    <Badge className="bg-white/[0.04] text-white/60 border-white/[0.06] font-mono text-[10px] uppercase tracking-widest">
+                                        Live Demo Available
+                                    </Badge>
+                                </div>
+
+                                {/* Title */}
+                                <div className="flex items-center gap-3 mb-4">
+                                    <FlaskConical className="h-8 w-8 text-emerald-400" />
+                                    <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white">
+                                        LM-Lab
+                                    </h2>
+                                </div>
+
+                                {/* Description */}
+                                <p className="text-base md:text-lg text-white/60 max-w-2xl mb-6 leading-relaxed">
+                                    An interactive platform for exploring language model architectures
+                                    from first principles. Visualize transition matrices, probe
+                                    inference dynamics, and generate text — all powered by a live
+                                    FastAPI backend with PyTorch.
+                                </p>
+
+                                {/* Tech Stack */}
+                                <div className="flex flex-wrap gap-1.5 mb-8">
+                                    {["Python", "PyTorch", "FastAPI", "Next.js", "TypeScript", "Canvas API"].map(
+                                        (tag) => (
+                                            <Badge
+                                                key={tag}
+                                                variant="secondary"
+                                                className="font-mono text-xs bg-white/[0.04] border-white/[0.06] text-white/50"
+                                            >
+                                                {tag}
+                                            </Badge>
+                                        )
+                                    )}
+                                </div>
+
+                                {/* Feature highlights */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                                    {[
+                                        {
+                                            icon: Brain,
+                                            title: "Live Inference",
+                                            desc: "Real-time next-character prediction with probability distributions",
+                                        },
+                                        {
+                                            icon: Boxes,
+                                            title: "Transition Matrix",
+                                            desc: "Interactive canvas heatmap of the learned bigram probabilities",
+                                        },
+                                        {
+                                            icon: Sparkles,
+                                            title: "Text Generation",
+                                            desc: "Generate text with configurable temperature and step-by-step tracing",
+                                        },
+                                    ].map((feat) => (
+                                        <div
+                                            key={feat.title}
+                                            className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 hover:bg-white/[0.04] hover:border-emerald-500/20 transition-all duration-300 group/feat"
+                                        >
+                                            <feat.icon className="h-5 w-5 text-emerald-400/60 mb-2 group-hover/feat:text-emerald-400 transition-colors" />
+                                            <h4 className="text-sm font-semibold text-white mb-1">
+                                                {feat.title}
+                                            </h4>
+                                            <p className="text-xs text-white/40 leading-relaxed">
+                                                {feat.desc}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* CTAs */}
+                                <div className="flex flex-wrap gap-3">
+                                    <Button
+                                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs uppercase tracking-widest h-11 px-6 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/25 transition-all duration-300"
+                                        asChild
+                                    >
+                                        <Link href="/lab/bigram">
+                                            <Brain className="h-4 w-4 mr-2" />
+                                            Open Bigram Explorer
+                                            <ArrowRight className="h-3.5 w-3.5 ml-2" />
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="border-white/[0.08] hover:bg-white/[0.04] text-white/70 font-mono text-xs uppercase tracking-widest h-11 px-6 transition-all"
+                                        asChild
+                                    >
+                                        <Link href="/lab/bigram#architecture">
+                                            <Boxes className="h-4 w-4 mr-2" />
+                                            View Architecture
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="border-white/[0.08] hover:bg-white/[0.04] text-white/70 font-mono text-xs uppercase tracking-widest h-11 px-6 transition-all"
+                                        asChild
+                                    >
+                                        <Link href="/lab/bigram#playground">
+                                            <Sparkles className="h-4 w-4 mr-2" />
+                                            Run Interactive Demo
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
                     </motion.div>
                 </div>
 

@@ -1,0 +1,270 @@
+"use client";
+
+import { useRef, useEffect, useState, useCallback, memo } from "react";
+import { Card } from "@/components/ui/card";
+import { Grid3x3, Search, Layers } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { TransitionMatrixViz } from "@/types/lmLab";
+
+interface TransitionMatrixProps {
+    data: TransitionMatrixViz | null;
+    activeContext?: string[]; // If present, we are viewing an active slice
+    onCellClick?: (rowLabel: string, colLabel: string) => void;
+}
+
+export const TransitionMatrix = memo(function TransitionMatrix({ data, activeContext, onCellClick }: TransitionMatrixProps) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [tooltip, setTooltip] = useState<{
+        x: number;
+        y: number;
+        row: string;
+        col: string;
+        value: number;
+    } | null>(null);
+    const [searchChar, setSearchChar] = useState("");
+    const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (searchChar && data) {
+            const idx = data.row_labels.findIndex(
+                (l) => l === searchChar
+            );
+            setHighlightIdx(idx === -1 ? null : idx);
+        } else {
+            setHighlightIdx(null);
+        }
+    }, [searchChar, data]);
+
+    const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        if (!data || !onCellClick || !canvasRef.current) return;
+        const rect = canvasRef.current.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        const padding = 32;
+        const size = Math.min(rect.width, 600);
+        const cellSize = (size - padding * 2) / data.row_labels.length;
+
+        const col = Math.floor((mx - padding) / cellSize);
+        const row = Math.floor((my - padding) / cellSize);
+
+        if (
+            row >= 0 &&
+            row < data.row_labels.length &&
+            col >= 0 &&
+            col < data.col_labels.length
+        ) {
+            const rowLabel = data.row_labels[row];
+            const colLabel = data.col_labels[col];
+            onCellClick(rowLabel, colLabel);
+        }
+    };
+
+    const draw = useCallback(() => {
+        const canvas = canvasRef.current;
+        const container = containerRef.current;
+        if (!canvas || !container || !data) return;
+
+        const { data: matrix, row_labels, col_labels } = data;
+        const n = row_labels.length;
+        const dpr = window.devicePixelRatio || 1;
+
+        const padding = 32;
+        const size = Math.min(container.clientWidth, 600);
+        const cellSize = (size - padding * 2) / n;
+
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+        canvas.style.width = `${size}px`;
+        canvas.style.height = `${size}px`;
+
+        const ctx = canvas.getContext("2d")!;
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, size, size);
+
+        // Draw cells
+        for (let r = 0; r < n; r++) {
+            for (let c = 0; c < n; c++) {
+                const v = matrix[r][c];
+                const x = padding + c * cellSize;
+                const y = padding + r * cellSize;
+
+                // Color: black → emerald via opacity
+                const alpha = Math.pow(v, 0.5); // sqrt for better visibility
+                const dimmed =
+                    highlightIdx !== null && highlightIdx !== r && highlightIdx !== c;
+
+                ctx.fillStyle = dimmed
+                    ? `rgba(16, 185, 129, ${alpha * 0.15})`
+                    : `rgba(16, 185, 129, ${alpha * 0.9})`;
+                ctx.fillRect(x, y, cellSize - 0.5, cellSize - 0.5);
+            }
+        }
+
+        // Labels
+        ctx.font = `${Math.min(cellSize * 0.7, 11)}px monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+
+        const getLabelColor = (char: string, highlighted: boolean) => {
+            if (highlighted) return "rgba(16, 185, 129, 1)"; // Emerald-500
+            if (/[A-Z]/.test(char)) return "rgba(251, 191, 36, 1)"; // Amber-400
+            if (/[a-z]/.test(char)) return "rgba(34, 211, 238, 1)"; // Cyan-400
+            return "rgba(255,255,255,0.4)"; // Gray
+        };
+
+        for (let c = 0; c < n; c++) {
+            const char = col_labels[c];
+            const x = padding + c * cellSize + cellSize / 2;
+            ctx.fillStyle = getLabelColor(char, highlightIdx === c);
+            ctx.fillText(char === " " ? "␣" : char, x, padding - 4);
+        }
+
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        for (let r = 0; r < n; r++) {
+            const char = row_labels[r];
+            const y = padding + r * cellSize + cellSize / 2;
+            ctx.fillStyle = getLabelColor(char, highlightIdx === r);
+            ctx.fillText(
+                char === " " ? "␣" : char,
+                padding - 6,
+                y
+            );
+        }
+    }, [data, highlightIdx]);
+
+    useEffect(() => {
+        draw();
+        const handleResize = () => draw();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [draw]);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        if (!data || !canvasRef.current) return;
+        const rect = canvasRef.current.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        const padding = 32;
+        const size = Math.min(rect.width, 600);
+        const cellSize = (size - padding * 2) / data.row_labels.length;
+
+        const col = Math.floor((mx - padding) / cellSize);
+        const row = Math.floor((my - padding) / cellSize);
+
+        if (
+            row >= 0 &&
+            row < data.row_labels.length &&
+            col >= 0 &&
+            col < data.col_labels.length
+        ) {
+            setTooltip({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top,
+                row: data.row_labels[row],
+                col: data.col_labels[col],
+                value: data.data[row][col],
+            });
+        } else {
+            setTooltip(null);
+        }
+    };
+
+    // Construct context string for display
+    const contextStr = activeContext
+        ? activeContext.map(c => c === " " ? "␣" : c).join("")
+        : "";
+
+    return (
+        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+                <div className="flex items-center gap-2">
+                    {activeContext ? (
+                        <Layers className="h-4 w-4 text-indigo-400" />
+                    ) : (
+                        <Grid3x3 className="h-4 w-4 text-violet-400" />
+                    )}
+
+                    <span className="font-mono text-xs uppercase tracking-widest text-white/60">
+                        {activeContext ? "Active Slice Transition" : "Transition Matrix"}
+                    </span>
+                </div>
+                {activeContext && (
+                    <div className="text-xs font-mono text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                        Slice: &apos;{contextStr}&apos;
+                    </div>
+                )}
+            </div>
+
+            {/* Search */}
+            <div className="px-5 pt-4">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
+                    <input
+                        type="text"
+                        value={searchChar}
+                        onChange={(e) => setSearchChar(e.target.value.slice(0, 1))}
+                        placeholder="Highlight character…"
+                        maxLength={1}
+                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/20 font-mono focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all"
+                    />
+                </div>
+            </div>
+
+            {/* Canvas */}
+            <div ref={containerRef} className="p-5 relative">
+                {!data ? (
+                    <div className="flex items-center justify-center h-64 text-white/30 text-xs font-mono">
+                        Run inference to generate the transition matrix
+                    </div>
+                ) : (
+                    <div className="relative">
+                        <canvas
+                            ref={canvasRef}
+                            onClick={handleCanvasClick}
+                            onMouseMove={handleMouseMove}
+                            onMouseLeave={() => setTooltip(null)}
+                            className={cn("cursor-crosshair", onCellClick ? "cursor-pointer" : "")}
+                        />
+                        {tooltip && (
+                            <div
+                                className="absolute z-50 pointer-events-none bg-black/90 border border-white/10 backdrop-blur-lg rounded-lg px-3 py-2 text-xs font-mono shadow-xl whitespace-nowrap"
+                                style={{
+                                    left: tooltip.x + 12,
+                                    top: tooltip.y - 40,
+                                }}
+                            >
+                                <span className="text-white/50">
+                                    P(
+                                    <span className="text-emerald-400">
+                                        {tooltip.col === " " ? "␣" : tooltip.col}
+                                    </span>
+                                    {" | "}
+                                    {activeContext && (
+                                        <span className="text-indigo-400">
+                                            {contextStr}
+                                        </span>
+                                    )}
+                                    <span className="text-violet-400">
+                                        {tooltip.row === " " ? "␣" : tooltip.row}
+                                    </span>
+                                    ) ={" "}
+                                </span>
+                                <span className="text-white font-bold">
+                                    {(tooltip.value * 100).toFixed(2)}%
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </Card>
+    );
+}, (prev, next) => {
+    // Custom comparison
+    return prev.data === next.data && prev.activeContext === next.activeContext;
+});
