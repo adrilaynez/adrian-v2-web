@@ -11,6 +11,8 @@ import {
     Type
 } from "lucide-react";
 import type { ArchitectureViz } from "@/types/lmLab";
+import { BlockMath, InlineMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 interface ArchitectureDeepDiveProps {
     data: ArchitectureViz | null;
@@ -18,6 +20,74 @@ interface ArchitectureDeepDiveProps {
 
 export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
     if (!data) return null;
+
+    // Helper to detect and render LaTeX or plain text
+    const renderStep = (step: string) => {
+        if (step.includes("matrix W")) {
+            return (
+                <div className="space-y-4">
+                    <div className="flex items-start justify-between group/tip">
+                        <p className="text-white/70">{step.split("W")[0]} <code className="text-indigo-400 font-bold">W</code> {step.split("W")[1].split("(")[0]}</p>
+
+                        <div className="group relative ml-2 mt-1">
+                            <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
+                                <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
+                            </div>
+                            <div className="absolute right-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">What is Matrix W?</p>
+                                <p>It's essentially a lookup table of <strong className="text-white">9216 numbers</strong> (96x96 characters in the vocab). Each number represents the "unnormalized score" of how likely one character follows another.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <BlockMath math="W \in \mathbb{R}^{|V| \times |V|}" />
+                </div>
+            );
+        }
+        if (step.includes("softmax")) {
+            return (
+                <div className="space-y-4">
+                    <div className="flex items-start justify-between group/tip">
+                        <p className="text-white/70">Predicts next character via:</p>
+
+                        <div className="group relative ml-2 mt-1">
+                            <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
+                                <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
+                            </div>
+                            <div className="absolute right-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">What is Softmax?</p>
+                                <p>Softmax takes raw scores (logits) and squashes them into a <strong className="text-emerald-400">probability distribution</strong>. All numbers become positive and add up to 1 (100%).</p>
+                                <div className="mt-2 font-mono text-[9px] text-indigo-400/70 italic">
+                                    <InlineMath math="\sigma(z)_i = \frac{e^{z_i}}{\sum e^{z_j}}" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <BlockMath math="P(x_{t+1} | x_t) = \text{softmax}(W[idx])" />
+                </div>
+            );
+        }
+        if (step.includes("cross-entropy")) {
+            return (
+                <div className="space-y-4">
+                    <div className="flex items-start justify-between group/tip">
+                        <p className="text-white/70">Optimizes parameters using:</p>
+
+                        <div className="group relative ml-2 mt-1">
+                            <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
+                                <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
+                            </div>
+                            <div className="absolute right-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">What is Loss (Cross-Entropy)?</p>
+                                <p>Loss measures the <strong className="text-white">distance</strong> between the model's prediction and the truth. If the truth is 'n' and the model gave 'n' a 0.1% chance, the loss will be very high. Training is the process of <strong className="text-indigo-400">tuning weights</strong> to minimize this distance.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <BlockMath math="\mathcal{L} = -\sum_{i} y_i \log(\hat{y}_i)" />
+                </div>
+            );
+        }
+        return <p className="text-sm text-white/70 leading-relaxed pb-6">{step}</p>;
+    };
 
     return (
         <section className="relative py-20 border-t border-white/[0.04] bg-white/[0.01]">
@@ -53,12 +123,12 @@ export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
                                         {i + 1}
                                     </div>
                                     {i < data.how_it_works.length - 1 && (
-                                        <div className="w-px h-full bg-white/[0.05] my-2" />
+                                        <div className="w-px h-6 bg-white/[0.05] my-2" />
                                     )}
                                 </div>
-                                <p className="text-sm text-white/70 leading-relaxed pb-6">
-                                    {step}
-                                </p>
+                                <div className="flex-grow pb-6">
+                                    {renderStep(step)}
+                                </div>
                             </div>
                         ))}
                     </motion.div>

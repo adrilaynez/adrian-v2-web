@@ -191,7 +191,7 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
         : "";
 
     return (
-        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm overflow-hidden">
+        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
                 <div className="flex items-center gap-2">
@@ -204,6 +204,23 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
                     <span className="font-mono text-xs uppercase tracking-widest text-white/60">
                         {activeContext ? "Active Slice Transition" : "Transition Matrix"}
                     </span>
+
+                    <div className="group relative ml-1">
+                        <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
+                            <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
+                        </div>
+                        <div className="absolute left-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">How to read this chart?</p>
+                            <div className="space-y-2">
+                                <p><strong className="text-violet-400">Rows (Y):</strong> The letter the model just wrote.</p>
+                                <p><strong className="text-emerald-400">Columns (X):</strong> The letter the model is trying to guess.</p>
+                                <p><strong className="text-white">Brightness:</strong> The brighter a square is, the more likely that pair of letters appears in the text.</p>
+                                <div className="mt-3 pt-3 border-t border-white/5 text-[10px] italic">
+                                    Example: If the row is 'q' and the 'u' column shines brightly, it means the model knows that after 'q' almost always comes 'u'.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 {activeContext && (
                     <div className="text-xs font-mono text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">

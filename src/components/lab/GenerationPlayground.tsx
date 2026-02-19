@@ -42,13 +42,30 @@ export function GenerationPlayground({
     };
 
     return (
-        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm overflow-hidden" id="playground">
+        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm" id="playground">
             {/* Header */}
             <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
                 <Sparkles className="h-4 w-4 text-pink-400" />
                 <span className="font-mono text-xs uppercase tracking-widest text-white/60">
                     Generation Playground
                 </span>
+
+                {/* Educational Tooltip */}
+                <div className="group relative ml-1">
+                    <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
+                        <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
+                    </div>
+                    <div className="absolute left-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">How is text generated?</p>
+                        <div className="space-y-2">
+                            <p><strong className="text-pink-400">Sampling:</strong> The model doesn't just pick the #1 answer. It "rolls a dice" weighted by probabilities. This is why it can generate different text every time.</p>
+                            <p><strong className="text-amber-400">Temperature:</strong> Higher values make the dice roll "wilder" (more random). Lower values make it "safer" and more repetitive.</p>
+                            <div className="mt-3 pt-3 border-t border-white/5 text-[10px] italic">
+                                Try temperature 2.0 to see complete gibberish, or 0.1 to see it get stuck in loops!
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-4">

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { lmApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Send, LayoutGrid, Type, Terminal, Cpu, Info, ChevronLeft } from "lucide-react";
+import { Play, Send, LayoutGrid, Type, Terminal, Cpu, Info, ChevronLeft, HelpCircle, Activity, Zap, Layers, BookOpen } from "lucide-react";
 import Link from "next/link";
 
 import { Suspense } from "react";

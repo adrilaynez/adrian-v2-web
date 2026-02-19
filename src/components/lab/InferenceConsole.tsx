@@ -35,13 +35,31 @@ export function InferenceConsole({
     };
 
     return (
-        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm overflow-hidden">
+        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm">
             {/* Header */}
             <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
                 <Terminal className="h-4 w-4 text-emerald-400" />
                 <span className="font-mono text-xs uppercase tracking-widest text-white/60">
                     Inference Console
                 </span>
+
+                {/* Educational Tooltip */}
+                <div className="group relative ml-1">
+                    <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
+                        <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
+                    </div>
+                    <div className="absolute left-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">What is Inference?</p>
+                        <div className="space-y-2">
+                            <p><strong className="text-emerald-400">The Process:</strong> The model takes your text, looks at the <strong className="text-white">last character</strong>, and looks up the probabilities for what comes next in its brain (the Matrix).</p>
+                            <p><strong className="text-violet-400">Top-K:</strong> We only show the top winners. If K=5, you see the 5 most likely candidates.</p>
+                            <div className="mt-3 pt-3 border-t border-white/5 text-[10px] italic">
+                                Note: This model is "deterministic" in its probabilities but "stochastic" (random) when it actually picks a character to generate text.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {device && (
                     <Badge className="ml-auto bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px] font-mono">
                         <Cpu className="h-3 w-3 mr-1" />

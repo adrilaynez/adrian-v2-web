@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Database, Layers, Zap, type LucideIcon } from "lucide-react";
+import { Brain, Database, Layers, Zap, HelpCircle, type LucideIcon } from "lucide-react";
 import type { TrainingViz } from "@/types/lmLab";
 
 interface StatItem {
@@ -98,7 +98,7 @@ export function ModelHero({
                 </motion.div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-16">
                     {stats.map((stat, i) => {
                         const colorClass = getColorClasses(stat.color);
                         return (
@@ -107,8 +107,17 @@ export function ModelHero({
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2 + i * 0.1 }}
-                                className={`p-4 rounded-xl backdrop-blur-sm group transition-all duration-300 border ${colorClass.split(' ').filter(c => c.startsWith('border-')).join(' ')} ${colorClass.split(' ').filter(c => c.startsWith('bg-')).join(' ')} hover:bg-white/[0.08]`}
+                                className={`p-4 rounded-xl backdrop-blur-sm group relative transition-all duration-300 border ${colorClass.split(' ').filter(c => c.startsWith('border-')).join(' ')} ${colorClass.split(' ').filter(c => c.startsWith('bg-')).join(' ')} hover:bg-white/[0.08]`}
                             >
+                                {/* Educational Tooltip */}
+                                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 border border-white/10 p-3 rounded-xl z-50 w-48 text-[10px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed text-center">
+                                    <p className="font-bold text-white mb-1">{stat.label}</p>
+                                    {stat.label === "Parameters" && "They are like the brain's connections. This model is simple, so it doesn't need many."}
+                                    {stat.label === "Vocabulary" && "It's the set of letters and symbols the model knows, like its own alphabet."}
+                                    {stat.label === "Training Data" && "The amount of text the model read to learn how to write."}
+                                    {stat.label === "Final Loss" && "It's the 'error' score. The lower it is, the better the model knows which letter comes next."}
+                                </div>
+
                                 <div className="flex items-center justify-center mb-3">
                                     <div className={`p-2 rounded-lg transition-all duration-300 ${colorClass.split(' ').filter(c => c.startsWith('text-')).join(' ')} group-hover:scale-110`}>
                                         <stat.icon className="w-5 h-5" />
@@ -127,6 +136,24 @@ export function ModelHero({
                         );
                     })}
                 </div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className="flex flex-col items-center gap-4"
+                >
+                    <button
+                        onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-sm font-bold text-emerald-400 uppercase tracking-[0.2em] hover:bg-emerald-500/20 hover:border-emerald-500/40 hover:scale-105 transition-all group shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]"
+                    >
+                        <HelpCircle className="w-4 h-4 text-emerald-400 group-hover:rotate-[360deg] transition-transform duration-500" />
+                        Need an intuitive explanation?
+                    </button>
+                    <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.1em]">
+                        Understand the core idea before diving into the math and visualizations.
+                    </p>
+                </motion.div>
             </div>
         </section>
     );
