@@ -71,7 +71,6 @@ export function ProjectsContent() {
 
             {/* Main Content */}
             <section className="container py-16 mx-auto max-w-screen-xl px-4">
-
                 {/* Flagship — LM-Lab */}
                 <div className="mb-24">
                     <div className="flex items-center gap-4 mb-8">
@@ -176,9 +175,9 @@ export function ProjectsContent() {
                                         className="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs uppercase tracking-widest h-11 px-6 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/25 transition-all duration-300"
                                         asChild
                                     >
-                                        <Link href="/lab/bigram">
-                                            <Brain className="h-4 w-4 mr-2" />
-                                            Open Bigram Explorer
+                                        <Link href="/lab">
+                                            <FlaskConical className="h-4 w-4 mr-2" />
+                                            Open Lab
                                             <ArrowRight className="h-3.5 w-3.5 ml-2" />
                                         </Link>
                                     </Button>
@@ -187,7 +186,7 @@ export function ProjectsContent() {
                                         className="border-white/[0.08] hover:bg-white/[0.04] text-white/70 font-mono text-xs uppercase tracking-widest h-11 px-6 transition-all"
                                         asChild
                                     >
-                                        <Link href="/lab/bigram#architecture">
+                                        <Link href="/lab">
                                             <Boxes className="h-4 w-4 mr-2" />
                                             View Architecture
                                         </Link>
@@ -197,7 +196,7 @@ export function ProjectsContent() {
                                         className="border-white/[0.08] hover:bg-white/[0.04] text-white/70 font-mono text-xs uppercase tracking-widest h-11 px-6 transition-all"
                                         asChild
                                     >
-                                        <Link href="/lab/bigram#playground">
+                                        <Link href="/lab">
                                             <Sparkles className="h-4 w-4 mr-2" />
                                             Run Interactive Demo
                                         </Link>

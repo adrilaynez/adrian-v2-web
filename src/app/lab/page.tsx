@@ -240,15 +240,6 @@ export default function LabLandingPage() {
                             </p>
                         </motion.div>
                     </div>
-
-                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-8">
-                        LM-Lab <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6C6C] to-white italic font-light">Suite</span>
-                    </h1>
-
-                    <p className="text-lg text-slate-400 leading-relaxed font-light">
-                        Plataforma avanzada para la inspección y análisis de modelos de lenguaje.
-                        Visualiza pesos, activa matrices de transición y desglosa la probabilidad de cada token en tiempo real.
-                    </p>
                 </section>
 
                 {/* ─── Journey Progression ─── */}

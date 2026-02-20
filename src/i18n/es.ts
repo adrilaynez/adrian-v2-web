@@ -123,19 +123,28 @@ export const es: TranslationDictionary = {
         models: {
             bigram: {
                 name: "Explorador Bigrama",
-                description: "Análisis de primer orden y matrices de transición.",
+                subtitle: "El Modelo Estadístico Más Simple",
+                description: "Explora el bloque fundamental del modelado de lenguaje. Aprende cómo las probabilidades de transición carácter a carácter forman un modelo probabilístico completo sin memoria más allá del predecesor inmediato. Visualiza la matriz de transición, ejecuta inferencia en vivo y genera texto mediante muestreo autorregresivo.",
             },
             ngram: {
                 name: "Laboratorio N-Gram",
-                description: "Contextos variables y explosión combinatoria.",
+                subtitle: "Ventanas de Contexto Variables",
+                description: "Extiende el modelo Bigrama condicionando en N caracteres previos en lugar de solo uno. Observa cómo aumentar el tamaño del contexto mejora las predicciones pero desencadena un crecimiento exponencial en el espacio de estados (|V|^N). Experimenta el compromiso fundamental entre expresividad y escasez de datos que motivó los enfoques neuronales.",
             },
             mlp: {
-                name: "MLP Neural",
-                description: "Representaciones densas y perceptrones neuronales.",
+                name: "Red Neuronal MLP",
+                subtitle: "De Contar a Aprender",
+                description: "Transición de tablas de búsqueda discretas a representaciones aprendidas continuas. Descubre cómo los perceptrones multicapa usan embeddings densos y activaciones no lineales para generalizar más allá de coincidencias exactas de n-gramas. Comprende la retropropagación, el descenso de gradiente y el cambio del modelado estadístico al neuronal del lenguaje.",
             },
             transformer: {
-                name: "Transformer",
-                description: "Mecanismos de atención y arquitectura LLM moderna.",
+                name: "Arquitectura Transformer",
+                subtitle: "La Atención es Todo lo que Necesitas",
+                description: "Explora la arquitectura que revolucionó la IA moderna. Aprende cómo los mecanismos de auto-atención permiten al modelo ponderar dinámicamente la importancia de cada token en la secuencia, eliminando ventanas de contexto fijas. Visualiza patrones de atención, codificaciones posicionales y el mecanismo de atención multi-cabeza que impulsa GPT y BERT.",
+            },
+            neuralNetworks: {
+                name: "Redes Neuronales",
+                subtitle: "Fundamentos del Aprendizaje Profundo",
+                description: "Construye intuición sobre redes neuronales artificiales desde primeros principios. Comprende perceptrones, funciones de activación, matrices de pesos y cómo la optimización basada en gradientes permite el aprendizaje. Ve cómo unidades matemáticas simples se combinan para formar aproximadores de funciones poderosos capaces de modelar patrones complejos en los datos.",
             },
         },
         dashboard: {
@@ -417,6 +426,33 @@ export const es: TranslationDictionary = {
                     trainingSplit: "Datos de Entrenamiento:",
                     vocabulary: "Tamaño del Vocabulario:",
                     charTokens: "caracteres",
+                },
+                probFlow: {
+                    badge: "Visualizador de Flujo de Probabilidad",
+                    alreadyNormalized: "⚠ La matriz parece pre-normalizada",
+                    description: "Explora cómo los conteos brutos se convierten en probabilidades y cómo el modelo muestrea el siguiente token. Este diagrama interactivo muestra el pipeline completo de inferencia: desde seleccionar un carácter de contexto, hasta normalizar su fila en una distribución de probabilidad, hasta muestrear estocásticamente el siguiente token.",
+                    step1: "Paso 1: Seleccionar Contexto",
+                    step2: "Paso 2: Normalizar",
+                    step3: "Paso 3: Muestrear Siguiente Token",
+                    currentToken: "Token Actual",
+                    typeToChange: "Escribe para cambiar contexto",
+                    normalize: "Normalizar",
+                    softmax: "Softmax",
+                    educational: {
+                        normTitle: "Normalización Simple",
+                        normDesc: "Divide cada conteo por la suma de la fila. Esto convierte frecuencias brutas en probabilidades que suman 1.0.",
+                        softmaxTitle: "Softmax (Escalado por Temperatura)",
+                        softmaxDesc: "Exponencia valores y normaliza. La temperatura controla la nitidez: temp baja → distribución punteada, temp alta → distribución uniforme.",
+                    },
+                    tempLabel: "Temperatura",
+                    tempTooltip: "Controla la aleatoriedad. Más baja = más determinista, Más alta = más creativo/aleatorio",
+                    sampleButton: "Muestrear Siguiente Token",
+                    sampling: "Muestreando...",
+                    result: "Resultado Muestreado",
+                    mostLikely: "Más Probable",
+                    probability: "Probabilidad",
+                    roll: "Tirada Aleatoria",
+                    explanation: "El modelo lanzó un dado ponderado (tirada = {roll}) y seleccionó '{token}' con probabilidad {prob}%",
                 },
             },
             inference: {
@@ -819,6 +855,137 @@ export const es: TranslationDictionary = {
         pressBuild: "Pulsa Construir Matriz y empieza a iterar sobre los pares de caracteres.",
         table: {
             curnxt: "act \\ sig"
+        }
+    },
+    neuralNetworkNarrative: {
+        hero: {
+            eyebrow: "Comprendiendo los Modelos de Lenguaje",
+            titlePrefix: "Redes Neuronales y",
+            titleSuffix: "Deep Learning",
+            description: "Un enfoque desde primeros principios para construir cerebros artificiales.",
+            titlePrimary: "Redes Neuronales",
+            titleSecondary: "Deep Learning"
+        },
+        historical: {
+            title: "Orígenes Históricos",
+            lead: "La búsqueda de la inteligencia artificial.",
+            p1: "A mediados del siglo XX, los científicos comenzaron a",
+            p1Highlight: "modelar el cerebro",
+            p1End: "con modelos matemáticos simples.",
+            p2: "Esto llevó a la invención del perceptrón.",
+            p3: "Sin embargo, los primeros modelos tenían",
+            p3Highlight: "severas limitaciones",
+            p3End: "que obstaculizaron el progreso.",
+            quote: "Estamos intentando construir máquinas que puedan pensar.",
+            p4: "Tomó décadas superar estos obstáculos."
+        },
+        countingToLearning: {
+            title: "De Contar a Aprender",
+            lead: "Cómo la probabilidad se convierte en plasticidad.",
+            p1: "A diferencia de modelos simples,",
+            p1Highlight: "las redes neuronales aprenden",
+            p1End: "ajustando conexiones.",
+            p2: "Este cambio de contar a la",
+            p2Highlight: "optimización continua",
+            p2End: "es profundo.",
+            insightTitle: "La Visión",
+            insightText: "Aprender es simplemente encontrar los pesos correctos en un espacio matemático masivo.",
+            p3: "Veamos cómo hace esto una sola neurona."
+        },
+        perceptron: {
+            title: "El Perceptrón",
+            lead: "La unidad fundamental de computación neuronal.",
+            p1: "Un perceptrón toma entradas,",
+            p1Highlight: "las multiplica por pesos",
+            p1End: ", y añade un sesgo.",
+            p2: "Luego aplica una función de activación.",
+            formulaCaption: "La combinación lineal y la función de activación.",
+            p3: "Este simple mecanismo puede",
+            p3Highlight: "separar datos linealmente",
+            p3End: "en diferentes categorías.",
+            p4: "Pero por sí solo, no es suficiente para patrones complejos."
+        },
+        weightsAndBias: {
+            title: "Pesos y Sesgos",
+            lead: "Los parámetros del aprendizaje.",
+            p1: "Los pesos determinan la",
+            p1Highlight: "importancia de cada entrada",
+            p1End: ".",
+            p2: "El sesgo desplaza el",
+            p2Highlight: "umbral de activación",
+            p2End: ".",
+            p3: "Ajustar estos es el núcleo del entrenamiento.",
+            calloutTitle: "Parámetros",
+            calloutText: "Toda red neuronal se define por estos números aprendibles."
+        },
+        activations: {
+            title: "Funciones de Activación",
+            lead: "Introduciendo no linealidad.",
+            p1: "Sin funciones de activación, las redes neuronales serían solo regresión lineal.",
+            p2: "Permiten a la red modelar fronteras complejas y curvas.",
+            reluTitle: "ReLU",
+            reluDesc: "Rectified Linear Unit. Rápida y popular, da cero para entradas negativas.",
+            sigmoidTitle: "Sigmoide",
+            sigmoidDesc: "Comprime salidas entre 0 y 1. Buena para probabilidades.",
+            tanhTitle: "Tanh",
+            tanhDesc: "Comprime salidas entre -1 y 1. Centrada en cero.",
+            p3: "Elegir la función correcta",
+            p3Highlight: "cambia las dinámicas de aprendizaje",
+            p3End: "significativamente."
+        },
+        backpropagation: {
+            title: "Backpropagation",
+            lead: "El motor del deep learning.",
+            p1: "Para aprender, necesitamos saber",
+            p1Highlight: "cuánto se equivocan nuestras predicciones",
+            p1End: ".",
+            lossCaption: "La Función de Pérdida mide nuestro error.",
+            p2: "Calculamos el error y",
+            p2Highlight: "lo propagamos hacia atrás",
+            p2End: "por la red.",
+            p3: "Usando cálculo, encontramos el",
+            p3Highlight: "gradiente de la pérdida",
+            p3End: "respecto a cada peso.",
+            p4: "Esto nos dice cómo actualizar los pesos para hacerlo mejor la próxima vez.",
+            updateCaption: "Regla de actualización de parámetros por Descenso de Gradiente.",
+            p5: "Este proceso se repite hasta minimizar el error."
+        },
+        parameterUpdates: {
+            title: "Actualización de Parámetros",
+            lead: "Observando a la red aprender.",
+            p1: "Al principio, las predicciones son",
+            p1Highlight: "totalmente aleatorias",
+            p1End: ".",
+            p2: "Pero al iterar, los pesos se van refinando gradualmente.",
+            insightTitle: "Optimización",
+            insightText: "Estamos caminando cuesta abajo en un panorama de error de altas dimensiones.",
+            p3: "Eventualmente, el modelo converge en una solución."
+        },
+        bigramConnection: {
+            title: "Conexión con Bigramas",
+            lead: "De frecuencias a vectores densos.",
+            p1: "Mientras que los bigramas solo cuentan ocurrencias, las redes neuronales aprenden representaciones continuas.",
+            p2: "Esto les permite",
+            p2Highlight: "generalizar a combinaciones no vistas",
+            p2End: "mucho mejor.",
+            insightTitle: "Generalización",
+            insightText: "Las redes neuronales entienden características subyacentes, no solo coincidencias exactas.",
+            p3: "Esto las hace muchísimo más poderosas que los modelos puramente estadísticos."
+        },
+        limitations: {
+            title: "Poder y Limitaciones",
+            lead: "No es una solución mágica.",
+            p1: "Pese a su poder, las redes neuronales requieren",
+            p1Highlight: "cantidades masivas de datos",
+            p1End: "y cómputo.",
+            p2: "Suelen ser cajas negras, haciendo difícil entender por qué tomaron una decisión.",
+            p3: "A pesar de esto, son la base de la IA moderna.",
+            quote: "Nosotros damos forma a nuestros modelos, y luego nuestros modelos nos dan forma a nosotros.",
+            p4: "El siguiente paso es entender cómo estas unidades básicas se combinan en arquitecturas como los Transformers."
+        },
+        footer: {
+            text: "Esto concluye la sección del perceptrón multicapa.",
+            brand: "LM-LAB · Modo Educativo"
         }
     }
 };

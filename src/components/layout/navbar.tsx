@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 const navItems = [
     { name: "Home", href: "/" },
     { name: "Projects", href: "/projects" },
-    { name: "Lab", href: "/lab/bigram" },
+    { name: "Lab", href: "/lab" },
     { name: "Notes", href: "/notes" },
 ]
 

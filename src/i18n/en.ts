@@ -51,19 +51,28 @@ export const en = {
         models: {
             bigram: {
                 name: "Bigram Explorer",
-                description: "First-order analysis and transition matrices.",
+                subtitle: "The Simplest Statistical Model",
+                description: "Explore the foundational building block of language modeling. Learn how character-to-character transition probabilities form a complete probabilistic model with zero memory beyond the immediate predecessor. Visualize the transition matrix, run live inference, and generate text through autoregressive sampling.",
             },
             ngram: {
                 name: "N-Gram Lab",
-                description: "Variable contexts and combinatorial explosion.",
+                subtitle: "Variable Context Windows",
+                description: "Extend the Bigram model by conditioning on N previous characters instead of just one. Observe how increasing context size improves predictions but triggers exponential growth in the state space (|V|^N). Experience the fundamental tradeoff between expressiveness and data sparsity that motivated neural approaches.",
             },
             mlp: {
-                name: "MLP Neural",
-                description: "Dense representations and neural perceptrons.",
+                name: "MLP Neural Network",
+                subtitle: "From Counting to Learning",
+                description: "Transition from discrete lookup tables to continuous learned representations. Discover how multi-layer perceptrons use dense embeddings and non-linear activations to generalize beyond exact n-gram matches. Understand backpropagation, gradient descent, and the shift from statistical to neural language modeling.",
             },
             transformer: {
-                name: "Transformer",
-                description: "Attention mechanisms and modern LLM architecture.",
+                name: "Transformer Architecture",
+                subtitle: "Attention is All You Need",
+                description: "Explore the architecture that revolutionized modern AI. Learn how self-attention mechanisms allow the model to dynamically weight the importance of every token in the sequence, eliminating fixed context windows. Visualize attention patterns, positional encodings, and the multi-head attention mechanism that powers GPT and BERT.",
+            },
+            neuralNetworks: {
+                name: "Neural Networks",
+                subtitle: "Foundations of Deep Learning",
+                description: "Build intuition for artificial neural networks from first principles. Understand perceptrons, activation functions, weight matrices, and how gradient-based optimization enables learning. See how simple mathematical units combine to form powerful function approximators capable of modeling complex patterns in data.",
             },
         },
         dashboard: {
@@ -415,6 +424,33 @@ export const en = {
                     trainingSplit: "Training Data:",
                     vocabulary: "Vocabulary Size:",
                     charTokens: "characters",
+                },
+                probFlow: {
+                    badge: "Probability Flow Visualizer",
+                    alreadyNormalized: "⚠ Matrix appears pre-normalized",
+                    description: "Explore how raw counts become probabilities and how the model samples the next token. This interactive diagram shows the complete inference pipeline: from selecting a context character, to normalizing its row into a probability distribution, to stochastically sampling the next token.",
+                    step1: "Step 1: Select Context",
+                    step2: "Step 2: Normalize",
+                    step3: "Step 3: Sample Next Token",
+                    currentToken: "Current Token",
+                    typeToChange: "Type to change context",
+                    normalize: "Normalize",
+                    softmax: "Softmax",
+                    educational: {
+                        normTitle: "Simple Normalization",
+                        normDesc: "Divide each count by the row sum. This converts raw frequencies into probabilities that sum to 1.0.",
+                        softmaxTitle: "Softmax (Temperature-Scaled)",
+                        softmaxDesc: "Exponentiates values and normalizes. Temperature controls sharpness: low temp → peaked distribution, high temp → uniform distribution.",
+                    },
+                    tempLabel: "Temperature",
+                    tempTooltip: "Controls randomness. Lower = more deterministic, Higher = more creative/random",
+                    sampleButton: "Sample Next Token",
+                    sampling: "Sampling...",
+                    result: "Sampled Result",
+                    mostLikely: "Most Likely",
+                    probability: "Probability",
+                    roll: "Random Roll",
+                    explanation: "The model threw a weighted dice (roll = {roll}) and selected '{token}' with probability {prob}%",
                 },
             },
             inference: {
@@ -817,6 +853,137 @@ export const en = {
         pressBuild: "Press Build Bigram Matrix and start stepping through character pairs.",
         table: {
             curnxt: "cur \\ nxt"
+        }
+    },
+    neuralNetworkNarrative: {
+        hero: {
+            eyebrow: "Understanding Language Models",
+            titlePrefix: "Neural Networks &",
+            titleSuffix: "Deep Learning",
+            description: "A first-principles approach to building artificial brains.",
+            titlePrimary: "Neural Networks",
+            titleSecondary: "Deep Learning"
+        },
+        historical: {
+            title: "Historical Origins",
+            lead: "The quest for artificial intelligence.",
+            p1: "In the mid-20th century, scientists began",
+            p1Highlight: "modeling the brain",
+            p1End: "with simple mathematical models.",
+            p2: "This led to the invention of the perceptron.",
+            p3: "However, early models had",
+            p3Highlight: "severe limitations",
+            p3End: "that hindered progress.",
+            quote: "We are trying to build machines that can think.",
+            p4: "It took decades to overcome these hurdles."
+        },
+        countingToLearning: {
+            title: "From Counting to Learning",
+            lead: "How probability becomes plasticity.",
+            p1: "Unlike simple models,",
+            p1Highlight: "neural networks learn",
+            p1End: "by adjusting connections.",
+            p2: "This shift from counting to",
+            p2Highlight: "continuous optimization",
+            p2End: "is profound.",
+            insightTitle: "The Insight",
+            insightText: "Learning is just finding the right weights in a massive mathematical space.",
+            p3: "Let's see how a single neuron does this."
+        },
+        perceptron: {
+            title: "The Perceptron",
+            lead: "The fundamental unit of neural computation.",
+            p1: "A perceptron takes inputs,",
+            p1Highlight: "multiplies them by weights",
+            p1End: ", and adds a bias.",
+            p2: "Then it applies an activation function.",
+            formulaCaption: "The linear combination and activation function.",
+            p3: "This simple mechanism can",
+            p3Highlight: "separate data linearly",
+            p3End: "into different categories.",
+            p4: "But on its own, it's not enough for complex patterns."
+        },
+        weightsAndBias: {
+            title: "Weights and Bias",
+            lead: "The parameters of learning.",
+            p1: "Weights determine the",
+            p1Highlight: "importance of each input",
+            p1End: ".",
+            p2: "Bias shifts the",
+            p2Highlight: "activation threshold",
+            p2End: ".",
+            p3: "Adjusting these is the core of training.",
+            calloutTitle: "Parameters",
+            calloutText: "Every neural network is defined by these learnable numbers."
+        },
+        activations: {
+            title: "Activation Functions",
+            lead: "Introducing non-linearity.",
+            p1: "Without activation functions, neural networks would be just linear regression.",
+            p2: "They allow the network to model complex, curved boundaries.",
+            reluTitle: "ReLU",
+            reluDesc: "Rectified Linear Unit. Fast and popular, outputs zero for negative inputs.",
+            sigmoidTitle: "Sigmoid",
+            sigmoidDesc: "Squashes outputs between 0 and 1. Good for probabilities.",
+            tanhTitle: "Tanh",
+            tanhDesc: "Squashes outputs between -1 and 1. Centered around zero.",
+            p3: "Choosing the right function",
+            p3Highlight: "changes the learning dynamics",
+            p3End: "significantly."
+        },
+        backpropagation: {
+            title: "Backpropagation",
+            lead: "The engine of deep learning.",
+            p1: "To learn, we need to know how",
+            p1Highlight: "wrong our predictions are",
+            p1End: ".",
+            lossCaption: "The Loss Function measures our error.",
+            p2: "We calculate the error and",
+            p2Highlight: "propagate it backwards",
+            p2End: "through the network.",
+            p3: "Using calculus, we find the",
+            p3Highlight: "gradient of the loss",
+            p3End: "with respect to each weight.",
+            p4: "This tells us how to update the weights to do better next time.",
+            updateCaption: "Gradient Descent parameter update rule.",
+            p5: "This process repeats until the error is minimized."
+        },
+        parameterUpdates: {
+            title: "Parameter Updates",
+            lead: "Watching the network learn.",
+            p1: "At first, predictions are",
+            p1Highlight: "completely random",
+            p1End: ".",
+            p2: "But as we iterate, the weights gradually refine.",
+            insightTitle: "Optimization",
+            insightText: "We are walking downhill in a high-dimensional error landscape.",
+            p3: "Eventually, the model converges on a solution."
+        },
+        bigramConnection: {
+            title: "Connection to Bigrams",
+            lead: "From frequencies to dense vectors.",
+            p1: "While bigrams just count occurrences, neural nets learn continuous representations.",
+            p2: "This allows them to",
+            p2Highlight: "generalize to unseen combinations",
+            p2End: "much better.",
+            insightTitle: "Generalization",
+            insightText: "Neural networks understand underlying features, not just exact matches.",
+            p3: "This makes them vastly more powerful than pure statistical models."
+        },
+        limitations: {
+            title: "Power and Limitations",
+            lead: "Not a silver bullet.",
+            p1: "While powerful, neural networks require",
+            p1Highlight: "massive amounts of data",
+            p1End: "and compute.",
+            p2: "They are often black boxes, making it hard to understand why they made a decision.",
+            p3: "Despite this, they are the foundation of modern AI.",
+            quote: "We shape our models, and thereafter our models shape us.",
+            p4: "The next step is understanding how these basic units combine into architectures like Transformers."
+        },
+        footer: {
+            text: "This concludes the multi-layer perceptron section.",
+            brand: "LM-LAB · Educational Mode"
         }
     }
 };

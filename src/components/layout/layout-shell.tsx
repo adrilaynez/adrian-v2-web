@@ -6,13 +6,13 @@ import { Footer } from "@/components/layout/footer";
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const isLabRoute = pathname?.startsWith("/lab");
+    const isLabModelRoute = pathname?.startsWith("/lab/") && pathname !== "/lab";
 
     return (
         <div className="relative flex min-h-screen flex-col">
-            {!isLabRoute && <Navbar />}
+            {!isLabModelRoute && <Navbar />}
             <main className="flex-1">{children}</main>
-            {!isLabRoute && <Footer />}
+            {!isLabModelRoute && <Footer />}
         </div>
     );
 }

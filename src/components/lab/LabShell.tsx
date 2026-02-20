@@ -33,7 +33,7 @@ export function LabShell({ children }: { children: React.ReactNode }) {
                     {/* Left */}
                     <div className="flex items-center gap-4">
                         <Link
-                            href="/projects"
+                            href="/lab"
                             className="flex items-center gap-2 text-xs text-white/50 hover:text-white/80 transition-colors font-mono"
                         >
                             <ArrowLeft className="h-3.5 w-3.5" />
