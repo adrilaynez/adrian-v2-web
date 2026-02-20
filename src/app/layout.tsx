@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LayoutShell } from "@/components/layout/layout-shell";
+import { I18nProvider } from "@/i18n/context";
 import "katex/dist/katex.min.css"; // LaTeX support
 
 const geistSans = Geist({
@@ -53,7 +54,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LayoutShell>{children}</LayoutShell>
+          <I18nProvider>
+            <LayoutShell>{children}</LayoutShell>
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

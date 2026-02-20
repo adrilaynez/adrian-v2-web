@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 import { FlaskConical, Brain, Zap, BookOpen, Layers } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "@/i18n/context";
-import { useLabMode } from "@/context/LabModeContext";
+import { useLabMode, LabModeProvider } from "@/context/LabModeContext";
 import { TrainingInsights } from "@/components/lab/TrainingInsights";
 
 const TransitionMatrix = dynamic(() =>
@@ -42,7 +42,7 @@ const ArchitectureDeepDive = dynamic(() =>
 );
 
 
-export default function BigramPage() {
+function BigramPageContent() {
     const { t } = useI18n();
     const { mode } = useLabMode();
     const isEducational = mode === "educational";
@@ -286,5 +286,13 @@ export default function BigramPage() {
                 nextChar={modalState.nextChar}
             />
         </LabShell>
+    );
+}
+
+export default function BigramPage() {
+    return (
+        <LabModeProvider>
+            <BigramPageContent />
+        </LabModeProvider>
     );
 }

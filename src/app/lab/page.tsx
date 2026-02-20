@@ -1,3 +1,5 @@
+"use client";
+
 import ModelSelector from "@/components/ModelSelector";
 import Link from "next/link";
 import { motion } from "framer-motion";

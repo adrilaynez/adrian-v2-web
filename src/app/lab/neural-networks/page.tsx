@@ -8,7 +8,7 @@ import { SectionDivider } from "@/components/lab/SectionDivider";
 import { motion } from "framer-motion";
 import { FlaskConical } from "lucide-react";
 import { useI18n } from "@/i18n/context";
-import { useLabMode } from "@/context/LabModeContext";
+import { useLabMode, LabModeProvider } from "@/context/LabModeContext";
 
 const NeuralNetworkNarrative = dynamic(
     () => import("@/components/lab/NeuralNetworkNarrative").then((m) => ({ default: m.NeuralNetworkNarrative })),
@@ -29,7 +29,7 @@ function NeuralNetworksLoadingPlaceholder() {
     );
 }
 
-export default function NeuralNetworksPage() {
+function NeuralNetworksPageContent() {
     const { t } = useI18n();
     const { mode } = useLabMode();
 
@@ -90,5 +90,13 @@ export default function NeuralNetworksPage() {
                 </div>
             )}
         </LabShell>
+    );
+}
+
+export default function NeuralNetworksPage() {
+    return (
+        <LabModeProvider>
+            <NeuralNetworksPageContent />
+        </LabModeProvider>
     );
 }

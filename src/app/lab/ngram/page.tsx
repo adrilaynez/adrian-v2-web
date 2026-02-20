@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useEffect, useCallback, useRef, useState, useMemo } from "react";
 import { useI18n } from "@/i18n/context";
-import { useLabMode } from "@/context/LabModeContext";
+import { useLabMode, LabModeProvider } from "@/context/LabModeContext";
 
 const ContextControl = dynamic(() =>
     import("@/components/lab/ContextControl").then((m) => m.ContextControl)
@@ -260,11 +260,10 @@ function ComparisonDashboard({
                 return (
                     <div
                         key={n}
-                        className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 transition-colors ${
-                            isActive
+                        className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 transition-colors ${isActive
                                 ? "border-cyan-500/30 bg-cyan-500/[0.06]"
                                 : "border-white/[0.06] bg-white/[0.015]"
-                        }`}
+                            }`}
                     >
                         <span className={`font-mono text-xs font-bold w-12 ${isActive ? "text-cyan-300" : "text-white/40"}`}>
                             N={n}
@@ -300,7 +299,7 @@ function ComparisonDashboard({
    Page component
    ───────────────────────────────────────────── */
 
-export default function NgramPage() {
+function NgramPageContent() {
     const { t } = useI18n();
     const { mode } = useLabMode();
     const isEdu = mode === "educational";
@@ -636,5 +635,13 @@ export default function NgramPage() {
                 </motion.div>
             </div>
         </LabShell>
+    );
+}
+
+export default function NgramPage() {
+    return (
+        <LabModeProvider>
+            <NgramPageContent />
+        </LabModeProvider>
     );
 }

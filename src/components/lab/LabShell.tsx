@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { useI18n } from "@/i18n/context";
+import { LabModeProvider } from "@/context/LabModeContext";
 
 export function LabShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
