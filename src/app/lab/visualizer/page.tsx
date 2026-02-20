@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { lmApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Send, LayoutGrid, Type, Terminal, Cpu, Info, ChevronLeft, HelpCircle, Activity, Zap, Layers, BookOpen } from "lucide-react";
+import { Play, Send, LayoutGrid, Type, Terminal, Cpu, Info, ChevronLeft, HelpCircle, Activity, Zap, Layers, BookOpen, Brain, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { Suspense } from "react";
@@ -208,6 +208,45 @@ function VisualizerContent() {
                     </div>
                 </div>
 
+            </div>
+
+            {/* Navigation for Next Steps */}
+            <div className="container mx-auto px-6 pb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-800/60">
+
+                    <Link href="/lab" className="group relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-6 hover:border-slate-600 transition-all duration-300">
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-800/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                        <div className="relative flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 group-hover:text-white group-hover:border-slate-600 transition-colors">
+                                    <LayoutGrid className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Return to</div>
+                                    <div className="text-lg font-bold text-slate-200 group-hover:text-white transition-colors">Lab Overview</div>
+                                </div>
+                            </div>
+                            <ChevronLeft className="w-5 h-5 text-slate-600 group-hover:text-slate-300 transition-colors" />
+                        </div>
+                    </Link>
+
+                    <Link href="/lab/neural-networks" className="group relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-6 hover:border-[#FF6C6C]/50 transition-all duration-300">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#FF6C6C]/0 via-[#FF6C6C]/5 to-[#FF6C6C]/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                        <div className="relative flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-xl bg-[#FF6C6C]/10 border border-[#FF6C6C]/20 text-[#FF6C6C] group-hover:bg-[#FF6C6C]/20 transition-colors">
+                                    <Brain className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#FF6C6C]/70 mb-1">Next Module</div>
+                                    <div className="text-lg font-bold text-slate-200 group-hover:text-[#FF6C6C] transition-colors">Neural Networks</div>
+                                </div>
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-slate-600 group-hover:text-[#FF6C6C] transition-colors" />
+                        </div>
+                    </Link>
+
+                </div>
             </div>
         </div>
     );

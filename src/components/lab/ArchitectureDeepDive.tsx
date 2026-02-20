@@ -13,21 +13,30 @@ import {
 import type { ArchitectureViz } from "@/types/lmLab";
 import { BlockMath, InlineMath } from "react-katex";
 import "katex/dist/katex.min.css";
+import { useI18n } from "@/i18n/context";
 
 interface ArchitectureDeepDiveProps {
     data: ArchitectureViz | null;
 }
 
 export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
+    const { t } = useI18n();
     if (!data) return null;
 
+    const stepsList = [
+        { id: "matrixW", key: "models.bigram.architecture.stepsList.matrixW" },
+        { id: "softmax", key: "models.bigram.architecture.stepsList.softmax" },
+        { id: "loss", key: "models.bigram.architecture.stepsList.loss" }
+    ];
+
     // Helper to detect and render LaTeX or plain text
-    const renderStep = (step: string) => {
-        if (step.includes("matrix W")) {
+    const renderStep = (stepId: string, label: string) => {
+        if (stepId === "matrixW") {
             return (
                 <div className="space-y-4">
                     <div className="flex items-start justify-between group/tip">
-                        <p className="text-white/70">{step.split("W")[0]} <code className="text-indigo-400 font-bold">W</code> {step.split("W")[1].split("(")[0]}</p>
+                        {/* We use a hardcoded structure here to match the specific 'matrix W' visualization logic but with translated label */}
+                        <p className="text-white/70">{label}</p>
 
                         <div className="group relative ml-2 mt-1">
                             <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
@@ -43,11 +52,11 @@ export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
                 </div>
             );
         }
-        if (step.includes("softmax")) {
+        if (stepId === "softmax") {
             return (
                 <div className="space-y-4">
                     <div className="flex items-start justify-between group/tip">
-                        <p className="text-white/70">Predicts next character via:</p>
+                        <p className="text-white/70">{label}</p>
 
                         <div className="group relative ml-2 mt-1">
                             <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
@@ -66,11 +75,11 @@ export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
                 </div>
             );
         }
-        if (step.includes("cross-entropy")) {
+        if (stepId === "loss") {
             return (
                 <div className="space-y-4">
                     <div className="flex items-start justify-between group/tip">
-                        <p className="text-white/70">Optimizes parameters using:</p>
+                        <p className="text-white/70">{label}</p>
 
                         <div className="group relative ml-2 mt-1">
                             <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
@@ -86,8 +95,20 @@ export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
                 </div>
             );
         }
-        return <p className="text-sm text-white/70 leading-relaxed pb-6">{step}</p>;
+        return <p className="text-sm text-white/70 leading-relaxed pb-6">{label}</p>;
     };
+
+    const strengths = [
+        t("models.bigram.architecture.analysis.strengths.0"),
+        t("models.bigram.architecture.analysis.strengths.1"),
+        t("models.bigram.architecture.analysis.strengths.2"),
+    ];
+
+    const limitations = [
+        t("models.bigram.architecture.analysis.limitations.0"),
+        t("models.bigram.architecture.analysis.limitations.1"),
+        t("models.bigram.architecture.analysis.limitations.2"),
+    ];
 
     return (
         <section className="relative py-20 border-t border-white/[0.04] bg-white/[0.01]">
@@ -116,18 +137,18 @@ export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
                         <h3 className="text-sm font-mono uppercase tracking-widest text-indigo-400 border-b border-indigo-500/20 pb-2 mb-4">
                             Inference Mechanism
                         </h3>
-                        {data.how_it_works.map((step, i) => (
-                            <div key={i} className="flex gap-4 group">
+                        {stepsList.map((step, i) => (
+                            <div key={step.id} className="flex gap-4 group">
                                 <div className="flex flex-col items-center">
                                     <div className="w-6 h-6 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-[10px] font-mono text-white/60 group-hover:border-indigo-500/50 group-hover:text-indigo-400 transition-colors">
                                         {i + 1}
                                     </div>
-                                    {i < data.how_it_works.length - 1 && (
+                                    {i < stepsList.length - 1 && (
                                         <div className="w-px h-6 bg-white/[0.05] my-2" />
                                     )}
                                 </div>
                                 <div className="flex-grow pb-6">
-                                    {renderStep(step)}
+                                    {renderStep(step.id, t(step.key))}
                                 </div>
                             </div>
                         ))}
@@ -147,7 +168,7 @@ export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
                                 Capabilities
                             </h3>
                             <ul className="space-y-3">
-                                {data.strengths.map((s, i) => (
+                                {strengths.map((s, i) => (
                                     <li key={i} className="flex gap-3 text-sm text-white/60">
                                         <CheckCircle2 className="w-4 h-4 text-emerald-500/50 shrink-0 mt-0.5" />
                                         {s}
@@ -162,7 +183,7 @@ export function ArchitectureDeepDive({ data }: ArchitectureDeepDiveProps) {
                                 Constraints
                             </h3>
                             <ul className="space-y-3">
-                                {data.limitations.map((l, i) => (
+                                {limitations.map((l, i) => (
                                     <li key={i} className="flex gap-3 text-sm text-white/60">
                                         <AlertTriangle className="w-4 h-4 text-amber-500/50 shrink-0 mt-0.5" />
                                         {l}

@@ -4,6 +4,16 @@ import { motion } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Layers } from "lucide-react";
+import { useI18n } from "@/i18n/context";
+import { useLabMode } from "@/context/LabModeContext";
+
+const NGRAM_NAMES: Record<number, string> = {
+    1: "Bigram",
+    2: "Trigram",
+    3: "4-gram",
+    4: "5-gram",
+    5: "5-gram",
+};
 
 interface ContextControlProps {
     value: number;
@@ -12,26 +22,48 @@ interface ContextControlProps {
 }
 
 export function ContextControl({ value, onChange, disabled }: ContextControlProps) {
+    const { t } = useI18n();
+    const { mode } = useLabMode();
+    const isEdu = mode === "educational";
+
     return (
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6">
+        <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className={`rounded-2xl p-6 md:p-7 border transition-colors ${
+                isEdu
+                    ? "bg-gradient-to-br from-amber-950/15 via-black/40 to-black/60 border-amber-500/15 shadow-[0_0_25px_-8px_rgba(245,158,11,0.15)]"
+                    : "bg-gradient-to-br from-cyan-950/10 via-black/40 to-black/60 border-cyan-500/15 shadow-[0_0_25px_-8px_rgba(6,182,212,0.15)]"
+            }`}
+        >
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400">
-                        <Layers className="w-5 h-5" />
+                    <div className={`p-2.5 rounded-xl ${isEdu ? "bg-amber-500/15" : "bg-cyan-500/15"}`}>
+                        <Layers className={`w-5 h-5 ${isEdu ? "text-amber-300" : "text-cyan-300"}`} />
                     </div>
                     <div>
-                        <h3 className="text-white font-bold text-sm">Context Size (N)</h3>
+                        <h3 className="text-white font-bold text-sm tracking-tight">{t("models.ngram.controls.contextSize")}</h3>
                         <p className="text-white/40 text-xs mt-0.5">
                             Number of previous characters to condition on
                         </p>
                     </div>
                 </div>
-                <Badge variant="outline" className="text-indigo-300 border-indigo-500/30 bg-indigo-500/10 font-mono text-lg px-3 py-1">
-                    N = {value}
-                </Badge>
+                <div className="flex items-center gap-2">
+                    <Badge
+                        variant="outline"
+                        className={`font-mono text-lg px-3 py-1 ${
+                            isEdu
+                                ? "text-amber-300 border-amber-500/30 bg-amber-500/10"
+                                : "text-cyan-300 border-cyan-500/30 bg-cyan-500/10"
+                        }`}
+                    >
+                        N = {value}
+                    </Badge>
+                </div>
             </div>
 
-            <div className="px-2">
+            <div className="px-2 mb-4">
                 <Slider
                     value={[value]}
                     min={1}
@@ -43,13 +75,26 @@ export function ContextControl({ value, onChange, disabled }: ContextControlProp
                 />
             </div>
 
-            <div className="flex justify-between mt-4 text-[10px] font-mono uppercase tracking-widest text-white/30">
-                <span>Bigram (1)</span>
-                <span>Trigram (2)</span>
-                <span>4-Gram</span>
-                <span>5-Gram</span>
-                <span className="text-red-400/50">Explosion (5+)</span>
+            <div className="flex justify-between px-1">
+                {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                        key={n}
+                        onClick={() => onChange(n)}
+                        disabled={disabled}
+                        className={`text-[10px] font-mono uppercase tracking-widest transition-all px-1 py-0.5 rounded ${
+                            n === value
+                                ? isEdu
+                                    ? "text-amber-300 font-bold"
+                                    : "text-cyan-300 font-bold"
+                                : n === 5
+                                    ? "text-red-400/50 hover:text-red-400/70"
+                                    : "text-white/30 hover:text-white/50"
+                        }`}
+                    >
+                        {NGRAM_NAMES[n]}
+                    </button>
+                ))}
             </div>
-        </div>
+        </motion.div>
     );
 }

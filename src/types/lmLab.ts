@@ -106,6 +106,9 @@ export interface NGramTrainingInfo {
     context_utilization: number;
     sparsity: number;
     transition_density: number;
+    loss_history?: number[];
+    final_loss?: number;
+    perplexity?: number;
 }
 
 export interface NGramDiagnostics {
@@ -115,6 +118,7 @@ export interface NGramDiagnostics {
     sparsity?: number;
     observed_contexts?: number;
     context_utilization?: number;
+    perplexity?: number;
 }
 
 export interface ActiveSlice {
@@ -136,6 +140,11 @@ export interface NGramInferenceResponse {
     visualization: {
         transition_matrix: TransitionMatrixViz | null;
         active_slice: ActiveSlice | null;
+        context_distributions?: Record<string, {
+            context: string;
+            probabilities: number[];
+            row_labels?: string[];
+        }> | null;
         training: NGramTrainingInfo;
         diagnostics: NGramDiagnostics;
         architecture: ArchitectureViz;

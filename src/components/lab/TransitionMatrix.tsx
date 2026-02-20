@@ -1,29 +1,89 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback, memo } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo, memo } from "react";
+import { ZoomIn, ZoomOut, Maximize2, Minimize2, Info, Grid3x3, Search, Layers } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Grid3x3, Search, Layers } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/context";
+import { motion } from "framer-motion";
 import type { TransitionMatrixViz } from "@/types/lmLab";
 
 interface TransitionMatrixProps {
     data: TransitionMatrixViz | null;
     activeContext?: string[]; // If present, we are viewing an active slice
     onCellClick?: (rowLabel: string, colLabel: string) => void;
+    datasetMeta?: {
+        corpusName: string;
+        rawTextSize?: number;
+        trainDataSize?: number;
+        vocabSize?: number;
+    };
+    /** Use "cyan" on N-gram page to match lab style; "emerald" on Bigram page */
+    accent?: "cyan" | "emerald";
 }
 
-export const TransitionMatrix = memo(function TransitionMatrix({ data, activeContext, onCellClick }: TransitionMatrixProps) {
+const accentStyles = {
+    cyan: {
+        badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+        input: "focus:border-cyan-500/50 focus:ring-cyan-500/20",
+        searchIcon: "group-focus-within:text-cyan-400",
+        infoActive: "bg-cyan-500/20",
+        card: "bg-cyan-500/[0.04] border-cyan-500/20",
+        cardText: "text-cyan-300",
+        tooltipCell: "text-cyan-400 bg-cyan-500/10",
+        bar: "bg-cyan-500",
+        barBg: "bg-cyan-500/20",
+    },
+    emerald: {
+        badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+        input: "focus:border-emerald-500/50 focus:ring-emerald-500/20",
+        searchIcon: "group-focus-within:text-emerald-400",
+        infoActive: "bg-emerald-500/20",
+        card: "bg-emerald-500/[0.04] border-emerald-500/20",
+        cardText: "text-emerald-300",
+        tooltipCell: "text-emerald-400 bg-emerald-500/10",
+        bar: "bg-emerald-500",
+        barBg: "bg-emerald-500/20",
+    },
+} as const;
+
+export const TransitionMatrix = memo(function TransitionMatrix({
+    data,
+    activeContext,
+    onCellClick,
+    datasetMeta,
+    accent = "emerald",
+}: TransitionMatrixProps) {
+    const { t } = useI18n();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const [tooltip, setTooltip] = useState<{
-        x: number;
-        y: number;
-        row: string;
-        col: string;
-        value: number;
-    } | null>(null);
+    const style = accentStyles[accent];
+
+    const formatCount = useCallback((value?: number) => {
+        if (value === undefined || value === null) return t("models.bigram.unknown");
+        return value.toLocaleString();
+    }, [t]);
+
+    const isSliceView = data ? data.row_labels.length === 1 : false;
+    const sliceTableRows = useMemo(() => {
+        if (!data || !isSliceView) return [];
+        const row = data.data[0];
+        return data.col_labels
+            .map((label, i) => ({ char: label, prob: row[i] }))
+            .sort((a, b) => b.prob - a.prob);
+    }, [data, isSliceView]);
+
+    const [tooltip, setTooltip] = useState<{ x: number; y: number; row: string; col: string; value: number } | null>(null);
     const [searchChar, setSearchChar] = useState("");
     const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
+    const [zoomLevel, setZoomLevel] = useState(1.0);
+    const [showInfoPanel, setShowInfoPanel] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const tooltipRafRef = useRef<number | null>(null);
+    const lastTooltipKeyRef = useRef<string>("");
 
     useEffect(() => {
         if (searchChar && data) {
@@ -36,195 +96,293 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
         }
     }, [searchChar, data]);
 
-    const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!data || !onCellClick || !canvasRef.current) return;
-        const rect = canvasRef.current.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-
-        const padding = 32;
-        const rows = data.row_labels.length;
-        const cols = data.col_labels.length;
-        const canvasW = Math.min(rect.width, 800);
-        const cellW = (canvasW - padding * 2) / cols;
-        const cellH = rows === cols ? cellW : Math.min(Math.max(cellW, 20), 40);
-
-        const col = Math.floor((mx - padding) / cellW);
-        const row = Math.floor((my - padding) / cellH);
-
-        if (
-            row >= 0 &&
-            row < rows &&
-            col >= 0 &&
-            col < cols
-        ) {
-            const rowLabel = data.row_labels[row];
-            const colLabel = data.col_labels[col];
-            onCellClick(rowLabel, colLabel);
-        }
-    };
-
     const draw = useCallback(() => {
+        if (!canvasRef.current || !containerRef.current || !data || isSliceView) return;
         const canvas = canvasRef.current;
-        const container = containerRef.current;
-        if (!canvas || !container || !data) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
         const { data: matrix, row_labels, col_labels } = data;
         const rows = row_labels.length;
         const cols = col_labels.length;
         const dpr = window.devicePixelRatio || 1;
-
         const padding = 32;
-        const canvasW = Math.min(container.clientWidth, 800);
-        const cellW = (canvasW - padding * 2) / cols;
-        const cellH = rows === cols ? cellW : Math.min(Math.max(cellW, 20), 40);
+
+        const baseWidth = 800;
+        const cellW = ((baseWidth - padding * 2) / cols) * zoomLevel;
+        const cellH = cellW;
+
+        const totalW = padding * 2 + cols * cellW;
         const totalH = padding * 2 + rows * cellH;
 
-        canvas.width = canvasW * dpr;
+        canvas.width = totalW * dpr;
         canvas.height = totalH * dpr;
-        canvas.style.width = `${canvasW}px`;
+        canvas.style.width = `${totalW}px`;
         canvas.style.height = `${totalH}px`;
 
-        const ctx = canvas.getContext("2d")!;
         ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, canvasW, totalH);
+        ctx.clearRect(0, 0, totalW, totalH);
 
-        // Draw cells
-        for (let r = 0; r < rows; r++) {
+        const isCyan = accent === "cyan";
+        const r = isCyan ? 6 : 16;
+        const g = isCyan ? 182 : 185;
+        const b = isCyan ? 212 : 129;
+
+        for (let rIdx = 0; rIdx < rows; rIdx++) {
             for (let c = 0; c < cols; c++) {
-                const v = matrix[r][c];
+                const val = matrix[rIdx][c];
                 const x = padding + c * cellW;
-                const y = padding + r * cellH;
+                const y = padding + rIdx * cellH;
 
-                // Color: black → emerald via opacity
-                const alpha = Math.pow(v, 0.5); // sqrt for better visibility
-                const dimmed =
-                    highlightIdx !== null && highlightIdx !== r && highlightIdx !== c;
+                const isHighlighted = highlightIdx !== null && (highlightIdx === rIdx || highlightIdx === c);
+                const isDimmed = highlightIdx !== null && !isHighlighted;
+                let alpha = Math.pow(val, 0.5);
+                if (isDimmed) alpha *= 0.1;
+                if (highlightIdx === null) alpha = Math.max(alpha, 0.05);
 
-                ctx.fillStyle = dimmed
-                    ? `rgba(16, 185, 129, ${alpha * 0.15})`
-                    : `rgba(16, 185, 129, ${alpha * 0.9})`;
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
                 ctx.fillRect(x, y, cellW - 0.5, cellH - 0.5);
+
+                if (isHighlighted) {
+                    ctx.strokeStyle = "rgba(251, 191, 36, 0.6)";
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, cellW, cellH);
+                }
             }
         }
 
-        // Labels
-        const colFontSize = Math.min(cellW * 0.7, 11);
-        const rowFontSize = Math.min(cellH * 0.7, 11);
-        ctx.font = `${colFontSize}px monospace`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "bottom";
-
-        const getLabelColor = (char: string, highlighted: boolean) => {
-            if (highlighted) return "rgba(16, 185, 129, 1)"; // Emerald-500
-            if (/[A-Z]/.test(char)) return "rgba(251, 191, 36, 1)"; // Amber-400
-            if (/[a-z]/.test(char)) return "rgba(34, 211, 238, 1)"; // Cyan-400
-            return "rgba(255,255,255,0.4)"; // Gray
-        };
-
-        for (let c = 0; c < cols; c++) {
-            const char = col_labels[c];
-            const x = padding + c * cellW + cellW / 2;
-            ctx.fillStyle = getLabelColor(char, highlightIdx === c);
-            ctx.fillText(char === " " ? "␣" : char, x, padding - 4);
+        if (cellW > 12) {
+            ctx.font = `${Math.min(11, cellW * 0.6)}px monospace`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            for (let c = 0; c < cols; c++) {
+                const x = padding + c * cellW + cellW / 2;
+                ctx.fillText(col_labels[c], x, padding - 10);
+            }
+            for (let rIdx = 0; rIdx < rows; rIdx++) {
+                const y = padding + rIdx * cellH + cellH / 2;
+                ctx.fillText(row_labels[rIdx], padding - 10, y);
+            }
         }
-
-        ctx.font = `${rowFontSize}px monospace`;
-        ctx.textAlign = "right";
-        ctx.textBaseline = "middle";
-        for (let r = 0; r < rows; r++) {
-            const char = row_labels[r];
-            const y = padding + r * cellH + cellH / 2;
-            ctx.fillStyle = getLabelColor(char, highlightIdx === r);
-            ctx.fillText(
-                char === " " ? "␣" : char,
-                padding - 6,
-                y
-            );
-        }
-    }, [data, highlightIdx]);
+    }, [data, highlightIdx, zoomLevel, isSliceView, accent]);
 
     useEffect(() => {
         draw();
-        const handleResize = () => draw();
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
     }, [draw]);
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!data || !canvasRef.current) return;
-        const rect = canvasRef.current.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-
+    const getCellFromOffset = (offsetX: number, offsetY: number) => {
+        if (!data || isSliceView) return null;
         const padding = 32;
         const rows = data.row_labels.length;
         const cols = data.col_labels.length;
-        const canvasW = Math.min(rect.width, 800);
-        const cellW = (canvasW - padding * 2) / cols;
-        const cellH = rows === cols ? cellW : Math.min(Math.max(cellW, 20), 40);
+        const baseWidth = 800;
+        const cellW = ((baseWidth - padding * 2) / cols) * zoomLevel;
+        const cellH = cellW;
+        const startX = padding;
+        const startY = padding;
 
-        const col = Math.floor((mx - padding) / cellW);
-        const row = Math.floor((my - padding) / cellH);
-
-        if (
-            row >= 0 &&
-            row < rows &&
-            col >= 0 &&
-            col < cols
-        ) {
-            setTooltip({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-                row: data.row_labels[row],
-                col: data.col_labels[col],
-                value: data.data[row][col],
-            });
-        } else {
-            setTooltip(null);
-        }
+        if (offsetX < startX || offsetY < startY) return null;
+        const c = Math.floor((offsetX - startX) / cellW);
+        const r = Math.floor((offsetY - startY) / cellH);
+        if (c >= 0 && c < data.col_labels.length && r >= 0 && r < data.row_labels.length) return { r, c };
+        return null;
     };
 
-    // Construct context string for display
-    const contextStr = activeContext
-        ? activeContext.map(c => c === " " ? "␣" : c).join("")
+    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        if (!data || isSliceView) return;
+        const { offsetX, offsetY } = e.nativeEvent;
+        const { clientX, clientY } = e;
+        const cell = getCellFromOffset(offsetX, offsetY);
+
+        if (tooltipRafRef.current !== null) cancelAnimationFrame(tooltipRafRef.current);
+        tooltipRafRef.current = window.requestAnimationFrame(() => {
+            if (!cell) {
+                if (lastTooltipKeyRef.current !== "none") {
+                    setTooltip(null);
+                    lastTooltipKeyRef.current = "none";
+                }
+                return;
+            }
+            const nextTooltip = {
+                x: clientX,
+                y: clientY,
+                row: data.row_labels[cell.r],
+                col: data.col_labels[cell.c],
+                value: data.data[cell.r][cell.c],
+            };
+            const nextKey = `${cell.r}:${cell.c}:${Math.round(clientX)}:${Math.round(clientY)}`;
+            if (nextKey !== lastTooltipKeyRef.current) {
+                setTooltip(nextTooltip);
+                lastTooltipKeyRef.current = nextKey;
+            }
+        });
+    };
+
+    const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        const cell = getCellFromOffset(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+        if (cell && data && onCellClick) onCellClick(data.row_labels[cell.r], data.col_labels[cell.c]);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (tooltipRafRef.current !== null) cancelAnimationFrame(tooltipRafRef.current);
+        };
+    }, []);
+
+    const badgeLabel = data
+        ? isSliceView
+            ? `P(next | context) · 1×${data.col_labels.length}`
+            : `Transition matrix · ${data.row_labels.length}×${data.col_labels.length}`
         : "";
 
     return (
-        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
-                <div className="flex items-center gap-2">
-                    {activeContext ? (
-                        <Layers className="h-4 w-4 text-indigo-400" />
-                    ) : (
-                        <Grid3x3 className="h-4 w-4 text-violet-400" />
-                    )}
-
-                    <span className="font-mono text-xs uppercase tracking-widest text-white/60">
-                        {activeContext ? "Active Slice Transition" : "Transition Matrix"}
-                    </span>
-
-                    <div className="group relative ml-1">
-                        <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
-                            <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
-                        </div>
-                        <div className="absolute left-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">How to read this chart?</p>
-                            <div className="space-y-2">
-                                <p><strong className="text-violet-400">Rows (Y):</strong> The letter the model just wrote.</p>
-                                <p><strong className="text-emerald-400">Columns (X):</strong> The letter the model is trying to guess.</p>
-                                <p><strong className="text-white">Brightness:</strong> The brighter a square is, the more likely that pair of letters appears in the text.</p>
-                                <div className="mt-3 pt-3 border-t border-white/5 text-[10px] italic">
-                                    Example: If the row is 'q' and the 'u' column shines brightly, it means the model knows that after 'q' almost always comes 'u'.
-                                </div>
+        <div id="transition-matrix" className={cn("flex flex-col gap-4", isFullscreen && "fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-6")}>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/[0.04] p-4 rounded-xl border border-white/10">
+                <div className="flex items-center gap-4">
+                    <Badge variant="outline" className={cn("px-3 py-1 uppercase tracking-widest text-[10px]", style.badge)}>
+                        {badgeLabel}
+                    </Badge>
+                    {!isSliceView && (
+                        <>
+                            <div className="h-4 w-px bg-white/10" />
+                            <div className="relative group">
+                                <Search className={cn("absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/40 transition-colors", style.searchIcon)} />
+                                <Input
+                                    placeholder={t("models.bigram.matrix.searchPlaceholder")}
+                                    value={searchChar}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchChar(e.target.value.slice(0, 1))}
+                                    maxLength={1}
+                                    className={cn("pl-8 h-8 w-40 bg-black/20 border-white/10 text-xs transition-all font-mono", style.input)}
+                                />
                             </div>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
-                {activeContext && (
-                    <div className="text-xs font-mono text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
-                        Slice: &apos;{contextStr}&apos;
+
+                <div className="flex items-center gap-2">
+                    {!isSliceView && (
+                        <div className="flex items-center gap-1 bg-black/20 p-1 rounded-lg border border-white/5 mr-2">
+                            <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-white/10" onClick={() => setZoomLevel(z => Math.max(0.2, z - 0.2))}>
+                                <ZoomOut className="w-3 h-3" />
+                            </Button>
+                            <span className="text-[10px] font-mono text-white/50 w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-white/10" onClick={() => setZoomLevel(z => Math.min(5, z + 0.2))}>
+                                <ZoomIn className="w-3 h-3" />
+                            </Button>
+                        </div>
+                    )}
+                    <Button
+                        variant={showInfoPanel ? "secondary" : "ghost"}
+                        size="icon"
+                        className="h-8 w-8 hover:bg-white/10 relative"
+                        onClick={() => setShowInfoPanel(!showInfoPanel)}
+                    >
+                        <Info className="w-4 h-4" />
+                        {showInfoPanel && <div className={cn("absolute inset-0 rounded-md animate-pulse", style.infoActive)} />}
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10" onClick={() => setIsFullscreen(!isFullscreen)}>
+                        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </Button>
+                </div>
+            </div>
+
+            {datasetMeta && (
+                <Card className={cn("px-4 py-3", style.card)}>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                        {t("models.bigram.matrix.datasetMeta.learnedFrom")} <span className={style.cardText}>{datasetMeta.corpusName}</span>.
+                        {t("models.bigram.matrix.datasetMeta.summarizes")} <span className={style.cardText}>{formatCount(datasetMeta.rawTextSize)}</span> {t("models.bigram.matrix.datasetMeta.rawChars")}
+                        (<span className={style.cardText}>{formatCount(datasetMeta.trainDataSize)}</span> {t("models.bigram.matrix.datasetMeta.inTrain")}),
+                        {t("models.bigram.matrix.datasetMeta.vocab")} <span className={style.cardText}>{formatCount(datasetMeta.vocabSize)}</span> {t("models.bigram.matrix.datasetMeta.symbols")}.
+                    </p>
+                </Card>
+            )}
+
+            {showInfoPanel && (
+                <Card className={cn("bg-slate-900/70 p-4 md:p-5", style.card)}>
+                    <h4 className={cn("text-xs font-bold uppercase tracking-widest mb-2", style.cardText)}>
+                        {t("models.bigram.matrix.tooltip.title")}
+                    </h4>
+                    <p className="text-xs text-white/65 leading-relaxed mb-3">
+                        {t("models.bigram.matrix.tooltip.desc")}
+                    </p>
+                    {datasetMeta && (
+                        <div className="text-xs text-white/65 leading-relaxed space-y-1">
+                            <p><span className="text-white/40 uppercase tracking-wider mr-2">{t("models.bigram.matrix.datasetMeta.corpus")}</span>{datasetMeta.corpusName}</p>
+                            <p><span className="text-white/40 uppercase tracking-wider mr-2">{t("models.bigram.matrix.datasetMeta.rawText")}</span>{formatCount(datasetMeta.rawTextSize)} {t("models.bigram.matrix.datasetMeta.rawChars")}</p>
+                            <p><span className="text-white/40 uppercase tracking-wider mr-2">{t("models.bigram.matrix.datasetMeta.trainingSplit")}</span>{formatCount(datasetMeta.trainDataSize)} {t("models.bigram.matrix.datasetMeta.charTokens")}</p>
+                            <p><span className="text-white/40 uppercase tracking-wider mr-2">{t("models.bigram.matrix.datasetMeta.vocabulary")}</span>{formatCount(datasetMeta.vocabSize)} {t("models.bigram.matrix.datasetMeta.symbols")}</p>
+                        </div>
+                    )}
+                </Card>
+            )}
+
+            <div className="relative flex-1 min-h-0 overflow-hidden bg-black/40 rounded-xl border border-white/5">
+                {isSliceView && sliceTableRows.length > 0 ? (
+                    <div className="p-4 overflow-auto max-h-[420px] custom-scrollbar">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-white/10">
+                                    <th className="pb-2 text-[10px] font-mono uppercase tracking-widest text-white/40">Next char</th>
+                                    <th className="pb-2 text-[10px] font-mono uppercase tracking-widest text-white/40 w-20 text-right">P (%)</th>
+                                    <th className="pb-2 pl-4 text-[10px] font-mono uppercase tracking-widest text-white/40">Distribution</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sliceTableRows.map(({ char, prob }, i) => (
+                                    <motion.tr
+                                        key={char}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: i * 0.01 }}
+                                        className="border-b border-white/[0.04] hover:bg-white/[0.03] group"
+                                    >
+                                        <td className="py-2">
+                                            <span className="font-mono text-sm text-white/90">{(char === " " ? "⎵" : char)}</span>
+                                        </td>
+                                        <td className="py-2 text-right font-mono text-xs text-white/70">
+                                            {(prob * 100).toFixed(2)}%
+                                        </td>
+                                        <td className="py-2 pl-4">
+                                            <div className="h-5 rounded bg-white/[0.06] overflow-hidden min-w-[80px] max-w-[200px]">
+                                                <div
+                                                    className={cn("h-full rounded transition-all", style.bar)}
+                                                    style={{ width: `${Math.max(2, prob * 100)}%` }}
+                                                />
+                                            </div>
+                                        </td>
+                                    </motion.tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div ref={containerRef} className="w-full h-full overflow-auto flex items-center justify-center p-4 custom-scrollbar">
+                        <canvas
+                            ref={canvasRef}
+                            onMouseMove={handleMouseMove}
+                            onMouseLeave={() => {
+                                if (tooltipRafRef.current !== null) cancelAnimationFrame(tooltipRafRef.current);
+                                lastTooltipKeyRef.current = "none";
+                                setTooltip(null);
+                            }}
+                            onClick={handleClick}
+                            className="cursor-crosshair shadow-2xl"
+                        />
+                    </div>
+                )}
+
+                {tooltip && (
+                    <div
+                        className="pointer-events-none fixed z-50 px-3 py-2 bg-slate-900/95 border border-white/10 rounded-lg shadow-xl text-xs"
+                        style={{ left: tooltip.x + 15, top: tooltip.y + 15 }}
+                    >
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className={cn("font-mono px-1 rounded", style.tooltipCell)}>&apos;{tooltip.row}&apos;</span>
+                            <span className="text-white/30">→</span>
+                            <span className={cn("font-mono px-1 rounded", style.tooltipCell)}>&apos;{tooltip.col}&apos;</span>
+                        </div>
+                        <div className="font-mono text-white font-bold">{(tooltip.value * 100).toFixed(4)}%</div>
                     </div>
                 )}
             </div>
@@ -254,7 +412,7 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
                     <div className="relative">
                         <canvas
                             ref={canvasRef}
-                            onClick={handleCanvasClick}
+                            onClick={handleClick}
                             onMouseMove={handleMouseMove}
                             onMouseLeave={() => setTooltip(null)}
                             className={cn("cursor-crosshair", onCellClick ? "cursor-pointer" : "")}
@@ -275,7 +433,7 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
                                     {" | "}
                                     {activeContext && (
                                         <span className="text-indigo-400">
-                                            {contextStr}
+                                            {activeContext.join("")}
                                         </span>
                                     )}
                                     <span className="text-violet-400">
@@ -291,7 +449,7 @@ export const TransitionMatrix = memo(function TransitionMatrix({ data, activeCon
                     </div>
                 )}
             </div>
-        </Card>
+        </div>
     );
 }, (prev, next) => {
     // Custom comparison

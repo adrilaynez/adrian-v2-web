@@ -20,6 +20,7 @@ import {
   ExternalLink,
   Sparkles,
 } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 
 /* ─── Staggered Character Reveal ─── */
 function AnimatedTitle({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
@@ -28,11 +29,11 @@ function AnimatedTitle({ text, className, delay = 0 }: { text: string; className
       {text.split("").map((char, i) => (
         <motion.span
           key={i}
-          initial={{ opacity: 0, y: 50, filter: "blur(12px)" }}
+          initial={{ opacity: 0, y: 36, filter: "blur(8px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{
-            duration: 0.6,
-            delay: delay + i * 0.025,
+            duration: 0.55,
+            delay: delay + i * 0.02,
             ease: [0.22, 1, 0.36, 1],
           }}
           className="inline-block"
@@ -50,7 +51,7 @@ function FadeUp({ children, delay = 0, className = "" }: { children: React.React
     <motion.div
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
       className={className}
     >
       {children}
@@ -62,7 +63,7 @@ function FadeUp({ children, delay = 0, className = "" }: { children: React.React
 function ScrollReveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 48 }}
+      initial={{ opacity: 0, y: 42 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -77,44 +78,23 @@ function ScrollReveal({ children, className = "" }: { children: React.ReactNode;
 function Counter({ value, suffix = "" }: { value: string; suffix?: string }) {
   return (
     <motion.span
-      initial={{ opacity: 0, scale: 0.5 }}
+      initial={{ opacity: 0, scale: 0.7 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
     >
       {value}{suffix}
     </motion.span>
   );
 }
 
-/* ─── Floating Orb Background ─── */
+/* ─── Static Orb Background (GPU-friendly, no JS animation) ─── */
 function FloatingOrbs() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden -z-10">
-      <motion.div
-        animate={{
-          x: [0, 30, -20, 0],
-          y: [0, -40, 20, 0],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute left-1/2 top-1/4 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-violet-500/[0.07] blur-[150px]"
-      />
-      <motion.div
-        animate={{
-          x: [0, -40, 30, 0],
-          y: [0, 20, -30, 0],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute right-1/4 bottom-1/4 h-[400px] w-[400px] rounded-full bg-cyan-500/[0.05] blur-[130px]"
-      />
-      <motion.div
-        animate={{
-          x: [0, 20, -30, 0],
-          y: [0, 30, -20, 0],
-        }}
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-        className="absolute left-1/4 bottom-1/3 h-[300px] w-[300px] rounded-full bg-rose-500/[0.04] blur-[120px]"
-      />
+      <div className="absolute left-1/2 top-1/4 -translate-x-1/2 h-[540px] w-[540px] rounded-full bg-violet-500/[0.06] blur-[100px]" />
+      <div className="absolute right-1/4 bottom-1/4 h-[360px] w-[360px] rounded-full bg-cyan-500/[0.05] blur-[80px]" />
+      <div className="absolute left-1/4 bottom-1/3 h-[260px] w-[260px] rounded-full bg-rose-500/[0.04] blur-[80px]" />
     </div>
   );
 }
@@ -122,17 +102,18 @@ function FloatingOrbs() {
 /* ═══════════════════════════════════════════════════════════════ */
 
 export default function Home() {
-  const heroRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
+  const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.35]);
   const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 0.95]);
 
   return (
     <div className="flex flex-col min-h-screen relative">
-      <NebulaBackground particleCount={80} baseColor="rgba(140, 140, 255, 0.06)" />
+      <NebulaBackground particleCount={25} baseColor="rgba(140, 140, 255, 0.06)" />
 
       {/* ────────── HERO ────────── */}
       <motion.section
@@ -145,12 +126,9 @@ export default function Home() {
         <div className="container max-w-6xl space-y-8 relative z-10">
           {/* Status Chip */}
           <FadeUp delay={0.1}>
-            <span className="inline-flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-xl">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              </span>
-              System Online :: v2.2
+            <span className="inline-flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              {t("landing.hero.status")}
             </span>
           </FadeUp>
 
@@ -212,21 +190,18 @@ export default function Home() {
         {/* Scroll Hint */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.3 }}
-          transition={{ delay: 2.5, duration: 1.5 }}
+          animate={{ opacity: 0.35 }}
+          transition={{ delay: 2.2, duration: 1.2 }}
           className="absolute bottom-10"
         >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-          >
+          <motion.div animate={{ y: [0, 9, 0] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}>
             <ChevronDown className="h-5 w-5 text-muted-foreground" />
           </motion.div>
         </motion.div>
       </motion.section>
 
       {/* ────────── METRICS RIBBON ────────── */}
-      <section className="relative z-10 border-y border-white/[0.06] bg-white/[0.01] backdrop-blur-sm">
+      <section className="relative z-10 border-y border-white/[0.06] bg-white/[0.01]">
         <div className="container mx-auto max-w-screen-xl px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/[0.06]">
             {[
@@ -265,19 +240,16 @@ export default function Home() {
 
                 {/* Floating Status Card */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 18 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.3 }}
+                  transition={{ duration: 0.7, delay: 0.25 }}
                   className="absolute bottom-0 left-0 right-0 p-6"
                 >
-                  <div className="bg-background/50 backdrop-blur-xl rounded-xl border border-white/[0.08] p-5 shadow-2xl">
+                  <div className="bg-background/80 rounded-xl border border-white/[0.08] p-5 shadow-2xl">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                      </span>
-                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">Currently Building</span>
+                      <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">{t("landing.about.building")}</span>
                     </div>
                     <p className="text-sm font-medium text-foreground">Deep Learning Engine — CUDA / C++</p>
                     <p className="text-xs text-muted-foreground/60 mt-1">Custom kernels for matrix operations and backpropagation</p>
@@ -339,7 +311,7 @@ export default function Home() {
                   ].map((s) => (
                     <motion.span
                       key={s}
-                      whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.08)" }}
+                      whileHover={{ scale: 1.06, backgroundColor: "rgba(255,255,255,0.08)" }}
                       className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-muted-foreground transition-colors cursor-default"
                     >
                       {s}

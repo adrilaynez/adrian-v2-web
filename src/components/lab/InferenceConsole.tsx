@@ -6,8 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Terminal, Zap, Cpu, AlertCircle } from "lucide-react";
+import { Terminal, Zap, Cpu, AlertCircle, Info } from "lucide-react";
 import type { Prediction } from "@/types/lmLab";
+import { useI18n } from "@/i18n/context";
 
 interface InferenceConsoleProps {
     onAnalyze: (text: string, topK: number) => void;
@@ -26,6 +27,7 @@ export function InferenceConsole({
     loading,
     error,
 }: InferenceConsoleProps) {
+    const { t } = useI18n();
     const [text, setText] = useState("hello");
     const [topK, setTopK] = useState(5);
 
@@ -35,14 +37,8 @@ export function InferenceConsole({
     };
 
     return (
-        <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm">
-            {/* Header */}
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
-                <Terminal className="h-4 w-4 text-emerald-400" />
-                <span className="font-mono text-xs uppercase tracking-widest text-white/60">
-                    Inference Console
-                </span>
-
+        <Card className="bg-slate-900/50 border border-white/10 rounded-2xl p-6 relative overflow-hidden">
+            <div className="flex justify-between items-start mb-4">
                 {/* Educational Tooltip */}
                 <div className="group relative ml-1">
                     <div className="flex items-center justify-center w-4 h-4 rounded-full bg-white/5 border border-white/10 cursor-help hover:bg-white/10 transition-colors">
@@ -120,66 +116,81 @@ export function InferenceConsole({
                 </Button>
             </form>
 
-            {/* Results */}
-            <div className="px-5 pb-5 space-y-3">
-                {error && (
-                    <div className="flex items-center gap-2 text-red-400 text-xs bg-red-500/10 rounded-lg px-3 py-2 border border-red-500/20">
-                        <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                        {error}
-                    </div>
-                )}
+            {/* Error Message */}
+            {error && (
+                <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs flex items-center gap-2">
+                    <Info className="w-4 h-4" />
+                    {error}
+                </div>
+            )}
 
-                {loading && (
-                    <div className="space-y-2">
-                        {Array.from({ length: topK }).map((_, i) => (
-                            <Skeleton key={i} className="h-8 bg-white/[0.04] rounded-lg" />
-                        ))}
+            {/* Results Section */}
+            {predictions && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-8 pt-6 border-t border-white/5 space-y-4"
+                >
+                    <div className="flex items-center justify-between text-[10px] font-mono text-white/30 uppercase tracking-widest">
+                        <span>{t("models.bigram.inference.lastChar")} &quot;{text.slice(-1)}&quot;</span>
+                        <div className="flex items-center gap-2">
+                            {device && <span>{device}</span>}
+                            {inferenceMs && <span className="text-emerald-400">{inferenceMs.toFixed(2)}ms</span>}
+                        </div>
                     </div>
-                )}
+                </motion.div>
+            )}
 
-                <AnimatePresence mode="wait">
-                    {predictions && !loading && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="space-y-1.5"
-                        >
-                            {predictions.map((p, i) => (
-                                <motion.div
-                                    key={p.token}
-                                    initial={{ opacity: 0, x: -12 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.04 }}
-                                    className="flex items-center gap-3 group"
-                                >
-                                    <span className="w-8 h-8 flex items-center justify-center rounded-md bg-white/[0.06] border border-white/[0.08] text-sm font-mono text-white group-hover:border-emerald-500/40 transition-colors">
-                                        {p.token === " " ? "␣" : p.token}
-                                    </span>
-                                    <div className="flex-1 h-6 bg-white/[0.03] rounded-full overflow-hidden relative">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${(p.probability * 100).toFixed(1)}%` }}
-                                            transition={{ duration: 0.6, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
-                                            className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-600/60 to-emerald-400/40 rounded-full"
-                                        />
-                                        <span className="absolute inset-0 flex items-center pl-3 text-[10px] font-mono text-white/60">
-                                            {(p.probability * 100).toFixed(1)}%
-                                        </span>
-                                    </div>
-                                </motion.div>
-                            ))}
-                            {inferenceMs !== undefined && (
-                                <div className="text-right pt-1">
-                                    <span className="text-[10px] font-mono text-white/30">
-                                        {inferenceMs.toFixed(2)}ms
+            {loading && (
+                <div className="space-y-2">
+                    {Array.from({ length: topK }).map((_, i) => (
+                        <Skeleton key={i} className="h-8 bg-white/[0.04] rounded-lg" />
+                    ))}
+                </div>
+            )}
+
+            <AnimatePresence mode="wait">
+                {predictions && !loading && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="space-y-1.5"
+                    >
+                        {predictions.map((p, i) => (
+                            <motion.div
+                                key={p.token}
+                                initial={{ opacity: 0, x: -12 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.04 }}
+                                className="flex items-center gap-3 group"
+                            >
+                                <span className="w-8 h-8 flex items-center justify-center rounded-md bg-white/[0.06] border border-white/[0.08] text-sm font-mono text-white group-hover:border-emerald-500/40 transition-colors">
+                                    {p.token === " " ? "␣" : p.token}
+                                </span>
+                                <div className="flex-1 h-6 bg-white/[0.03] rounded-full overflow-hidden relative">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${(p.probability * 100).toFixed(1)}%` }}
+                                        transition={{ duration: 0.6, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
+                                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-600/60 to-emerald-400/40 rounded-full"
+                                    />
+                                    <span className="absolute inset-0 flex items-center pl-3 text-[10px] font-mono text-white/60">
+                                        {(p.probability * 100).toFixed(1)}%
                                     </span>
                                 </div>
-                            )}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+                            </motion.div>
+                        ))}
+                        {inferenceMs !== undefined && (
+                            <div className="text-right pt-1">
+                                <span className="text-[10px] font-mono text-white/30">
+                                    {inferenceMs.toFixed(2)}ms
+                                </span>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </Card>
     );
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, memo } from "react";
 
 interface NebulaProps {
     className?: string;
@@ -16,7 +16,9 @@ interface Particle {
     opacity: number;
 }
 
-export const NebulaBackground: React.FC<NebulaProps> = ({
+const MAX_PARTICLES = 30;
+
+export const NebulaBackground: React.FC<NebulaProps> = memo(({
     className = "",
     particleCount = 60,
     baseColor = "rgba(140, 140, 255, 0.08)",
@@ -31,63 +33,53 @@ export const NebulaBackground: React.FC<NebulaProps> = ({
 
         let particles: Particle[] = [];
         let animationFrameId: number;
-        const CONNECTION_DISTANCE = 120;
+        const effectiveCount = Math.min(particleCount, MAX_PARTICLES);
 
         const resizeCanvas = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = `${window.innerWidth}px`;
+            canvas.style.height = `${window.innerHeight}px`;
+            ctx.scale(dpr, dpr);
             initParticles();
         };
 
         const createParticle = (): Particle => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
             size: Math.random() * 1.5 + 0.3,
-            speedX: (Math.random() - 0.5) * 0.3,
-            speedY: (Math.random() - 0.5) * 0.3,
-            opacity: Math.random() * 0.4 + 0.05,
+            speedX: (Math.random() - 0.5) * 0.2,
+            speedY: (Math.random() - 0.5) * 0.2,
+            opacity: Math.random() * 0.3 + 0.05,
         });
 
         const initParticles = () => {
-            particles = Array.from({ length: particleCount }, createParticle);
+            particles = Array.from({ length: effectiveCount }, createParticle);
         };
+
+        const w = () => window.innerWidth;
+        const h = () => window.innerHeight;
 
         const animate = () => {
             if (!ctx || !canvas) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const width = w();
+            const height = h();
+            ctx.clearRect(0, 0, width, height);
 
-            // Update & draw particles
             for (const p of particles) {
                 p.x += p.speedX;
                 p.y += p.speedY;
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
-                if (p.y < 0) p.y = canvas.height;
-                if (p.y > canvas.height) p.y = 0;
+                if (p.x < 0) p.x = width;
+                if (p.x > width) p.x = 0;
+                if (p.y < 0) p.y = height;
+                if (p.y > height) p.y = 0;
 
                 ctx.globalAlpha = p.opacity;
                 ctx.fillStyle = baseColor;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fill();
-            }
-
-            // Draw connections
-            ctx.strokeStyle = baseColor;
-            ctx.lineWidth = 0.3;
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < CONNECTION_DISTANCE) {
-                        ctx.globalAlpha = (1 - dist / CONNECTION_DISTANCE) * 0.15;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
             }
 
             ctx.globalAlpha = 1;
@@ -110,4 +102,4 @@ export const NebulaBackground: React.FC<NebulaProps> = ({
             className={`fixed inset-0 w-full h-full pointer-events-none z-0 ${className}`}
         />
     );
-};
+});

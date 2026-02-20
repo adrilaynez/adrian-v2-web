@@ -4,23 +4,30 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cpu, FlaskConical } from "lucide-react";
+import {
+    ArrowLeft,
+    FlaskConical,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const models = [
-    { id: "bigram", label: "Bigram", href: "/lab/bigram", ready: true },
-    { id: "ngram", label: "N-Gram", href: "/lab/ngram", ready: true },
-    { id: "mlp", label: "MLP", href: "/lab/mlp", ready: false },
-    { id: "transformer", label: "Transformer", href: "/lab/transformer", ready: false },
-];
+import { LanguageToggle } from "@/components/ui/language-toggle";
+import { useI18n } from "@/i18n/context";
 
 export function LabShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { t } = useI18n();
+
+    const models = [
+        { id: "bigram", label: t("lab.bigram"), href: "/lab/bigram", ready: true },
+        { id: "neural-networks", label: t("lab.neuralNetworks"), href: "/lab/neural-networks", ready: true },
+        { id: "ngram", label: t("lab.ngram"), href: "/lab/ngram", ready: true },
+        { id: "mlp", label: t("lab.mlp"), href: "/lab/mlp", ready: false },
+        { id: "transformer", label: t("lab.transformer"), href: "/lab/transformer", ready: false },
+    ];
 
     return (
         <div className="min-h-screen bg-[#0a0a0f] text-white font-sans">
             {/* Top Bar */}
-            <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0a0a0f]/80 backdrop-blur-xl">
+            <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0a0a0f]/95">
                 <div className="container mx-auto flex items-center justify-between h-14 px-4 md:px-8 max-w-screen-2xl">
                     {/* Left */}
                     <div className="flex items-center gap-4">
@@ -29,7 +36,7 @@ export function LabShell({ children }: { children: React.ReactNode }) {
                             className="flex items-center gap-2 text-xs text-white/50 hover:text-white/80 transition-colors font-mono"
                         >
                             <ArrowLeft className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Back to Projects</span>
+                            <span className="hidden sm:inline">{t("lab.shell.allModels")}</span>
                         </Link>
 
                         <div className="h-4 w-px bg-white/[0.08]" />
@@ -78,16 +85,8 @@ export function LabShell({ children }: { children: React.ReactNode }) {
                         })}
                     </nav>
 
-                    {/* Right — Status */}
-                    <div className="flex items-center gap-2">
-                        <span className="relative flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                        </span>
-                        <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest hidden md:inline">
-                            <Cpu className="inline h-3 w-3 mr-1" />
-                            Lab Active
-                        </span>
+                    <div className="flex items-center">
+                        <LanguageToggle />
                     </div>
                 </div>
             </header>
