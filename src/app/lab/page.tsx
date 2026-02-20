@@ -2,7 +2,7 @@
 
 import ModelSelector from "@/components/ModelSelector";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,7 +19,10 @@ import {
     GraduationCap,
     Zap,
     Network,
+    Check,
 } from "lucide-react";
+import { useLabMode } from "@/context/LabModeContext";
+import { useI18n } from "@/i18n/context";
 
 const accentStyles: Record<string, { icon: string; border: string; glow: string; bar: string }> = {
     emerald: {
@@ -61,10 +64,21 @@ const highlights = [
     { icon: Sparkles, labelKey: "backend", color: "text-amber-400" },
 ];
 
-import { useI18n } from "@/i18n/context";
-
 export default function LabLandingPage() {
     const { t } = useI18n();
+    const { mode, hasChosen, choose, isInitialized } = useLabMode();
+
+    const educationalFeatures = [
+        t("lab.landing.modes.educational.features.0"),
+        t("lab.landing.modes.educational.features.1"),
+        t("lab.landing.modes.educational.features.2"),
+    ];
+
+    const freeLabFeatures = [
+        t("lab.landing.modes.freeLab.features.0"),
+        t("lab.landing.modes.freeLab.features.1"),
+        t("lab.landing.modes.freeLab.features.2"),
+    ];
 
     const models = [
         {
@@ -219,25 +233,21 @@ export default function LabLandingPage() {
                             ))}
                         </motion.div>
 
-                        {/* CTA */}
+                        {/* Scroll nudge */}
                         <motion.div
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.34 }}
+                            className="flex flex-col items-center gap-2"
                         >
-                            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="inline-flex">
-                                <Link
-                                    href="/lab/bigram"
-                                    className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-sm font-bold text-emerald-400 uppercase tracking-[0.15em] hover:bg-emerald-500/20 hover:border-emerald-500/40 hover:scale-[1.02] transition-all group shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]"
-                                >
-                                    <Brain className="w-4 h-4" />
-                                    {t("lab.landing.hero.start")}
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </Link>
-                            </motion.div>
-                            <p className="mt-3 text-[10px] font-mono text-white/20 uppercase tracking-widest">
+                            <motion.div
+                                animate={{ y: [0, 5, 0] }}
+                                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                                className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent"
+                            />
+                            <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">
                                 {t("lab.landing.hero.recommended")}
-                            </p>
+                            </span>
                         </motion.div>
                     </div>
                 </section>
@@ -305,69 +315,260 @@ export default function LabLandingPage() {
                     </motion.div>
                 </section>
 
-                {/* ─── Modes explanation ─── */}
-                <section className="max-w-5xl mx-auto px-6 pb-24">
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="h-px bg-white/[0.06] flex-1" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/25 shrink-0">
-                            {t("lab.landing.modes.title")}
-                        </span>
-                        <div className="h-px bg-white/[0.06] flex-1" />
-                    </div>
+                {/* ─── Mode Selection Entry Flow ─── */}
+                <section className="max-w-5xl mx-auto px-6 pb-16">
+                    <motion.div
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-60px" }}
+                        transition={{ duration: 0.55 }}
+                    >
+                        {/* Section header */}
+                        <div className="text-center mb-10">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] mb-4">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="text-[10px] font-mono text-white/40 uppercase tracking-[0.25em]">
+                                    {t("lab.landing.modes.title")}
+                                </span>
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-2">
+                                {t("lab.landing.modes.entryTitle")}
+                            </h2>
+                            <p className="text-sm text-white/35 max-w-md mx-auto">
+                                {t("lab.landing.modes.entrySubtitle")}
+                            </p>
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <motion.div
-                            initial={{ opacity: 0, x: -18 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.45 }}
-                            className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-7 relative overflow-hidden"
-                        >
-                            <div className="absolute top-0 left-0 right-0 h-px bg-emerald-500" />
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                                    <BookOpen className="w-4 h-4 text-emerald-400" />
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-white">
+                        {/* Mode selection cards — visually distinct from model cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+                            {/* Educational Mode card */}
+                            <motion.button
+                                onClick={() => choose('educational')}
+                                whileHover={{ scale: 1.015 }}
+                                whileTap={{ scale: 0.985 }}
+                                className={cn(
+                                    "relative text-left rounded-2xl p-7 transition-all duration-300 overflow-hidden cursor-pointer group",
+                                    mode === 'educational'
+                                        ? "bg-emerald-500/[0.12] border-2 border-emerald-500/50 shadow-[0_0_60px_-15px_rgba(16,185,129,0.35)]"
+                                        : "bg-white/[0.03] border-2 border-white/[0.08] hover:border-emerald-500/25 hover:bg-emerald-500/[0.05]"
+                                )}
+                            >
+                                {/* Gradient wash */}
+                                <div className={cn(
+                                    "absolute inset-0 transition-opacity duration-300",
+                                    mode === 'educational'
+                                        ? "opacity-100 bg-gradient-to-br from-emerald-500/[0.08] via-transparent to-transparent"
+                                        : "opacity-0 group-hover:opacity-100 bg-gradient-to-br from-emerald-500/[0.04] via-transparent to-transparent"
+                                )} />
+
+                                {/* Selected indicator */}
+                                <AnimatePresence>
+                                    {mode === 'educational' && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.7 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.7 }}
+                                            className="absolute top-4 right-4 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+                                        >
+                                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <div className="relative z-10">
+                                    {/* Icon + tag row */}
+                                    <div className="flex items-start justify-between mb-5">
+                                        <div className={cn(
+                                            "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
+                                            mode === 'educational'
+                                                ? "bg-emerald-500/20 border border-emerald-500/40"
+                                                : "bg-white/[0.06] border border-white/[0.1] group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25"
+                                        )}>
+                                            <BookOpen className={cn(
+                                                "w-5 h-5 transition-colors duration-300",
+                                                mode === 'educational' ? "text-emerald-400" : "text-white/40 group-hover:text-emerald-400"
+                                            )} />
+                                        </div>
+                                        <span className={cn(
+                                            "text-[9px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border transition-all duration-300",
+                                            mode === 'educational'
+                                                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300"
+                                                : "bg-white/[0.04] border-white/[0.1] text-white/30"
+                                        )}>
+                                            {t("lab.landing.modes.educational.tag")}
+                                        </span>
+                                    </div>
+
+                                    <h3 className={cn(
+                                        "text-lg font-extrabold mb-1 transition-colors duration-300",
+                                        mode === 'educational' ? "text-emerald-300" : "text-white group-hover:text-emerald-300"
+                                    )}>
                                         {t("lab.landing.modes.educational.title")}
                                     </h3>
-                                    <p className="text-[10px] font-mono text-emerald-400/50 uppercase tracking-wider">
+                                    <p className={cn(
+                                        "text-[10px] font-mono uppercase tracking-wider mb-4 transition-colors duration-300",
+                                        mode === 'educational' ? "text-emerald-500/70" : "text-white/25"
+                                    )}>
                                         {t("lab.landing.modes.educational.subtitle")}
                                     </p>
-                                </div>
-                            </div>
-                            <p className="text-xs text-white/40 leading-relaxed">
-                                {t("lab.landing.modes.educational.description")}
-                            </p>
-                        </motion.div>
+                                    <p className="text-sm text-white/50 leading-relaxed mb-5">
+                                        {t("lab.landing.modes.educational.description")}
+                                    </p>
 
-                        <motion.div
-                            initial={{ opacity: 0, x: 18 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.45, delay: 0.08 }}
-                            className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-7 relative overflow-hidden"
-                        >
-                            <div className="absolute top-0 left-0 right-0 h-px bg-blue-500" />
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                                    <FlaskConical className="w-4 h-4 text-blue-400" />
+                                    {/* Feature list */}
+                                    <ul className="space-y-1.5">
+                                        {educationalFeatures.map((f: string) => (
+                                            <li key={f} className="flex items-center gap-2">
+                                                <div className={cn(
+                                                    "w-1 h-1 rounded-full flex-shrink-0 transition-colors duration-300",
+                                                    mode === 'educational' ? "bg-emerald-400" : "bg-white/20"
+                                                )} />
+                                                <span className={cn(
+                                                    "text-[11px] transition-colors duration-300",
+                                                    mode === 'educational' ? "text-emerald-400/80" : "text-white/30"
+                                                )}>{f}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-white">
+                            </motion.button>
+
+                            {/* Free Lab Mode card */}
+                            <motion.button
+                                onClick={() => choose('free')}
+                                whileHover={{ scale: 1.015 }}
+                                whileTap={{ scale: 0.985 }}
+                                className={cn(
+                                    "relative text-left rounded-2xl p-7 transition-all duration-300 overflow-hidden cursor-pointer group",
+                                    mode === 'free'
+                                        ? "bg-blue-500/[0.12] border-2 border-blue-500/50 shadow-[0_0_60px_-15px_rgba(59,130,246,0.35)]"
+                                        : "bg-white/[0.03] border-2 border-white/[0.08] hover:border-blue-500/25 hover:bg-blue-500/[0.05]"
+                                )}
+                            >
+                                {/* Gradient wash */}
+                                <div className={cn(
+                                    "absolute inset-0 transition-opacity duration-300",
+                                    mode === 'free'
+                                        ? "opacity-100 bg-gradient-to-br from-blue-500/[0.08] via-transparent to-transparent"
+                                        : "opacity-0 group-hover:opacity-100 bg-gradient-to-br from-blue-500/[0.04] via-transparent to-transparent"
+                                )} />
+
+                                {/* Selected indicator */}
+                                <AnimatePresence>
+                                    {mode === 'free' && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.7 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.7 }}
+                                            className="absolute top-4 right-4 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_12px_rgba(59,130,246,0.6)]"
+                                        >
+                                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <div className="relative z-10">
+                                    {/* Icon + tag row */}
+                                    <div className="flex items-start justify-between mb-5">
+                                        <div className={cn(
+                                            "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
+                                            mode === 'free'
+                                                ? "bg-blue-500/20 border border-blue-500/40"
+                                                : "bg-white/[0.06] border border-white/[0.1] group-hover:bg-blue-500/10 group-hover:border-blue-500/25"
+                                        )}>
+                                            <FlaskConical className={cn(
+                                                "w-5 h-5 transition-colors duration-300",
+                                                mode === 'free' ? "text-blue-400" : "text-white/40 group-hover:text-blue-400"
+                                            )} />
+                                        </div>
+                                        <span className={cn(
+                                            "text-[9px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border transition-all duration-300",
+                                            mode === 'free'
+                                                ? "bg-blue-500/20 border-blue-500/40 text-blue-300"
+                                                : "bg-white/[0.04] border-white/[0.1] text-white/30"
+                                        )}>
+                                            {t("lab.landing.modes.freeLab.tag")}
+                                        </span>
+                                    </div>
+
+                                    <h3 className={cn(
+                                        "text-lg font-extrabold mb-1 transition-colors duration-300",
+                                        mode === 'free' ? "text-blue-300" : "text-white group-hover:text-blue-300"
+                                    )}>
                                         {t("lab.landing.modes.freeLab.title")}
                                     </h3>
-                                    <p className="text-[10px] font-mono text-blue-400/50 uppercase tracking-wider">
+                                    <p className={cn(
+                                        "text-[10px] font-mono uppercase tracking-wider mb-4 transition-colors duration-300",
+                                        mode === 'free' ? "text-blue-500/70" : "text-white/25"
+                                    )}>
                                         {t("lab.landing.modes.freeLab.subtitle")}
                                     </p>
+                                    <p className="text-sm text-white/50 leading-relaxed mb-5">
+                                        {t("lab.landing.modes.freeLab.description")}
+                                    </p>
+
+                                    {/* Feature list */}
+                                    <ul className="space-y-1.5">
+                                        {freeLabFeatures.map((f: string) => (
+                                            <li key={f} className="flex items-center gap-2">
+                                                <div className={cn(
+                                                    "w-1 h-1 rounded-full flex-shrink-0 transition-colors duration-300",
+                                                    mode === 'free' ? "bg-blue-400" : "bg-white/20"
+                                                )} />
+                                                <span className={cn(
+                                                    "text-[11px] transition-colors duration-300",
+                                                    mode === 'free' ? "text-blue-400/80" : "text-white/30"
+                                                )}>{f}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
-                            </div>
-                            <p className="text-xs text-white/40 leading-relaxed">
-                                {t("lab.landing.modes.freeLab.description")}
+                            </motion.button>
+                        </div>
+
+                        {/* Default note — shown only before user has chosen */}
+                        <AnimatePresence>
+                            {!hasChosen && isInitialized && (
+                                <motion.p
+                                    initial={{ opacity: 0, y: -6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="text-center text-[10px] font-mono text-white/20 uppercase tracking-widest mb-8"
+                                >
+                                    {t("lab.landing.modes.defaultNote")}
+                                </motion.p>
+                            )}
+                        </AnimatePresence>
+
+                        {/* ─── Prominent CTA ─── */}
+                        <motion.div
+                            layout
+                            className="flex flex-col items-center gap-3"
+                        >
+                            <motion.div
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.97 }}
+                            >
+                                <Link
+                                    href="/lab/bigram"
+                                    className={cn(
+                                        "inline-flex items-center gap-3 px-10 py-4 rounded-2xl text-sm font-extrabold uppercase tracking-[0.15em] transition-all duration-300 group shadow-lg",
+                                        mode === 'educational'
+                                            ? "bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_0_40px_-8px_rgba(16,185,129,0.6)] hover:shadow-[0_0_60px_-8px_rgba(16,185,129,0.8)]"
+                                            : "bg-blue-500 hover:bg-blue-400 text-white shadow-[0_0_40px_-8px_rgba(59,130,246,0.6)] hover:shadow-[0_0_60px_-8px_rgba(59,130,246,0.8)]"
+                                    )}
+                                >
+                                    <Brain className="w-4 h-4" />
+                                    {t("lab.landing.modes.cta")}
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </motion.div>
+                            <p className="text-[10px] font-mono text-white/25 uppercase tracking-widest">
+                                {t("lab.landing.modes.ctaSubtext")}
                             </p>
                         </motion.div>
-                    </div>
+                    </motion.div>
                 </section>
 
                 {/* ─── Model Cards ─── */}

@@ -8,12 +8,7 @@ import { cn } from "@/lib/utils";
 
 type Tab = "perceptron" | "activation" | "gradients" | "training";
 
-const TABS: { id: Tab; label: string }[] = [
-    { id: "perceptron", label: "Perceptron" },
-    { id: "activation", label: "Activation" },
-    { id: "gradients", label: "Gradients" },
-    { id: "training", label: "Training" },
-];
+const TAB_IDS: Tab[] = ["perceptron", "activation", "gradients", "training"];
 
 const FONT = "ui-monospace, SFMono-Regular, Menlo, monospace";
 const PLAYGROUND_KEY = "models.neuralNetworks.sections.playground";
@@ -157,7 +152,7 @@ export function NNPlayground() {
                 <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-4">
                     <div>
                         <Explained i18nKey={`${PLAYGROUND_KEY}.inputs`}>
-                            <p className="inline-block text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2.5 hover:text-white/50 transition-colors border-b border-dashed border-transparent hover:border-white/30">Inputs</p>
+                            <p className="inline-block text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2.5 hover:text-white/50 transition-colors border-b border-dashed border-transparent hover:border-white/30">{t(`${PLAYGROUND_KEY}.inputs.title`)}</p>
                         </Explained>
                         <div className="space-y-2">
                             <Slider label="x₁" value={nn.x1} min={-2} max={2} step={0.1} onChange={nn.setX1} accent="white" tooltipKey={`${PLAYGROUND_KEY}.inputs.x1`} />
@@ -169,7 +164,7 @@ export function NNPlayground() {
 
                     <div>
                         <Explained i18nKey={`${PLAYGROUND_KEY}.weights`}>
-                            <p className="inline-block text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2.5 hover:text-white/50 transition-colors border-b border-dashed border-transparent hover:border-white/30">Parameters</p>
+                            <p className="inline-block text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2.5 hover:text-white/50 transition-colors border-b border-dashed border-transparent hover:border-white/30">{t(`${PLAYGROUND_KEY}.weights.title`)}</p>
                         </Explained>
                         <div className="space-y-2">
                             <Slider label="w₁" value={nn.w1} min={-3} max={3} step={0.05} onChange={nn.setW1} accent="rose" tooltipKey={`${PLAYGROUND_KEY}.weights.w1`} />
@@ -182,7 +177,7 @@ export function NNPlayground() {
 
                     <div>
                         <Explained i18nKey={`${PLAYGROUND_KEY}.activation`}>
-                            <p className="inline-block text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2 hover:text-white/50 transition-colors border-b border-dashed border-transparent hover:border-white/30">Activation</p>
+                            <p className="inline-block text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2 hover:text-white/50 transition-colors border-b border-dashed border-transparent hover:border-white/30">{t(`${PLAYGROUND_KEY}.activation.title`)}</p>
                         </Explained>
                         <div className="grid grid-cols-2 gap-1.5">
                             {(Object.keys(ACTIVATION_LABELS) as ActivationFn[]).map(key => (
@@ -212,7 +207,7 @@ export function NNPlayground() {
 
                     <div>
                         <Explained i18nKey={`${PLAYGROUND_KEY}.training`}>
-                            <p className="inline-block text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2.5 hover:text-white/50 transition-colors border-b border-dashed border-transparent hover:border-white/30">Training</p>
+                            <p className="inline-block text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2.5 hover:text-white/50 transition-colors border-b border-dashed border-transparent hover:border-white/30">{t(`${PLAYGROUND_KEY}.training.title`)}</p>
                         </Explained>
                         <div className="space-y-2">
                             <Slider label="target" value={nn.target} min={-1} max={2} step={0.05} onChange={nn.setTarget} accent="emerald" tooltipKey={`${PLAYGROUND_KEY}.training.target`} />
@@ -228,7 +223,7 @@ export function NNPlayground() {
                                 <TooltipTrigger asChild>
                                     <button onClick={handleTrainStep}
                                         className="w-full px-3 py-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-mono font-bold hover:bg-rose-500/20 transition-colors">
-                                        Train 1 Step
+                                        {t(`${PLAYGROUND_KEY}.buttons.trainStep`)}
                                     </button>
                                 </TooltipTrigger>
                                 <TooltipContent side="right" className="max-w-[250px] bg-zinc-950 border-white/10 text-white/80 p-3">
@@ -242,7 +237,7 @@ export function NNPlayground() {
                                 <TooltipTrigger asChild>
                                     <button onClick={handleAutoTrain}
                                         className="w-full px-3 py-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-mono font-bold hover:bg-indigo-500/20 transition-colors">
-                                        Auto-Train ×10
+                                        {t(`${PLAYGROUND_KEY}.buttons.autoTrain`)}
                                     </button>
                                 </TooltipTrigger>
                                 <TooltipContent side="right" className="max-w-[250px] bg-zinc-950 border-white/10 text-white/80 p-3">
@@ -257,7 +252,7 @@ export function NNPlayground() {
                                     <TooltipTrigger asChild>
                                         <button onClick={nn.reset}
                                             className="flex-1 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white/40 text-[10px] font-mono font-bold hover:text-white/60 transition-colors">
-                                            Reset
+                                            {t(`${PLAYGROUND_KEY}.buttons.reset`)}
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="max-w-[250px] bg-zinc-950 border-white/10 text-white/80 p-3">
@@ -271,7 +266,7 @@ export function NNPlayground() {
                                     <TooltipTrigger asChild>
                                         <button onClick={nn.randomize}
                                             className="flex-1 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white/40 text-[10px] font-mono font-bold hover:text-white/60 transition-colors">
-                                            Random
+                                            {t(`${PLAYGROUND_KEY}.buttons.random`)}
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="max-w-[250px] bg-zinc-950 border-white/10 text-white/80 p-3">
@@ -335,22 +330,22 @@ export function NNPlayground() {
                 {/* ─── Tabs ─── */}
                 <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
                     <div className="flex border-b border-white/[0.06] overflow-x-auto">
-                        {TABS.map(tabItem => (
-                            <TooltipProvider key={tabItem.id}>
+                        {TAB_IDS.map(id => (
+                            <TooltipProvider key={id}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <button
-                                            onClick={() => setTab(tabItem.id)}
-                                            className={`px-4 py-2.5 text-[10px] font-mono font-bold border-b-2 transition-all whitespace-nowrap ${tab === tabItem.id
+                                            onClick={() => setTab(id)}
+                                            className={`px-4 py-2.5 text-[10px] font-mono font-bold border-b-2 transition-all whitespace-nowrap ${tab === id
                                                 ? "border-rose-400 text-rose-400 bg-rose-500/[0.04]"
                                                 : "border-transparent text-white/30 hover:text-white/50"
                                                 }`}
                                         >
-                                            {tabItem.label}
+                                            {t(`${PLAYGROUND_KEY}.tabLabels.${id}`)}
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-[250px] bg-zinc-950 border-white/10 text-white/80 p-3">
-                                        <p className="text-xs leading-relaxed">{t(`${PLAYGROUND_KEY}.tabs.${tabItem.id}`)}</p>
+                                        <p className="text-xs leading-relaxed">{t(`${PLAYGROUND_KEY}.tabs.${id}`)}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -583,18 +578,18 @@ function GradientsView({ w1, w2, b, z, prediction, loss, gradients, learningRate
         <div className="space-y-5">
             <div>
                 <p className="text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2.5">
-                    <ExplainedText tooltip={t(`${PLAYGROUND_KEY}.gradients.forwardPass`)}>Forward Pass</ExplainedText>
+                    <ExplainedText tooltip={t(`${PLAYGROUND_KEY}.gradients.forwardPass`)}>{t(`${PLAYGROUND_KEY}.gradients.forwardPassLabel`)}</ExplainedText>
                 </p>
                 <div className="grid grid-cols-3 gap-3">
-                    <ValueCard label="Linear sum" expr="z = w₁x₁ + w₂x₂ + b" value={z.toFixed(4)} color="text-white/60" helpKey={`${PLAYGROUND_KEY}.gradients.linearSum`} />
-                    <ValueCard label="Prediction" expr={`ŷ = ${ACTIVATION_SHORT[activation]}(z)`} value={prediction.toFixed(4)} color="text-rose-400" helpKey={`${PLAYGROUND_KEY}.gradients.prediction`} />
-                    <ValueCard label="Loss" expr="L = (ŷ − target)²" value={loss.toFixed(6)} color="text-amber-400" helpKey={`${PLAYGROUND_KEY}.gradients.loss`} />
+                    <ValueCard label={t(`${PLAYGROUND_KEY}.gradients.linearSumLabel`)} expr="z = w₁x₁ + w₂x₂ + b" value={z.toFixed(4)} color="text-white/60" helpKey={`${PLAYGROUND_KEY}.gradients.linearSum`} />
+                    <ValueCard label={t(`${PLAYGROUND_KEY}.gradients.predictionLabel`)} expr={`ŷ = ${ACTIVATION_SHORT[activation]}(z)`} value={prediction.toFixed(4)} color="text-rose-400" helpKey={`${PLAYGROUND_KEY}.gradients.prediction`} />
+                    <ValueCard label={t(`${PLAYGROUND_KEY}.gradients.lossLabel`)} expr="L = (ŷ − target)²" value={loss.toFixed(6)} color="text-amber-400" helpKey={`${PLAYGROUND_KEY}.gradients.loss`} />
                 </div>
             </div>
 
             <div>
                 <p className="text-[9px] font-mono uppercase tracking-widest text-amber-400/60 mb-2">
-                    <ExplainedText tooltip={t(`${PLAYGROUND_KEY}.gradients.chainRule`)}>Gradients (Chain Rule)</ExplainedText>
+                    <ExplainedText tooltip={t(`${PLAYGROUND_KEY}.gradients.chainRule`)}>{t(`${PLAYGROUND_KEY}.gradients.chainRuleLabel`)}</ExplainedText>
                 </p>
                 <div className="rounded-lg bg-amber-500/[0.03] border border-amber-500/[0.1] p-3.5">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-[11px] font-mono">
@@ -610,7 +605,7 @@ function GradientsView({ w1, w2, b, z, prediction, loss, gradients, learningRate
 
             <div>
                 <p className="text-[9px] font-mono uppercase tracking-widest text-emerald-400/60 mb-2">
-                    <ExplainedText tooltip={t(`${PLAYGROUND_KEY}.gradients.weightUpdate`)}>Proposed Weight Update</ExplainedText>
+                    <ExplainedText tooltip={t(`${PLAYGROUND_KEY}.gradients.weightUpdate`)}>{t(`${PLAYGROUND_KEY}.gradients.weightUpdateLabel`)}</ExplainedText>
                 </p>
                 <div className="rounded-lg bg-emerald-500/[0.03] border border-emerald-500/[0.1] p-3.5 space-y-1.5 text-[11px] font-mono">
                     <p className="text-white/30">
@@ -655,9 +650,9 @@ function TrainingView({ history, maxLoss, scrollRef }: {
     if (history.length === 0) {
         return (
             <div className="py-16 text-center">
-                <p className="text-sm text-white/25 font-mono">No training data yet</p>
+                <p className="text-sm text-white/25 font-mono">{t(`${PLAYGROUND_KEY}.training.noData`)}</p>
                 <p className="text-[11px] text-white/15 font-mono mt-1.5">
-                    Click &ldquo;Train 1 Step&rdquo; or &ldquo;Auto-Train ×10&rdquo; to begin
+                    {t(`${PLAYGROUND_KEY}.training.noDataHint`)}
                 </p>
             </div>
         );
@@ -677,7 +672,7 @@ function TrainingView({ history, maxLoss, scrollRef }: {
 
             <div>
                 <p className="text-[9px] font-mono uppercase tracking-widest text-white/25 mb-2">
-                    <ExplainedText tooltip={t(`${PLAYGROUND_KEY}.visualization.lossCurve`)}>Loss over training steps</ExplainedText>
+                    <ExplainedText tooltip={t(`${PLAYGROUND_KEY}.visualization.lossCurve`)}>{t(`${PLAYGROUND_KEY}.visualization.lossCurveLabel`)}</ExplainedText>
                 </p>
                 <div className="flex items-end gap-px h-16 bg-white/[0.02] rounded-lg border border-white/[0.04] px-1 py-1 overflow-hidden">
                     {history.slice(-60).map((h, i) => (

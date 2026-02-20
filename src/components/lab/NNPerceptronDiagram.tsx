@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useI18n } from "@/i18n/context";
+
+const PK = "models.neuralNetworks.sections.playground";
 
 function relu(x: number) {
     return Math.max(0, x);
@@ -29,6 +32,7 @@ function Slider({ label, value, min, max, step, onChange, accent = "rose" }: {
 const FONT = "ui-monospace, SFMono-Regular, Menlo, monospace";
 
 export function NNPerceptronDiagram() {
+    const { t } = useI18n();
     const [x1, setX1] = useState(1.0);
     const [x2, setX2] = useState(0.5);
     const [w1, setW1] = useState(0.7);
@@ -109,13 +113,13 @@ export function NNPerceptronDiagram() {
 
                     {/* Sliders */}
                     <div className="grid grid-cols-2 gap-x-6 gap-y-3 mb-4">
-                        <Slider label="Input x₁" value={x1} min={-2} max={2} step={0.1} onChange={setX1} accent="white" />
-                        <Slider label="Input x₂" value={x2} min={-2} max={2} step={0.1} onChange={setX2} accent="white" />
-                        <Slider label="Weight w₁" value={w1} min={-2} max={2} step={0.05} onChange={setW1} accent="rose" />
-                        <Slider label="Weight w₂" value={w2} min={-2} max={2} step={0.05} onChange={setW2} accent="rose" />
+                        <Slider label={t(`${PK}.diagram.inputX1`)} value={x1} min={-2} max={2} step={0.1} onChange={setX1} accent="white" />
+                        <Slider label={t(`${PK}.diagram.inputX2`)} value={x2} min={-2} max={2} step={0.1} onChange={setX2} accent="white" />
+                        <Slider label={t(`${PK}.diagram.weightW1`)} value={w1} min={-2} max={2} step={0.05} onChange={setW1} accent="rose" />
+                        <Slider label={t(`${PK}.diagram.weightW2`)} value={w2} min={-2} max={2} step={0.05} onChange={setW2} accent="rose" />
                     </div>
                     <div className="max-w-[calc(50%-0.75rem)]">
-                        <Slider label="Bias b" value={b} min={-2} max={2} step={0.05} onChange={setB} accent="amber" />
+                        <Slider label={t(`${PK}.diagram.biasB`)} value={b} min={-2} max={2} step={0.05} onChange={setB} accent="amber" />
                     </div>
 
                     {/* Equation */}
@@ -130,7 +134,7 @@ export function NNPerceptronDiagram() {
                 </div>
             </div>
             <figcaption className="mt-3 text-center text-xs text-white/25 italic">
-                Adjust inputs, weights, and bias to see how the perceptron transforms them into an output.
+                {t(`${PK}.diagram.caption`)}
             </figcaption>
         </figure>
     );

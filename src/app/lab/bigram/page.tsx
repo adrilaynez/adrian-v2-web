@@ -12,15 +12,12 @@ import { useBigramVisualization } from "@/hooks/useBigramVisualization";
 import { useBigramGeneration } from "@/hooks/useBigramGeneration";
 import { useBigramStepwise } from "@/hooks/useBigramStepwise";
 import { motion } from "framer-motion";
-import { FlaskConical, Brain, Zap, BookOpen, Layers } from "lucide-react";
+import { FlaskConical, Brain, Zap, BookOpen, Layers, ArrowRight } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "@/i18n/context";
-import { useLabMode, LabModeProvider } from "@/context/LabModeContext";
+import { useLabMode } from "@/context/LabModeContext";
+import Link from "next/link";
 import { TrainingInsights } from "@/components/lab/TrainingInsights";
-
-const TransitionMatrix = dynamic(() =>
-    import("@/components/lab/TransitionMatrix").then((m) => m.TransitionMatrix)
-);
 
 const BigramNarrative = dynamic(() =>
     import("@/components/lab/BigramNarrative").then((m) => m.BigramNarrative)
@@ -110,18 +107,12 @@ function BigramPageContent() {
                     {/* ─── HERO ─── */}
                     <ModelHero />
 
-                    <div className="max-w-4xl mx-auto px-6 mb-24">
-                        <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-lg p-3 mb-6 text-center backdrop-blur-sm">
-                            <p className="text-sm text-emerald-200/80 font-mono">
-                                <span className="text-emerald-400 font-bold uppercase tracking-wider mr-2">Try it:</span>
-                                Click any colored cell in the matrix to see <span className="text-white font-semibold">real training examples</span>.
-                            </p>
-                        </div>
-                        <TransitionMatrix
-                            data={viz.data?.visualization.transition_matrix ?? null}
-                            onCellClick={handleCellClick}
-                        />
-                    </div>
+                    {/* ─── 01 · TRANSITION MATRIX & PROBABILITY FLOW ─── */}
+                    <SectionDivider
+                        number="01"
+                        title={t("models.bigram.sections.visualization.title")}
+                        description={t("models.bigram.sections.visualization.description")}
+                    />
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -265,8 +256,15 @@ function BigramPageContent() {
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
-                        className="mt-32 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-3"
+                        className="mt-32 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-6"
                     >
+                        <Link
+                            href="/lab/ngram"
+                            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/70 hover:text-white text-sm font-semibold transition-colors"
+                        >
+                            Next: N-Gram Model
+                            <ArrowRight className="w-4 h-4" />
+                        </Link>
                         <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-white/20">
                             <FlaskConical className="h-3 w-3" />
                             <span>LM-Lab · {t("models.bigram.hero.scientificInstrument")}</span>
@@ -290,9 +288,5 @@ function BigramPageContent() {
 }
 
 export default function BigramPage() {
-    return (
-        <LabModeProvider>
-            <BigramPageContent />
-        </LabModeProvider>
-    );
+    return <BigramPageContent />;
 }

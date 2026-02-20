@@ -1,16 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BookOpen, FlaskConical, ArrowDown, Lightbulb, AlertTriangle } from "lucide-react";
+import { BookOpen, FlaskConical, ArrowDown, Lightbulb, AlertTriangle, ArrowRight } from "lucide-react";
 import { ModeToggle } from "@/components/lab/ModeToggle";
 import { InferenceConsole } from "@/components/lab/InferenceConsole";
 import { GenerationPlayground } from "@/components/lab/GenerationPlayground";
 import { TransitionMatrix } from "@/components/lab/TransitionMatrix";
 import type { TransitionMatrixViz, Prediction, TrainingViz } from "@/types/lmLab";
 import { useI18n } from "@/i18n/context";
-
 import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
+import Link from "next/link";
+import { useLabMode } from "@/context/LabModeContext";
+import { BigramBuilder } from "@/components/lab/BigramBuilder";
+import { BigramDiagramExperience } from "@/components/lab/BigramDiagramExperience";
 
 /* ─────────────────────────────────────────────
    Primitive building blocks
@@ -226,8 +229,6 @@ interface BigramNarrativeProps {
     genError: string | null;
 }
 
-import { BigramBuilder } from "@/components/lab/BigramBuilder";
-
 export function BigramNarrative({
     matrixData,
     trainingData,
@@ -244,6 +245,7 @@ export function BigramNarrative({
     genError,
 }: BigramNarrativeProps) {
     const { t } = useI18n();
+    const { setMode } = useLabMode();
 
     return (
         <article className="max-w-[920px] mx-auto px-6 pt-8 pb-24">
@@ -381,6 +383,14 @@ export function BigramNarrative({
                         </p>
                     </div>
                 </div>
+
+                <P>{t("bigramNarrative.tokens.charLimitations")}</P>
+
+                <P>{t("bigramNarrative.tokens.wordLimitations")}</P>
+
+                <Callout title="Why character-level here?">
+                    <p>{t("bigramNarrative.tokens.whyCharHere")}</p>
+                </Callout>
             </Section>
 
             <SectionBreak />
@@ -394,9 +404,17 @@ export function BigramNarrative({
                     {t("bigramNarrative.counting.lead")}
                 </Lead>
 
-                <div className="my-12">
+                <P>{t("bigramNarrative.counting.p1")}</P>
+
+                <P>{t("bigramNarrative.counting.p2")}</P>
+
+                <div className="my-10">
                     <BigramBuilder />
                 </div>
+
+                <Callout title={t("bigramNarrative.counting.calloutTitle")}>
+                    <p>{t("bigramNarrative.counting.calloutText")}</p>
+                </Callout>
             </Section>
 
             <SectionBreak />
@@ -416,7 +434,7 @@ export function BigramNarrative({
                     {t("bigramNarrative.mechanics.p2")}
                 </P>
 
-                <div className="my-12 md:my-16">
+                <div className="my-8">
                     <TransitionMatrix
                         data={matrixData}
                         onCellClick={onCellClick}
@@ -478,6 +496,19 @@ export function BigramNarrative({
                         device={device}
                         loading={vizLoading}
                         error={vizError}
+                    />
+                </FigureWrapper>
+
+                <FigureWrapper
+                    label="Probability Flow Visualizer"
+                    hint="Select a context character, choose a normalization method, and sample the next token to see the full inference pipeline in action."
+                    showWindowDots={false}
+                >
+                    <BigramDiagramExperience
+                        mode="story"
+                        matrixData={matrixData}
+                        trainingData={trainingData}
+                        onCellClick={onCellClick}
                     />
                 </FigureWrapper>
             </Section>
@@ -580,6 +611,24 @@ export function BigramNarrative({
                 <p className="text-sm text-white/25 italic max-w-md mx-auto leading-relaxed mb-10">
                     {t("bigramNarrative.footer.text")}
                 </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+                    <button
+                        onClick={() => setMode("free")}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-400 text-sm font-semibold transition-colors"
+                    >
+                        <FlaskConical className="w-4 h-4" />
+                        Explore in Free Lab
+                    </button>
+                    <Link
+                        href="/lab/neural-networks"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/70 hover:text-white text-sm font-semibold transition-colors"
+                    >
+                        Next: Neural Networks
+                        <ArrowRight className="w-4 h-4" />
+                    </Link>
+                </div>
+
                 <div className="flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-white/10">
                     <FlaskConical className="h-3 w-3" />
                     {t("bigramNarrative.footer.brand")}

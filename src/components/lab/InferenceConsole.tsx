@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Terminal, Zap, Cpu, AlertCircle, Info } from "lucide-react";
+import { Zap, Cpu, Info } from "lucide-react";
 import type { Prediction } from "@/types/lmLab";
 import { useI18n } from "@/i18n/context";
 
@@ -45,13 +45,10 @@ export function InferenceConsole({
                         <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
                     </div>
                     <div className="absolute left-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">What is Inference?</p>
+                        <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">{t("models.ngram.sections.inference.title")}</p>
                         <div className="space-y-2">
-                            <p><strong className="text-emerald-400">The Process:</strong> The model takes your text, looks at the <strong className="text-white">last character</strong>, and looks up the probabilities for what comes next in its brain (the Matrix).</p>
-                            <p><strong className="text-violet-400">Top-K:</strong> We only show the top winners. If K=5, you see the 5 most likely candidates.</p>
-                            <div className="mt-3 pt-3 border-t border-white/5 text-[10px] italic">
-                                Note: This model is "deterministic" in its probabilities but "stochastic" (random) when it actually picks a character to generate text.
-                            </div>
+                            <p>{t("models.ngram.educationalOverlay.probabilityDistributionDescription")}</p>
+                            <p><strong className="text-violet-400">Top-K:</strong> {t("models.ngram.sections.inference.distribution.desc")}</p>
                         </div>
                     </div>
                 </div>
@@ -68,7 +65,7 @@ export function InferenceConsole({
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
                 <div className="space-y-2">
                     <label className="text-[11px] font-mono uppercase tracking-widest text-white/40">
-                        Input Text
+                        {t("models.ngram.sections.inference.distribution.title")}
                     </label>
                     <input
                         type="text"
@@ -82,7 +79,7 @@ export function InferenceConsole({
                 <div className="space-y-2">
                     <div className="flex justify-between">
                         <label className="text-[11px] font-mono uppercase tracking-widest text-white/40">
-                            Top-K Predictions
+                            {t("models.ngram.sections.inference.distribution.desc")}
                         </label>
                         <span className="text-xs font-mono text-emerald-400">{topK}</span>
                     </div>
@@ -106,11 +103,11 @@ export function InferenceConsole({
                             animate={{ opacity: [0.4, 1, 0.4] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
                         >
-                            Analyzing...
+                            {t("common.loading")}
                         </motion.span>
                     ) : (
                         <>
-                            <Zap className="h-3.5 w-3.5 mr-2" /> Analyze
+                            <Zap className="h-3.5 w-3.5 mr-2" /> {t("models.ngram.sections.inference.title")}
                         </>
                     )}
                 </Button>

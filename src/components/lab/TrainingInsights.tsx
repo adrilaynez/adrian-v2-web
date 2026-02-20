@@ -5,12 +5,17 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingDown, Activity } from "lucide-react";
 import type { TrainingViz } from "@/types/lmLab";
+import { useI18n } from "@/i18n/context";
+
+const TI = "models.neuralNetworks.sections.playground.training";
+const VI = "models.neuralNetworks.sections.playground.visualization";
 
 interface TrainingInsightsProps {
     data: TrainingViz | null;
 }
 
 export function TrainingInsights({ data }: TrainingInsightsProps) {
+    const { t } = useI18n();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -104,11 +109,11 @@ export function TrainingInsights({ data }: TrainingInsightsProps) {
 
     const stats = data
         ? [
-            { label: "Final Loss", value: data.final_loss?.toFixed(4) ?? "N/A" },
-            { label: "Steps", value: data.training_steps?.toLocaleString() ?? "N/A" },
-            { label: "Batch Size", value: data.batch_size?.toString() ?? "N/A" },
-            { label: "Learning Rate", value: data.learning_rate?.toExponential(1) ?? "N/A" },
-            { label: "Parameters", value: data.total_parameters?.toLocaleString() ?? "N/A" },
+            { labelKey: "finalLoss", value: data.final_loss?.toFixed(4) ?? "N/A" },
+            { labelKey: "steps", value: data.training_steps?.toLocaleString() ?? "N/A" },
+            { labelKey: "batchSize", value: data.batch_size?.toString() ?? "N/A" },
+            { labelKey: "learningRate", value: data.learning_rate?.toExponential(1) ?? "N/A" },
+            { labelKey: "parameters", value: data.total_parameters?.toLocaleString() ?? "N/A" },
         ]
         : [];
 
@@ -118,7 +123,7 @@ export function TrainingInsights({ data }: TrainingInsightsProps) {
             <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
                 <TrendingDown className="h-4 w-4 text-indigo-400" />
                 <span className="font-mono text-xs uppercase tracking-widest text-white/60">
-                    Training Insights
+                    {t(`${TI}.insightsTitle`)}
                 </span>
 
                 {/* Educational Tooltip */}
@@ -127,12 +132,12 @@ export function TrainingInsights({ data }: TrainingInsightsProps) {
                         <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
                     </div>
                     <div className="absolute left-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">What is Loss?</p>
+                        <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">{t(`${VI}.lossTooltipTitle`)}</p>
                         <div className="space-y-2">
-                            <p><strong className="text-indigo-400">Prediction Error:</strong> Loss measures how "surprised" the model is. A high loss means it's guessing wrong frequently.</p>
-                            <p><strong className="text-white">The Benchmark:</strong> Pure random guessing would give a loss of <strong className="text-amber-400">~4.56</strong> ($- \ln(1/96)$). Anything lower means the model has actually learned something!</p>
+                            <p><strong className="text-indigo-400">{t(`${VI}.lossTooltipErrorLabel`)}:</strong> {t(`${VI}.lossTooltipError`)}</p>
+                            <p><strong className="text-white">{t(`${VI}.lossTooltipBenchmarkLabel`)}:</strong> {t(`${VI}.lossTooltipBenchmark`)}</p>
                             <div className="mt-3 pt-3 border-t border-white/5 text-[10px] italic">
-                                The descending curve shows the model slowly discovering patterns in your text.
+                                {t(`${VI}.lossTooltipCaption`)}
                             </div>
                         </div>
                     </div>
@@ -143,7 +148,7 @@ export function TrainingInsights({ data }: TrainingInsightsProps) {
             <div ref={containerRef} className="px-5 pt-5">
                 {!data ? (
                     <div className="flex items-center justify-center h-40 text-white/30 text-xs font-mono">
-                        Run inference to view training data
+                        {t(`${TI}.runInference`)}
                     </div>
                 ) : (
                     <canvas ref={canvasRef} />
@@ -154,21 +159,17 @@ export function TrainingInsights({ data }: TrainingInsightsProps) {
             {data && (
                 <div className="px-5 pb-5 pt-4 flex flex-wrap gap-2">
                     {stats.map((s) => (
-                        <div key={s.label} className="group relative">
+                        <div key={s.labelKey} className="group relative">
                             <Badge
                                 className="bg-white/[0.04] border-white/[0.06] text-white/70 text-[10px] font-mono py-1 px-2.5 hover:bg-white/[0.06] transition-colors"
                             >
                                 <Activity className="h-3 w-3 mr-1 text-indigo-400" />
-                                {s.label}: <span className="text-white ml-1">{s.value}</span>
+                                {t(`${TI}.stats.${s.labelKey}.label`)}: <span className="text-white ml-1">{s.value}</span>
                             </Badge>
 
                             {/* Educational Tooltip */}
                             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-2 rounded-lg z-50 w-48 text-[9px] text-slate-400 pointer-events-none shadow-2xl leading-tight text-center">
-                                {s.label === "Final Loss" && "The error level. At the end of training, it should be as low as possible."}
-                                {s.label === "Steps" && "How many times the model practiced to improve its predictions."}
-                                {s.label === "Batch Size" && "The amount of information pieces the model processes at once."}
-                                {s.label === "Learning Rate" && "The learning speed. Neither too fast to avoid missing, nor too slow to avoid taking too long."}
-                                {s.label === "Parameters" && "The size of the neural network or 'brain' of the model."}
+                                {t(`${TI}.stats.${s.labelKey}.desc`)}
                             </div>
                         </div>
                     ))}

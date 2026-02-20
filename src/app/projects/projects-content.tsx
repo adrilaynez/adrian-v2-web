@@ -13,31 +13,35 @@ import {
     Sparkles,
     ArrowRight,
     ExternalLink,
+    Github, Code2, Layers, Cpu, Database, Activity, Monitor, Network, Binary, Terminal
 } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 
 const projects = [
     {
-        title: "Distri-KV",
-        description: "A distributed key-value store implemented in Go, featuring Raft consensus and sharding.",
+        title: "projects.experiments.items.distriKv.title",
+        description: "projects.experiments.items.distriKv.desc",
         tags: ["Go", "gRPC", "Raft", "Distributed Systems"],
         githubUrl: "#",
     },
     {
-        title: "NeuroVis",
-        description: "Interactive visualization tool for neural network activations in real-time.",
+        title: "projects.experiments.items.neuroVis.title",
+        description: "projects.experiments.items.neuroVis.desc",
         tags: ["TypeScript", "WebGL", "Three.js", "React"],
         githubUrl: "#",
         demoUrl: "#",
     },
     {
-        title: "Auto-Agent",
-        description: "A lightweight autonomous agent framework focused on coding tasks.",
+        title: "projects.experiments.items.autoAgent.title",
+        description: "projects.experiments.items.autoAgent.desc",
         tags: ["Python", "LangChain", "Docker"],
         githubUrl: "#",
     },
 ];
 
 export function ProjectsContent() {
+    const { t } = useI18n();
+
     return (
         <div className="flex flex-col min-h-screen">
             {/* Hero Section */}
@@ -47,25 +51,28 @@ export function ProjectsContent() {
                 </div>
 
                 <div className="container mx-auto max-w-5xl">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="space-y-4"
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                         <Badge variant="secondary" className="px-4 py-1 text-xs uppercase tracking-widest rounded-full border border-primary/20">
-                            Research & Development
+                            {t("projects.hero.badge")}
                         </Badge>
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6">
-                            Constructing the <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/50">
-                                Digital Frontier.
-                            </span>
-                        </h1>
-                        <p className="text-xl text-muted-foreground max-w-2xl">
-                            A curated collection of my work in distributed systems, AI infrastructure, and high-performance computing.
-                        </p>
                     </motion.div>
+                    <div className="relative group mt-8">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+                            className="text-5xl md:text-7xl font-black tracking-tight mb-6"
+                        >
+                            {t("projects.hero.titlePrefix")} <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/50">
+                                {t("projects.hero.titleSuffix")}
+                            </span>
+                        </motion.h1>
+                    </div>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+                        className="text-xl text-muted-foreground max-w-2xl"
+                    >
+                        {t("projects.hero.description")}
+                    </motion.p>
                 </div>
             </section>
 
@@ -75,7 +82,7 @@ export function ProjectsContent() {
                 <div className="mb-24">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="h-px bg-border flex-1"></div>
-                        <span className="text-sm font-mono text-muted-foreground uppercase tracking-widest">Flagship Project</span>
+                        <span className="text-sm font-mono text-muted-foreground uppercase tracking-widest">{t("projects.flagship.badge")}</span>
                         <div className="h-px bg-border flex-1"></div>
                     </div>
 
@@ -95,29 +102,26 @@ export function ProjectsContent() {
 
                             <div className="relative z-10 p-8 md:p-12">
                                 {/* Top badges */}
-                                <div className="flex items-center gap-2 mb-6 flex-wrap">
-                                    <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-mono text-[10px] uppercase tracking-widest">
-                                        Featured
+                                <div className="flex flex-wrap gap-2 mb-6">
+                                    <Badge variant="default" className="bg-primary/20 text-primary border-primary/50 uppercase tracking-wider text-[10px]">
+                                        {t("projects.flagship.featured")}
                                     </Badge>
-                                    <Badge className="bg-white/[0.04] text-white/60 border-white/[0.06] font-mono text-[10px] uppercase tracking-widest">
-                                        Live Demo Available
+                                    <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px] uppercase tracking-wider">
+                                        <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        {t("projects.flagship.liveDemo")}
                                     </Badge>
                                 </div>
 
-                                {/* Title */}
-                                <div className="flex items-center gap-3 mb-4">
-                                    <FlaskConical className="h-8 w-8 text-emerald-400" />
+                                <div className="space-y-2 mb-6">
+                                    <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-primary/60">{t("projects.flagship.badge")}</span>
                                     <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white">
-                                        LM-Lab
+                                        {t("projects.flagship.title")}
                                     </h2>
                                 </div>
 
                                 {/* Description */}
                                 <p className="text-base md:text-lg text-white/60 max-w-2xl mb-6 leading-relaxed">
-                                    An interactive platform for exploring language model architectures
-                                    from first principles. Visualize transition matrices, probe
-                                    inference dynamics, and generate text — all powered by a live
-                                    FastAPI backend with PyTorch.
+                                    {t("projects.flagship.description")}
                                 </p>
 
                                 {/* Tech Stack */}
@@ -140,18 +144,18 @@ export function ProjectsContent() {
                                     {[
                                         {
                                             icon: Brain,
-                                            title: "Live Inference",
-                                            desc: "Real-time next-character prediction with probability distributions",
+                                            title: t("projects.flagship.highlights.inference.title"),
+                                            desc: t("projects.flagship.highlights.inference.desc"),
                                         },
                                         {
                                             icon: Boxes,
-                                            title: "Transition Matrix",
-                                            desc: "Interactive canvas heatmap of the learned bigram probabilities",
+                                            title: t("projects.flagship.highlights.matrix.title"),
+                                            desc: t("projects.flagship.highlights.matrix.desc"),
                                         },
                                         {
                                             icon: Sparkles,
-                                            title: "Text Generation",
-                                            desc: "Generate text with configurable temperature and step-by-step tracing",
+                                            title: t("projects.flagship.highlights.generation.title"),
+                                            desc: t("projects.flagship.highlights.generation.desc"),
                                         },
                                     ].map((feat) => (
                                         <div
@@ -177,7 +181,7 @@ export function ProjectsContent() {
                                     >
                                         <Link href="/lab">
                                             <FlaskConical className="h-4 w-4 mr-2" />
-                                            Open Lab
+                                            {t("projects.flagship.cta.explorer")}
                                             <ArrowRight className="h-3.5 w-3.5 ml-2" />
                                         </Link>
                                     </Button>
@@ -188,7 +192,7 @@ export function ProjectsContent() {
                                     >
                                         <Link href="/lab">
                                             <Boxes className="h-4 w-4 mr-2" />
-                                            View Architecture
+                                            {t("projects.flagship.cta.architecture")}
                                         </Link>
                                     </Button>
                                     <Button
@@ -198,7 +202,7 @@ export function ProjectsContent() {
                                     >
                                         <Link href="/lab">
                                             <Sparkles className="h-4 w-4 mr-2" />
-                                            Run Interactive Demo
+                                            {t("projects.flagship.cta.demo")}
                                         </Link>
                                     </Button>
                                 </div>
@@ -208,8 +212,15 @@ export function ProjectsContent() {
                 </div>
 
                 {/* Other Projects Grid */}
-                <div className="mb-12">
-                    <h2 className="text-2xl font-bold tracking-tight mb-8 border-l-4 border-primary pl-4">Selected Experiments</h2>
+                <section>
+                    <motion.h2
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        className="text-2xl font-bold tracking-tight mb-8 border-l-4 border-primary pl-4"
+                    >
+                        {t("projects.experiments.title")}
+                    </motion.h2>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {projects.map((project, i) => (
                             <motion.div
@@ -219,11 +230,11 @@ export function ProjectsContent() {
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
                             >
-                                <ProjectCard {...project} />
+                                <ProjectCard {...project} title={t(project.title)} description={t(project.description)} />
                             </motion.div>
                         ))}
                     </div>
-                </div>
+                </section>
 
             </section>
         </div>

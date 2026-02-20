@@ -139,7 +139,7 @@ export default function Home() {
               style={{ fontSize: "clamp(2rem, 6.5vw, 5.5rem)" }}
             >
               <AnimatedTitle
-                text="ADRIAN LAYNEZ ORTIZ"
+                text={t("landing.hero.title")}
                 delay={0.3}
                 className="text-white"
               />
@@ -150,7 +150,7 @@ export default function Home() {
           <FadeUp delay={1.0}>
             <div className="flex items-center justify-center gap-4">
               <div className="h-px w-12 bg-white/20" />
-              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/40">Research & Engineering</span>
+              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/40">{t("landing.hero.role")}</span>
               <div className="h-px w-12 bg-white/20" />
             </div>
           </FadeUp>
@@ -158,10 +158,10 @@ export default function Home() {
           {/* Tagline */}
           <FadeUp delay={1.15} className="space-y-2">
             <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground/80 font-light leading-relaxed tracking-tight">
-              Mathematics & Computer Science.
+              {t("landing.hero.tagline1")}
             </p>
             <p className="mx-auto max-w-xl text-sm md:text-base text-muted-foreground/50 font-light">
-              <span className="text-primary/80 font-medium">Mechanistic Interpretability</span> · High-Performance Engineering.
+              <span className="text-primary/80 font-medium">Mechanistic Interpretability</span> · {t("landing.hero.tagline2").split("·")[1]?.trim() || "High-Performance Engineering."}
             </p>
           </FadeUp>
 
@@ -173,7 +173,7 @@ export default function Home() {
               asChild
             >
               <Link href="/projects">
-                View Lab Work <ArrowRight className="ml-2 h-4 w-4" />
+                {t("landing.hero.cta.lab")} <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button
@@ -182,7 +182,7 @@ export default function Home() {
               className="h-13 px-8 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-all duration-300"
               asChild
             >
-              <Link href="/notes">Read Notes</Link>
+              <Link href="/notes">{t("landing.hero.cta.notes")}</Link>
             </Button>
           </FadeUp>
         </div>
@@ -205,10 +205,10 @@ export default function Home() {
         <div className="container mx-auto max-w-screen-xl px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/[0.06]">
             {[
-              { value: "4+", label: "Years of Research" },
-              { value: "12+", label: "Open Source Repos" },
-              { value: "3", label: "Active Projects" },
-              { value: "∞", label: "Curiosity" },
+              { value: "4+", label: t("landing.metrics.research") },
+              { value: "12+", label: t("landing.metrics.repos") },
+              { value: "3", label: t("landing.metrics.projects") },
+              { value: "∞", label: t("landing.metrics.curiosity") },
             ].map((stat, i) => (
               <ScrollReveal key={stat.label}>
                 <div className="py-10 px-6 text-center group">
@@ -251,8 +251,8 @@ export default function Home() {
                       <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                       <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400">{t("landing.about.building")}</span>
                     </div>
-                    <p className="text-sm font-medium text-foreground">Deep Learning Engine — CUDA / C++</p>
-                    <p className="text-xs text-muted-foreground/60 mt-1">Custom kernels for matrix operations and backpropagation</p>
+                    <p className="text-sm font-medium text-foreground">{t("landing.about.projectTitle")}</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">{t("landing.about.projectDesc")}</p>
                   </div>
                 </motion.div>
 
@@ -269,44 +269,30 @@ export default function Home() {
             <ScrollReveal className="space-y-10">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-primary">
-                  <Sparkles className="h-3 w-3" /> About
+                  <Sparkles className="h-3 w-3" /> {t("landing.about.badge")}
                 </div>
                 <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1]">
-                  Bridging Abstract Mathematics
+                  {t("landing.about.bio.titlePrefix")}
                   <br className="hidden md:block" />
-                  <span className="text-muted-foreground"> & Machine Intelligence</span>
+                  <span className="text-muted-foreground"> {t("landing.about.bio.titleSuffix")}</span>
                 </h2>
               </div>
 
               <div className="space-y-5 text-[15px] leading-[1.8] text-muted-foreground">
-                <p>
-                  I am pursuing a double degree in{" "}
-                  <strong className="text-foreground">Mathematics and Computer Science</strong> at
-                  the Universidad Complutense de Madrid. My research focuses on understanding
-                  neural networks at their deepest level — from gradient dynamics
-                  to kernel-level optimization.
-                </p>
-                <p>
-                  I specialize in{" "}
-                  <strong className="text-foreground">Mechanistic Interpretability</strong> — the
-                  science of reverse-engineering how neural networks represent and process
-                  information internally. Rather than treating models as black boxes, I decompose
-                  their circuits to understand{" "}
-                  <em className="text-foreground/80">why they work</em>.
-                </p>
+                <p dangerouslySetInnerHTML={{ __html: t("landing.about.bio.p1") }} />
+                <p dangerouslySetInnerHTML={{ __html: t("landing.about.bio.p2") }} />
                 <p className="text-muted-foreground/60 border-l-2 border-primary/30 pl-4 italic">
-                  My mission: make AI systems transparent through rigorous mathematical
-                  analysis and low-level engineering.
+                  {t("landing.about.bio.mission")}
                 </p>
               </div>
 
               {/* Skills */}
               <div className="space-y-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground/40">Technical Proficiencies</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground/40">{t("landing.skills.title")}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {[
                     "Python", "C++", "CUDA", "Rust", "PyTorch",
-                    "Linear Algebra", "Topology", "Convex Optimization",
+                    t("landing.skills.linearAlgebra"), t("landing.skills.topology"), t("landing.skills.convexOpt"),
                     "Docker", "LaTeX", "Git",
                   ].map((s) => (
                     <motion.span
@@ -324,17 +310,17 @@ export default function Home() {
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" size="sm" className="rounded-full border-white/[0.08] hover:bg-white/[0.04] text-xs h-9 px-5 group/btn" asChild>
                   <Link href="https://github.com/adrilaynez" target="_blank">
-                    <Github className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover/btn:rotate-12" /> GitHub
+                    <Github className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover/btn:rotate-12" /> {t("landing.contact.githubShort")}
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" className="rounded-full border-white/[0.08] hover:bg-white/[0.04] text-xs h-9 px-5 group/btn" asChild>
                   <Link href="https://linkedin.com" target="_blank">
-                    <Linkedin className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover/btn:rotate-12" /> LinkedIn
+                    <Linkedin className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover/btn:rotate-12" /> {t("landing.contact.linkedin")}
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" className="rounded-full border-white/[0.08] hover:bg-white/[0.04] text-xs h-9 px-5 group/btn" asChild>
                   <Link href="mailto:contact@adrianlaynez.dev">
-                    <Mail className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover/btn:rotate-12" /> Contact
+                    <Mail className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover/btn:rotate-12" /> {t("landing.contact.email")}
                   </Link>
                 </Button>
               </div>
@@ -349,16 +335,15 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-20">
             <ScrollReveal className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-primary mb-4">
-                <FlaskConical className="h-3 w-3" /> Selected Work
+                <FlaskConical className="h-3 w-3" /> {t("landing.work.badge")}
               </div>
               <h3 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1]">
-                Engineering from
+                {t("landing.work.titlePrefix")}
                 <br className="hidden md:block" />
-                <span className="text-muted-foreground"> First Principles</span>
+                <span className="text-muted-foreground"> {t("landing.work.titleSuffix")}</span>
               </h3>
               <p className="mt-5 text-muted-foreground text-[15px] leading-relaxed max-w-xl">
-                Every project begins with a question. From reimplementing seminal papers to
-                writing bare-metal GPU kernels, each one is an exercise in deep understanding.
+                {t("landing.work.description")}
               </p>
             </ScrollReveal>
             <ScrollReveal>
@@ -368,7 +353,7 @@ export default function Home() {
                 asChild
               >
                 <Link href="/projects">
-                  View All Projects <ExternalLink className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  {t("landing.work.viewAll")} <ExternalLink className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
               </Button>
             </ScrollReveal>
@@ -378,8 +363,8 @@ export default function Home() {
             {items.map((item, i) => (
               <BentoGridItem
                 key={i}
-                title={item.title}
-                description={item.description}
+                title={t(item.title)}
+                description={t(item.description)}
                 header={item.header}
                 icon={item.icon}
                 className={i === 0 || i === 3 ? "md:col-span-2" : ""}
@@ -394,17 +379,16 @@ export default function Home() {
         <div className="container py-32 mx-auto max-w-3xl px-6 text-center">
           <ScrollReveal className="space-y-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.2em] text-primary">
-              <Mail className="h-3 w-3" /> Open to Opportunities
+              <Mail className="h-3 w-3" /> {t("landing.contact.badge")}
             </div>
             <h4 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1]">
-              Let&apos;s Build
-              <span className="text-muted-foreground"> Something</span>
+              {t("landing.contact.titlePrefix")}
+              <span className="text-muted-foreground"> {t("landing.contact.titleMiddle")}</span>
               <br />
-              <span className="text-muted-foreground">Together</span>
+              <span className="text-muted-foreground">{t("landing.contact.titleSuffix")}</span>
             </h4>
             <p className="text-muted-foreground text-[15px] leading-relaxed max-w-xl mx-auto">
-              Whether it&apos;s a research collaboration, an internship opportunity, or just a
-              conversation about the mathematics of intelligence — I&apos;d love to hear from you.
+              {t("landing.contact.description")}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <Button
@@ -413,7 +397,7 @@ export default function Home() {
                 asChild
               >
                 <Link href="mailto:contact@adrianlaynez.dev">
-                  Get in Touch <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("landing.contact.email")} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button
@@ -423,7 +407,7 @@ export default function Home() {
                 asChild
               >
                 <Link href="https://github.com/adrilaynez" target="_blank">
-                  <Github className="mr-2 h-4 w-4" /> GitHub Profile
+                  <Github className="mr-2 h-4 w-4" /> {t("landing.contact.github")}
                 </Link>
               </Button>
             </div>
@@ -446,37 +430,32 @@ const GradientSkeleton = ({ from, to }: { from: string; to: string }) => (
 
 const items = [
   {
-    title: "Nano-Transformer",
-    description:
-      "Ground-up reproduction of 'Attention Is All You Need' in PyTorch — Multi-Head Attention, Positional Encodings, and LayerNorm implemented without pre-built Transformer modules.",
+    title: "landing.work.items.nanoTransformer.title",
+    description: "landing.work.items.nanoTransformer.desc",
     header: <GradientSkeleton from="from-violet-500/10" to="to-indigo-500/10" />,
     icon: <Cpu className="h-4 w-4 text-violet-400" />,
   },
   {
-    title: "CUDA Matrix Kernels",
-    description:
-      "Handwritten CUDA kernels exploring SGEMM optimization — from naive implementations to tiled shared-memory strategies, benchmarked against cuBLAS.",
+    title: "landing.work.items.cudaKernels.title",
+    description: "landing.work.items.cudaKernels.desc",
     header: <GradientSkeleton from="from-cyan-500/10" to="to-blue-500/10" />,
     icon: <Layers className="h-4 w-4 text-cyan-400" />,
   },
   {
-    title: "Autograd Engine",
-    description:
-      "Lightweight reverse-mode automatic differentiation library. Dynamically constructs computation graphs and propagates gradients via the chain rule.",
+    title: "landing.work.items.autograd.title",
+    description: "landing.work.items.autograd.desc",
     header: <GradientSkeleton from="from-amber-500/10" to="to-orange-500/10" />,
     icon: <Sigma className="h-4 w-4 text-amber-400" />,
   },
   {
-    title: "The Mathematics of Deep Learning",
-    description:
-      "Interactive articles exploring the rigorous theory behind modern AI — SGD convergence analysis, the linear algebra of LoRA, and differential geometry on neural manifolds.",
+    title: "landing.work.items.mathDl.title",
+    description: "landing.work.items.mathDl.desc",
     header: <GradientSkeleton from="from-rose-500/10" to="to-pink-500/10" />,
     icon: <FlaskConical className="h-4 w-4 text-rose-400" />,
   },
   {
-    title: "Distributed Inference",
-    description:
-      "Architectural explorations in data-parallel training, model sharding, and optimized inference pipelines for large-scale neural networks.",
+    title: "landing.work.items.distributed.title",
+    description: "landing.work.items.distributed.desc",
     header: <GradientSkeleton from="from-emerald-500/10" to="to-teal-500/10" />,
     icon: <Database className="h-4 w-4 text-emerald-400" />,
   },

@@ -9,18 +9,27 @@ interface LabModeContextType {
     setMode: (mode: LabMode) => void;
     /** True once the client has hydrated and localStorage has been read. */
     isInitialized: boolean;
+    /** True if the user has explicitly chosen a mode at least once. */
+    hasChosen: boolean;
+    /** Mark that the user has made an explicit choice. */
+    choose: (mode: LabMode) => void;
 }
 
 const LabModeContext = createContext<LabModeContextType | undefined>(undefined);
 
 export function LabModeProvider({ children }: { children: React.ReactNode }) {
     const [mode, setModeState] = useState<LabMode>('educational');
+    const [hasChosen, setHasChosen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
         const saved = localStorage.getItem('lm-lab-mode') as LabMode;
         if (saved === 'educational' || saved === 'free') {
             setModeState(saved);
+        }
+        const chosen = localStorage.getItem('lm-lab-chosen');
+        if (chosen === '1') {
+            setHasChosen(true);
         }
         setIsInitialized(true);
     }, []);
@@ -30,8 +39,15 @@ export function LabModeProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('lm-lab-mode', newMode);
     }, []);
 
+    const choose = useCallback((newMode: LabMode) => {
+        setModeState(newMode);
+        setHasChosen(true);
+        localStorage.setItem('lm-lab-mode', newMode);
+        localStorage.setItem('lm-lab-chosen', '1');
+    }, []);
+
     return (
-        <LabModeContext.Provider value={{ mode, setMode, isInitialized }}>
+        <LabModeContext.Provider value={{ mode, setMode, isInitialized, hasChosen, choose }}>
             {children}
         </LabModeContext.Provider>
     );

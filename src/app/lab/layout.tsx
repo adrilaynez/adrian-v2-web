@@ -1,7 +1,14 @@
+import { LabModeProvider } from "@/context/LabModeContext";
+
 export default function LabLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <LabModeProvider>
+            {children}
+        </LabModeProvider>
+    );
 }
+
