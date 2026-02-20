@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 // import { buttonVariants } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageToggle } from "@/components/ui/language-toggle"
 
 const navItems = [
     { name: "Home", href: "/" },
@@ -42,6 +43,7 @@ export function Navbar() {
                 </div>
 
                 <div className="flex flex-1 items-center justify-end space-x-2">
+                    <LanguageToggle />
                     <ThemeToggle />
                 </div>
             </div>
