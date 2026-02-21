@@ -854,6 +854,17 @@ export const en = {
                 simplifiedSimulation: "Full stepwise prediction and generation available in Free Lab mode.",
             },
         },
+        mlp: {
+            title: "MLP + Embeddings",
+            description: "Explore 108 trained MLP configurations. Watch embeddings emerge from noise, compare training dynamics across architectures, and generate text from learned character-level representations.",
+            hero: {
+                badge: "Research Lab",
+            },
+            freeLab: {
+                title: "MLP Configuration Lab",
+                description: "Select any trained configuration from the Model Zoo, inspect training curves, explore the embedding space, and compare models side-by-side.",
+            },
+        },
         neuralNetworks: {
             title: "Neural Networks & Deep Learning",
             description: "A first-principles exploration of artificial neural networks — from the perceptron to backpropagation. Understand how learned parameters replace counting and why dense representations generalize where N-grams fail.",

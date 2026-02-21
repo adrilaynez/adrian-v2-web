@@ -119,7 +119,7 @@ export default function LabLandingPage() {
             name: t("lab.models.mlp.name"),
             subtitle: t("lab.models.mlp.subtitle"),
             description: t("lab.models.mlp.description"),
-            status: "coming" as const,
+            status: "ready" as const,
             icon: Layers,
             href: "/lab/mlp",
             accent: "violet",

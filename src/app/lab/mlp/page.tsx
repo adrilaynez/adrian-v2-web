@@ -1,15 +1,26 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useRef } from "react";
 import { LabShell } from "@/components/lab/LabShell";
+import { ModelHero } from "@/components/lab/ModelHero";
+import { SectionDivider } from "@/components/lab/SectionDivider";
 import { motion } from "framer-motion";
-import { FlaskConical, Layers, Lock } from "lucide-react";
+import { FlaskConical } from "lucide-react";
 import { useLabMode } from "@/context/LabModeContext";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { useI18n } from "@/i18n/context";
+import { useMLPGrid } from "@/hooks/useMLPGrid";
+import type { UseMLPGridReturn } from "@/hooks/useMLPGrid";
+import type { MLPNarrativeProps } from "@/components/lab/MLPNarrative";
+import type { MLPHyperparameterExplorerProps } from "@/components/lab/mlp/MLPHyperparameterExplorer";
 
-const MLPNarrative = dynamic(
+const MLPNarrative = dynamic<MLPNarrativeProps>(
     () => import("@/components/lab/MLPNarrative").then((m) => ({ default: m.MLPNarrative })),
+    { ssr: false, loading: () => <MLPLoadingPlaceholder /> }
+);
+
+const MLPHyperparameterExplorer = dynamic<MLPHyperparameterExplorerProps>(
+    () => import("@/components/lab/mlp/MLPHyperparameterExplorer").then((m) => ({ default: m.MLPHyperparameterExplorer })),
     { ssr: false, loading: () => <MLPLoadingPlaceholder /> }
 );
 
@@ -22,9 +33,89 @@ function MLPLoadingPlaceholder() {
     );
 }
 
+function MlpFreeLab({ mlpGrid }: { mlpGrid: UseMLPGridReturn }) {
+    const { t } = useI18n();
+
+    return (
+        <div className="max-w-7xl mx-auto pb-24">
+
+            {/* ── HERO ── */}
+            <ModelHero
+                title={t("models.mlp.title")}
+                description={t("models.mlp.description")}
+                customStats={[]}
+            />
+
+            {/* ── SECTION DIVIDER ── */}
+            <SectionDivider
+                number="01"
+                title={t("models.mlp.freeLab.title")}
+                description={t("models.mlp.freeLab.description")}
+            />
+
+            {/* ── EXPLORER ── */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6 }}
+                className="max-w-5xl mx-auto px-6 mb-28"
+            >
+                <MLPHyperparameterExplorer
+                    configs={mlpGrid.configs}
+                    selectedConfig={mlpGrid.selectedConfig}
+                    onSelectClosest={mlpGrid.selectClosest}
+                    timeline={mlpGrid.timeline}
+                    timelineLoading={mlpGrid.timelineLoading}
+                    onFetchTimeline={mlpGrid.fetchTimelineData}
+                    generation={mlpGrid.generation}
+                    generationLoading={mlpGrid.generationLoading}
+                    onGenerate={mlpGrid.generateText}
+                    gridLoading={mlpGrid.gridLoading}
+                    gridError={mlpGrid.gridError}
+                />
+            </motion.div>
+
+            {/* ── FOOTER ── */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="mt-32 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-3"
+            >
+                <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-white/20">
+                    <FlaskConical className="h-3 w-3" />
+                    <span>LM-Lab · {t("models.mlp.hero.badge")}</span>
+                </div>
+                <p className="text-[10px] text-white/15 font-mono">
+                    Switch to Educational Mode for the full guided narrative
+                </p>
+            </motion.div>
+        </div>
+    );
+}
+
 function MlpPageContent() {
     const { mode } = useLabMode();
     const isEducational = mode === "educational";
+    const mlpGrid = useMLPGrid();
+
+    // Auto-select best-scoring config once the grid loads.
+    // useMLPGrid already selects configs[0]; we override with the highest-score config.
+    const autoSelectedRef = useRef(false);
+    useEffect(() => {
+        if (mlpGrid.configs.length === 0 || autoSelectedRef.current) return;
+        autoSelectedRef.current = true;
+        const best = [...mlpGrid.configs].sort((a, b) => {
+            const sa = a.score ?? (1 - a.final_loss / 10);
+            const sb = b.score ?? (1 - b.final_loss / 10);
+            return sb - sa;
+        })[0];
+        if (best && best.config_id !== mlpGrid.selectedConfig?.config_id) {
+            mlpGrid.selectConfig(best);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mlpGrid.configs]);
 
     return (
         <LabShell>
@@ -32,55 +123,12 @@ function MlpPageContent() {
                 /* ═══════════════════════════════════════════
                    EDUCATIONAL MODE — Narrative blog layout
                    ═══════════════════════════════════════════ */
-                <MLPNarrative />
+                <MLPNarrative mlpGrid={mlpGrid} />
             ) : (
                 /* ═══════════════════════════════════════════
-                   FREE LAB MODE — Placeholder (to be implemented)
+                   FREE LAB MODE — Full interactive lab
                    ═══════════════════════════════════════════ */
-                <div className="max-w-7xl mx-auto pb-24">
-                    <div className="flex items-center justify-center min-h-[60vh]">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                        >
-                            <Card className="bg-black/40 border-white/[0.06] backdrop-blur-sm p-12 text-center max-w-md mx-auto">
-                                <div className="flex items-center justify-center mb-6">
-                                    <div className="relative">
-                                        <Layers className="h-12 w-12 text-violet-400/50" />
-                                        <Lock className="h-5 w-5 text-white/30 absolute -bottom-1 -right-1" />
-                                    </div>
-                                </div>
-                                <h2 className="text-xl font-bold text-white mb-2">
-                                    MLP Free Lab
-                                </h2>
-                                <p className="text-sm text-white/40 mb-4 leading-relaxed">
-                                    Interactive MLP + Embeddings playground. Currently under
-                                    development — switch to Educational Mode for the guided narrative.
-                                </p>
-                                <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[10px] font-mono uppercase tracking-widest">
-                                    Coming Soon
-                                </Badge>
-                            </Card>
-                        </motion.div>
-                    </div>
-
-                    {/* ─── FOOTER ─── */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        className="mt-32 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-3"
-                    >
-                        <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-white/20">
-                            <FlaskConical className="h-3 w-3" />
-                            <span>LM-Lab · MLP + Embeddings</span>
-                        </div>
-                        <p className="text-[10px] text-white/15 font-mono">
-                            Switch to Educational Mode for the guided narrative experience
-                        </p>
-                    </motion.div>
-                </div>
+                <MlpFreeLab mlpGrid={mlpGrid} />
             )}
         </LabShell>
     );

@@ -10,11 +10,23 @@ import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
 
 import { MLPNonLinearityVisualizer } from "@/components/lab/mlp/MLPNonLinearityVisualizer";
-import { EmbeddingSpaceVisualizer } from "@/components/lab/mlp/EmbeddingSpaceVisualizer";
+import { PedagogicalEmbeddingVisualizer } from "@/components/lab/mlp/PedagogicalEmbeddingVisualizer";
 import { MLPHyperparameterExplorer } from "@/components/lab/mlp/MLPHyperparameterExplorer";
 import { InitializationSensitivityVisualizer } from "@/components/lab/mlp/InitializationSensitivityVisualizer";
 import { GradientFlowVisualizer } from "@/components/lab/mlp/GradientFlowVisualizer";
 import { BatchNormEffectVisualizer } from "@/components/lab/mlp/BatchNormEffectVisualizer";
+import { ContextWindowVisualizer } from "@/components/lab/mlp/ContextWindowVisualizer";
+import { ConcatenationBottleneckVisualizer } from "@/components/lab/mlp/ConcatenationBottleneckVisualizer";
+import { PositionSensitivityVisualizer } from "@/components/lab/mlp/PositionSensitivityVisualizer";
+import { LongRangeDependencyDemo } from "@/components/lab/mlp/LongRangeDependencyDemo";
+import { LossIntuitionVisualizer } from "@/components/lab/mlp/LossIntuitionVisualizer";
+import { MLPPipelineVisualizer } from "@/components/lab/mlp/MLPPipelineVisualizer";
+import { SoftmaxTemperatureVisualizer } from "@/components/lab/mlp/SoftmaxTemperatureVisualizer";
+import type { UseMLPGridReturn } from "@/hooks/useMLPGrid";
+
+export interface MLPNarrativeProps {
+    mlpGrid: UseMLPGridReturn;
+}
 
 /* ─────────────────────────────────────────────
    Primitive building blocks (matches NN / Ngram narrative style)
@@ -373,7 +385,7 @@ function MLPArchitectureDiagram() {
    Main narrative component
    ───────────────────────────────────────────── */
 
-export function MLPNarrative() {
+export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
     const router = useRouter();
     const { setMode } = useLabMode();
 
@@ -419,31 +431,86 @@ export function MLPNarrative() {
                 </motion.div>
             </header>
 
+            {/* ─────────── 00 · BRIDGE FROM N-GRAMS ─────────── */}
+            <Section>
+                <SectionLabel number="00" label="Starting Point" />
+                <Heading>Why N-grams Weren&apos;t Enough</Heading>
+
+                <Lead>
+                    We already know N-grams can count. After working through bigrams and trigrams,
+                    one question naturally follows: what can&apos;t they do?
+                </Lead>
+
+                <P>
+                    N-gram models store a table of counts — how often each sequence of N characters
+                    appeared in training data. This works, but it has hard limits. If a 3-character
+                    sequence never appeared in training, the model assigns it{" "}
+                    <Highlight color="rose">zero probability</Highlight>, even if it&apos;s
+                    completely reasonable. The table also grows exponentially: a vocabulary of 70
+                    characters gives 70³ = 343,000 possible trigrams, and most are never observed.
+                    Larger N means exponentially more empty cells.
+                </P>
+
+                <P>
+                    Worse, N-grams have{" "}
+                    <Highlight color="rose">no notion of similarity</Highlight>. The model treats
+                    every character as an isolated symbol. It has no way to know that &quot;a&quot;
+                    and &quot;e&quot; are both vowels, or that patterns learned for one context
+                    might transfer to a slightly different one. Every context is learned from
+                    scratch, in isolation.
+                </P>
+
+                <Callout accent="violet" title="The core insight">
+                    <p>
+                        A table can only memorize. What we need is a <em>function</em> — something
+                        that can generalize from patterns it has seen to patterns it hasn&apos;t.
+                        A function can learn that vowels behave similarly, that certain character
+                        sequences share structure, and that unseen combinations aren&apos;t random.
+                        That function is a neural network.
+                    </p>
+                </Callout>
+            </Section>
+
+            <SectionBreak />
+
             {/* ─────────── 01 · WHAT IS AN MLP? ─────────── */}
             <Section>
                 <SectionLabel number="01" label="Foundations" />
                 <Heading>What Is a Multi-Layer Perceptron?</Heading>
 
                 <Lead>
-                    A multi-layer perceptron (MLP) is a feedforward neural network with one or more
-                    hidden layers and non-linear activation functions — the simplest architecture
-                    capable of learning complex, non-linear functions from data.
+                    Before talking about layers and architectures, start with the smallest unit:
+                    a single artificial neuron. One neuron, one decision. Stack enough of them
+                    and you can approximate almost any pattern in data.
                 </Lead>
 
                 <P>
-                    In the previous chapters, we explored N-gram models and single-layer neural
-                    networks. N-grams memorize statistical tables of token co-occurrences, while
-                    single-layer networks learn a linear mapping from inputs to outputs. Both have
-                    a fundamental ceiling:{" "}
-                    <Highlight>they cannot capture complex, non-linear relationships</Highlight>{" "}
-                    between tokens.
+                    A neuron takes a list of numbers as input, multiplies each by a{" "}
+                    <Highlight>weight</Highlight> — a dial that says how important that input is —
+                    sums everything up, and passes the result through an{" "}
+                    <Highlight>activation function</Highlight> that introduces a curve. Think of it
+                    as a tiny decision: &quot;given these inputs and these weights, how strongly
+                    should I fire?&quot; That&apos;s it. One neuron is unimpressive on its own.
+                    But the idea scales.
                 </P>
 
+                <Callout accent="violet" title="What is a weight?">
+                    <p>
+                        A weight is a trainable number — a dial the network adjusts during learning.
+                        A large positive weight means &quot;pay close attention to this input.&quot;
+                        A weight near zero means &quot;mostly ignore it.&quot; Training is the
+                        process of finding the right dial settings by repeatedly checking how wrong
+                        a prediction was and nudging every weight slightly in the direction that
+                        reduces the mistake. This is called <em>gradient descent</em>.
+                    </p>
+                </Callout>
+
                 <P>
-                    An MLP changes this by stacking multiple layers of neurons, each followed by a
-                    non-linear activation function (like ReLU or Tanh). This composition of layers
-                    gives the network the theoretical ability to approximate any continuous function —
-                    the famous Universal Approximation Theorem.
+                    Arrange many neurons side by side, all reading the same input, and you get a{" "}
+                    <Highlight>layer</Highlight>. Each neuron in that layer learns a different
+                    pattern. Stack two or more layers and the second layer reads the first
+                    layer&apos;s detections, not the raw input — it learns patterns of patterns.
+                    This stack is a <Highlight>Multi-Layer Perceptron (MLP)</Highlight>.
                 </P>
 
                 <FigureWrapper
@@ -454,15 +521,16 @@ export function MLPNarrative() {
                 </FigureWrapper>
 
                 <P>
-                    Each hidden layer transforms its input through a learned weight matrix and a
-                    non-linearity, progressively building higher-level features. The output layer
-                    then maps these features to a probability distribution over the vocabulary via
-                    softmax.
+                    Without the activation function between layers, stacking would be pointless —
+                    multiple linear transformations collapse into a single one. The non-linearity
+                    (Tanh, ReLU) is what makes depth meaningful. Each layer can bend and warp the
+                    representation in ways a single flat mapping never could. This is why deep
+                    networks can learn hierarchical features: strokes → letters → words → meaning.
                 </P>
 
                 <FormulaBlock
                     formula="h = \sigma(W_1 x + b_1), \quad \hat{y} = \text{softmax}(W_2 h + b_2)"
-                    caption="A two-layer MLP: the hidden layer applies weights and a non-linearity σ, and the output layer produces next-token probabilities."
+                    caption="Every symbol here is just the 'weighted sum + squish' described above. σ is the activation function, W₁ and W₂ are weight matrices the network learns, and softmax converts the final numbers into probabilities that sum to 1."
                 />
 
                 <Callout title="Why depth matters">
@@ -489,14 +557,18 @@ export function MLPNarrative() {
                 <Heading>MLP Applied to Language (Without Embeddings)</Heading>
 
                 <Lead>
-                    The simplest way to use an MLP for language: take the previous N tokens as
-                    one-hot vectors, concatenate them, and feed the result into the network to
-                    predict the next token.
+                    The simplest way to use an MLP for language: take the previous N tokens,
+                    convert each to a number vector, concatenate them, and feed the result into
+                    the network to predict the next token.
                 </Lead>
 
                 <P>
-                    Suppose we have a vocabulary of V characters and a context window of size N.
-                    Each token is represented as a one-hot vector of dimension V. We concatenate
+                    To feed characters into a neural network, we first need to turn them into
+                    numbers. The most straightforward method is a{" "}
+                    <Highlight>one-hot vector</Highlight>: a list of zeros the length of the
+                    vocabulary, with a single 1 in the slot for that character. For a vocabulary
+                    of 70 characters, &quot;a&quot; becomes [1, 0, 0, …, 0], &quot;b&quot; becomes
+                    [0, 1, 0, …, 0], and so on. With a context window of size N, we concatenate
                     N such vectors to form an input of dimension{" "}
                     <Highlight>N × V</Highlight>, then pass it through one or more hidden layers
                     to produce a probability distribution over the next token.
@@ -506,6 +578,33 @@ export function MLPNarrative() {
                     formula="x = [\text{onehot}(t_{i-N}); \ldots; \text{onehot}(t_{i-1})] \in \mathbb{R}^{N \cdot V}"
                     caption="The input to the MLP is a concatenation of N one-hot vectors, one per context token."
                 />
+
+                <Callout icon={AlertTriangle} accent="amber" title="What does loss actually mean?">
+                    <p>
+                        Loss is a measure of surprise. After each prediction, the model compares
+                        what it said — a probability for every possible next character — with what
+                        actually came next.
+                    </p>
+                    <p>
+                        If the model gave the correct character a probability of 0.9, it was
+                        confident and right. Low surprise. Low loss.
+                    </p>
+                    <p>
+                        If it gave the correct character a probability of 0.02, it was nearly
+                        certain something else would appear. Big surprise. High loss.
+                    </p>
+                    <p>
+                        Training is the process of reducing this average surprise — over millions
+                        of characters — until the model&apos;s predictions stop being shocking.
+                    </p>
+                </Callout>
+
+                <FigureWrapper
+                    label="Interactive · Loss Intuition"
+                    hint="Drag the slider to set how confident the model is in the correct token. See how cross-entropy loss explodes as confidence approaches zero."
+                >
+                    <LossIntuitionVisualizer />
+                </FigureWrapper>
 
                 <P>
                     This already represents a major step forward from N-gram tables. Instead of
@@ -528,6 +627,13 @@ export function MLPNarrative() {
                         contexts because it learns a smooth function — not a lookup table.
                     </p>
                 </Callout>
+
+                <FigureWrapper
+                    label="Interactive · MLP Forward Pass"
+                    hint="Type a short seed and step through each stage of the forward pass — from raw tokens to final probability distribution."
+                >
+                    <MLPPipelineVisualizer selectedConfig={mlpGrid.selectedConfig} />
+                </FigureWrapper>
             </Section>
 
             <SectionBreak />
@@ -638,18 +744,117 @@ export function MLPNarrative() {
                 </PullQuote>
 
                 <FigureWrapper
-                    label="Interactive · Embedding Space (2D Projection)"
-                    hint="Click any token to see its nearest neighbors. Semantically related tokens cluster together."
+                    label="Illustrative · Embedding Space (Simplified)"
+                    hint="This is a pedagogical illustration — not real model data. Click tokens to explore how similar characters cluster together."
                 >
-                    <EmbeddingSpaceVisualizer />
+                    <PedagogicalEmbeddingVisualizer />
                 </FigureWrapper>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 05 · EXPLORING CONFIGURATIONS ─────────── */}
+            {/* ─────────── 05 · LIMITATIONS OF MLP + EMBEDDINGS ─────────── */}
             <Section>
-                <SectionLabel number="05" label="Empirical Exploration" />
+                <SectionLabel number="05" label="Structural Limits" />
+                <Heading>New Limitations of MLP + Embeddings</Heading>
+
+                <Lead>
+                    Embeddings solve the representation problem, but the MLP architecture itself
+                    introduces structural limitations that no amount of tuning can overcome.
+                </Lead>
+
+                {/* ── Limitation 1: Fixed context window ── */}
+                <P>
+                    <Highlight color="amber">Fixed-size context window.</Highlight>{" "}
+                    An MLP must receive a fixed number of input tokens. It cannot dynamically attend
+                    to longer or shorter contexts — every prediction uses exactly N previous tokens,
+                    no more, no less. Information outside this window is completely invisible to the
+                    model. This is not a training failure — it is a hard architectural constraint.
+                </P>
+
+                <P>
+                    The consequence is stark for language: pronouns, references, and topic
+                    continuity all depend on context that may be many tokens back. Drag the slider
+                    below to see how a window of 3 tokens blinds the model to who &quot;she&quot;
+                    is — even though the answer is right there in the sentence.
+                </P>
+
+                <FigureWrapper
+                    label="Interactive · Context Window Blindness"
+                    hint="Drag the slider to grow the context window. Watch when 'Mary' (the referent) comes into view — and notice how small the window must be to hide it entirely."
+                >
+                    <ContextWindowVisualizer />
+                </FigureWrapper>
+
+                {/* ── Limitation 2: Long-range dependencies ── */}
+                <P>
+                    <Highlight color="amber">Long-range dependencies are out of reach.</Highlight>{" "}
+                    The problem compounds over longer texts. In real language, a pronoun may
+                    refer to a noun introduced dozens of tokens earlier. No practically-sized
+                    fixed window can reliably bridge these gaps — and even when it can, the signal
+                    is buried in N−1 other tokens competing for the network&apos;s attention.
+                </P>
+
+                <FigureWrapper
+                    label="Demo · Long-Range Dependency Failure"
+                    hint="A 19-word sentence where the pronoun 'she' refers to 'scientist' 15 tokens back. Compare how the MLP's prediction changes as the window grows, versus a model with full context."
+                >
+                    <LongRangeDependencyDemo />
+                </FigureWrapper>
+
+                {/* ── Limitation 3: Position-dependent meaning ── */}
+                <P>
+                    <Highlight color="amber">Position-dependent token meaning.</Highlight>{" "}
+                    Because the MLP concatenates embeddings end to end, the same token at
+                    position 1 and position 3 occupies different slices of the input vector —
+                    and therefore activates different columns of W₁. The model learns entirely
+                    separate weights for &quot;the at position 1&quot; versus &quot;the at position
+                    3.&quot; There is no shared, position-invariant representation of what a token
+                    means.
+                </P>
+
+                <FigureWrapper
+                    label="Interactive · Position Sensitivity"
+                    hint="Toggle 'the' between position 1 and position 3. The highlighted columns in W₁ show which parameters each instance activates — completely different sets."
+                >
+                    <PositionSensitivityVisualizer />
+                </FigureWrapper>
+
+                {/* ── Limitation 4: Concatenation bottleneck ── */}
+                <P>
+                    <Highlight color="amber">Parameter explosion and signal dilution.</Highlight>{" "}
+                    Even with embeddings, the first weight matrix W₁ has shape (N · D) × H.
+                    Doubling the context window doubles the size of this layer. For long contexts
+                    this becomes the dominant cost. At the same time, as N grows each token&apos;s
+                    embedding shrinks to a smaller fraction of the total input — from 100% at N=1
+                    to just 6% at N=16 — diluting every signal without adding any mechanism to
+                    focus on the most informative tokens.
+                </P>
+
+                <FigureWrapper
+                    label="Interactive · Concatenation Bottleneck"
+                    hint="Switch between Parameter Growth and Signal Dilution views. Drag the context size slider and watch W₁ expand — and each token's share of the input shrink."
+                >
+                    <ConcatenationBottleneckVisualizer />
+                </FigureWrapper>
+
+                <Callout icon={AlertTriangle} accent="amber" title="The same root cause">
+                    <p>
+                        All four limitations share a common origin: the MLP treats its entire
+                        context as a single flat vector. It has no mechanism to reason about
+                        the structure, ordering, or relative importance of individual tokens.
+                        Overcoming this requires architectures that process sequences{" "}
+                        <em>as sequences</em> — not as concatenated blobs. That architecture
+                        is the Transformer.
+                    </p>
+                </Callout>
+            </Section>
+
+            <SectionBreak />
+
+            {/* ─────────── 06 · EXPLORING CONFIGURATIONS ─────────── */}
+            <Section>
+                <SectionLabel number="06" label="Empirical Exploration" />
                 <Heading>Exploring MLP + Embedding Configurations</Heading>
 
                 <Lead>
@@ -694,6 +899,13 @@ export function MLPNarrative() {
                     ))}
                 </motion.div>
 
+                <FigureWrapper
+                    label="Interactive · Softmax Temperature"
+                    hint="Adjust temperature to see how it sharpens or flattens the probability distribution over next tokens. Low temperature = deterministic; high = creative."
+                >
+                    <SoftmaxTemperatureVisualizer />
+                </FigureWrapper>
+
                 <Callout title="Why systematic exploration matters">
                     <p>
                         There is no single &quot;best&quot; configuration — the optimal hyperparameters
@@ -705,71 +917,31 @@ export function MLPNarrative() {
 
                 <FigureWrapper
                     label="Interactive · Hyperparameter Explorer"
-                    hint="Adjust sliders to explore how embedding dimension, hidden size, depth, and context window affect model performance."
+                    hint="Adjust sliders to explore how embedding dimension, hidden size, and learning rate affect validation loss, compute cost, training dynamics, and learned embeddings."
                 >
-                    <MLPHyperparameterExplorer />
+                    <MLPHyperparameterExplorer
+                        configs={mlpGrid.configs}
+                        selectedConfig={mlpGrid.selectedConfig}
+                        onSelectClosest={mlpGrid.selectClosest}
+                        timeline={mlpGrid.timeline}
+                        timelineLoading={mlpGrid.timelineLoading}
+                        onFetchTimeline={mlpGrid.fetchTimelineData}
+                        generation={mlpGrid.generation}
+                        generationLoading={mlpGrid.generationLoading}
+                        onGenerate={mlpGrid.generateText}
+                        gridLoading={mlpGrid.gridLoading}
+                        gridError={mlpGrid.gridError}
+                    />
                 </FigureWrapper>
 
                 <P>
                     The interactive explorer above lets you compare models across these
-                    dimensions, visualizing how training loss, perplexity, and generated text
-                    quality change as you vary each hyperparameter. This empirical approach is
-                    how practitioners develop real intuition about model design.
+                    dimensions, visualizing validation loss, perplexity, training stability,
+                    compute cost, generated text quality, and the learned embedding space.
+                    Anomaly badges flag concerning patterns like overfitting or unstable
+                    gradients. This empirical approach is how practitioners develop real
+                    intuition about model design.
                 </P>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 06 · LIMITATIONS OF MLP + EMBEDDINGS ─────────── */}
-            <Section>
-                <SectionLabel number="06" label="Structural Limits" />
-                <Heading>New Limitations of MLP + Embeddings</Heading>
-
-                <Lead>
-                    Embeddings solve the representation problem, but the MLP architecture itself
-                    introduces structural limitations that no amount of tuning can overcome.
-                </Lead>
-
-                <P>
-                    <Highlight color="amber">Fixed-size context window.</Highlight>{" "}
-                    An MLP must receive a fixed number of input tokens. It cannot dynamically attend
-                    to longer or shorter contexts — every prediction uses exactly N previous tokens,
-                    no more, no less. Information outside this window is invisible to the model.
-                </P>
-
-                <P>
-                    <Highlight color="amber">Position-dependent token meaning.</Highlight>{" "}
-                    Because the MLP concatenates embeddings, the same token contributes different
-                    features depending on which position it occupies in the context window. The
-                    model treats &quot;the&quot; at position 1 and &quot;the&quot; at position 3
-                    as fundamentally different inputs — it has no built-in notion of
-                    position-invariant token identity.
-                </P>
-
-                <P>
-                    <Highlight color="amber">Information dilution with longer contexts.</Highlight>{" "}
-                    As the context window grows, each token&apos;s embedding becomes a smaller
-                    fraction of the total input vector. The hidden layers must work harder to
-                    extract relevant signal from an increasingly noisy concatenation, and the
-                    model&apos;s ability to focus on the most informative tokens degrades.
-                </P>
-
-                <P>
-                    <Highlight color="amber">First-layer scaling.</Highlight>{" "}
-                    Even with embeddings, the first weight matrix W₁ has shape (N · D) × H.
-                    Doubling the context window doubles the number of parameters in this layer.
-                    For long contexts, this becomes the dominant cost.
-                </P>
-
-                <Callout icon={AlertTriangle} accent="amber" title="The concatenation bottleneck">
-                    <p>
-                        All of these limitations stem from the same root cause: the MLP treats its
-                        input as a single flat vector. It has no mechanism to reason about the
-                        structure, ordering, or relative importance of individual tokens within
-                        the context. Overcoming this requires architectures that process sequences
-                        as sequences — not as concatenated vectors.
-                    </p>
-                </Callout>
             </Section>
 
             <SectionBreak />
@@ -802,7 +974,7 @@ export function MLPNarrative() {
                     label="Interactive · Initialization Sensitivity"
                     hint="Compare loss curves under different initialization scales. Well-scaled initialization is critical for convergence."
                 >
-                    <InitializationSensitivityVisualizer />
+                    <InitializationSensitivityVisualizer timeline={mlpGrid.timeline} />
                 </FigureWrapper>
 
                 <P>
@@ -822,7 +994,7 @@ export function MLPNarrative() {
                     label="Interactive · Gradient Flow Across Layers"
                     hint="Toggle between vanishing, stable, and exploding gradient regimes to see how gradient magnitude changes per layer."
                 >
-                    <GradientFlowVisualizer />
+                    <GradientFlowVisualizer timeline={mlpGrid.timeline} />
                 </FigureWrapper>
 
                 <P>

@@ -1,12 +1,19 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import type { MLPTimelineResponse } from "@/types/lmLab";
 
 /* ─────────────────────────────────────────────
    InitializationSensitivityVisualizer
    Shows how different weight initialization scales
-   affect training loss curves.
+   affect training loss curves. Uses real timeline
+   data for the "kaiming" (well-scaled) curve when
+   available, with simulated curves for comparison.
    ───────────────────────────────────────────── */
+
+export interface InitializationSensitivityVisualizerProps {
+    timeline: MLPTimelineResponse | null;
+}
 
 type InitMode = "too_small" | "kaiming" | "too_large";
 
@@ -40,30 +47,21 @@ function seededRng(seed: number) {
     return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
 }
 
-function generateLossCurve(mode: InitMode): number[] {
-    const rng = seededRng(mode === "too_small" ? 42 : mode === "kaiming" ? 137 : 999);
+function generateSimulatedCurve(mode: "too_small" | "too_large", realFinalLoss?: number): number[] {
+    const rng = seededRng(mode === "too_small" ? 42 : 999);
     const steps = 50;
     const curve: number[] = [];
     let loss: number;
 
     if (mode === "too_small") {
-        loss = 4.5;
+        const startLoss = realFinalLoss ? realFinalLoss + 0.5 : 4.5;
+        loss = startLoss;
         for (let i = 0; i < steps; i++) {
-            // Barely decreases
             loss -= 0.005 + rng() * 0.003;
-            loss = Math.max(4.1, loss + (rng() - 0.5) * 0.02);
+            loss = Math.max(startLoss - 0.4, loss + (rng() - 0.5) * 0.02);
             curve.push(loss);
         }
-    } else if (mode === "kaiming") {
-        loss = 4.5;
-        for (let i = 0; i < steps; i++) {
-            const progress = i / steps;
-            const target = 1.6 + (4.5 - 1.6) * Math.exp(-progress * 4);
-            loss = target + (rng() - 0.5) * 0.06;
-            curve.push(Math.max(1.5, loss));
-        }
     } else {
-        // too_large
         loss = 4.5;
         for (let i = 0; i < steps; i++) {
             if (i < 5) {
@@ -71,7 +69,6 @@ function generateLossCurve(mode: InitMode): number[] {
             } else if (i < 15) {
                 loss = 8 + (rng() - 0.5) * 4;
             } else {
-                // Eventually settles at high loss
                 loss = 5 + (rng() - 0.5) * 1.5 - (i - 15) * 0.03;
             }
             curve.push(Math.max(2.5, Math.min(12, loss)));
@@ -82,17 +79,21 @@ function generateLossCurve(mode: InitMode): number[] {
 
 const W = 380, H = 180, PAD = { l: 40, r: 12, t: 12, b: 24 };
 
-export function InitializationSensitivityVisualizer() {
+export function InitializationSensitivityVisualizer({ timeline }: InitializationSensitivityVisualizerProps) {
     const [active, setActive] = useState<Set<InitMode>>(new Set(["too_small", "kaiming", "too_large"]));
 
     const curves = useMemo(() => {
+        // Use real timeline data for the "kaiming" (well-scaled) curve when available
+        const realLoss = timeline?.metrics_log?.train_loss?.map((e) => e.value) ?? [];
+        const finalLoss = realLoss.length > 0 ? realLoss[realLoss.length - 1] : undefined;
+
         const result: Record<InitMode, number[]> = {
-            too_small: generateLossCurve("too_small"),
-            kaiming: generateLossCurve("kaiming"),
-            too_large: generateLossCurve("too_large"),
+            too_small: generateSimulatedCurve("too_small", finalLoss),
+            kaiming: realLoss.length > 0 ? realLoss : generateSimulatedCurve("too_small"), // fallback won't happen if timeline loaded
+            too_large: generateSimulatedCurve("too_large", finalLoss),
         };
         return result;
-    }, []);
+    }, [timeline]);
 
     // Compute global y-range across active curves
     const allVals = useMemo(() => {
@@ -139,11 +140,10 @@ export function InitializationSensitivityVisualizer() {
                         <button
                             key={m.value}
                             onClick={() => toggle(m.value)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
-                                isActive
-                                    ? `${m.color} bg-white/[0.06] border border-white/20`
-                                    : "text-white/25 bg-white/[0.02] border border-white/[0.06] hover:border-white/15"
-                            }`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${isActive
+                                ? `${m.color} bg-white/[0.06] border border-white/20`
+                                : "text-white/25 bg-white/[0.02] border border-white/[0.06] hover:border-white/15"
+                                }`}
                         >
                             {m.label}
                         </button>

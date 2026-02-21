@@ -856,6 +856,17 @@ export const es: TranslationDictionary = {
                 simplifiedSimulation: "La predicción paso a paso y la generación completa están disponibles en modo Lab Libre.",
             },
         },
+        mlp: {
+            title: "MLP + Embeddings",
+            description: "Explora 108 configuraciones MLP entrenadas. Observa cómo los embeddings emergen del ruido, compara dinámicas de entrenamiento entre arquitecturas y genera texto desde representaciones aprendidas a nivel de carácter.",
+            hero: {
+                badge: "Laboratorio de Investigación",
+            },
+            freeLab: {
+                title: "Laboratorio de Configuración MLP",
+                description: "Selecciona cualquier configuración del Model Zoo, inspecciona curvas de entrenamiento, explora el espacio de embeddings y compara modelos lado a lado.",
+            },
+        },
         neuralNetworks: {
             title: "Redes Neuronales y Deep Learning",
             description: "Una exploración desde primeros principios de las redes neuronales artificiales — del perceptrón a la retropropagación. Comprende cómo los parámetros aprendidos reemplazan al conteo y por qué las representaciones densas generalizan donde los N-gramas fallan.",
