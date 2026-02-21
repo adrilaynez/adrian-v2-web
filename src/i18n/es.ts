@@ -1000,7 +1000,7 @@ export const es: TranslationDictionary = {
             description: "A first-principles exploration of the simplest statistical language model — and why it still matters."
         },
         problem: {
-            title: "The Problem of Prediction",
+            title: "El Problema de la Predicción",
             lead: "Language is fundamentally sequential. Every word you read right now is informed by the words that came before it.",
             p1: "This property — that each token in a sequence carries ",
             p1Highlight: "expectations about what follows",
