@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 
 export type LabMode = 'educational' | 'free';
 
@@ -46,8 +46,13 @@ export function LabModeProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('lm-lab-chosen', '1');
     }, []);
 
+    const value = useMemo(
+        () => ({ mode, setMode, isInitialized, hasChosen, choose }),
+        [mode, setMode, isInitialized, hasChosen, choose]
+    );
+
     return (
-        <LabModeContext.Provider value={{ mode, setMode, isInitialized, hasChosen, choose }}>
+        <LabModeContext.Provider value={value}>
             {children}
         </LabModeContext.Provider>
     );

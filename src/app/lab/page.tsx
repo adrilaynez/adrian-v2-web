@@ -2,6 +2,7 @@
 
 import ModelSelector from "@/components/ModelSelector";
 import Link from "next/link";
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -68,19 +69,19 @@ export default function LabLandingPage() {
     const { t } = useI18n();
     const { mode, hasChosen, choose, isInitialized } = useLabMode();
 
-    const educationalFeatures = [
+    const educationalFeatures = useMemo(() => [
         t("lab.landing.modes.educational.features.0"),
         t("lab.landing.modes.educational.features.1"),
         t("lab.landing.modes.educational.features.2"),
-    ];
+    ], [t]);
 
-    const freeLabFeatures = [
+    const freeLabFeatures = useMemo(() => [
         t("lab.landing.modes.freeLab.features.0"),
         t("lab.landing.modes.freeLab.features.1"),
         t("lab.landing.modes.freeLab.features.2"),
-    ];
+    ], [t]);
 
-    const models = [
+    const models = useMemo(() => [
         {
             id: "bigram",
             name: t("lab.models.bigram.name"),
@@ -136,7 +137,7 @@ export default function LabLandingPage() {
             accent: "amber",
             complexity: 5,
         },
-    ];
+    ], [t]);
 
     return (
         <div className="min-h-screen bg-[#0a0a0f] text-white">

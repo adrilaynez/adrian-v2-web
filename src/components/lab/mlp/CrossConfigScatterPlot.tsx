@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useI18n } from "@/i18n/context";
 import type { MLPGridConfig } from "@/types/lmLab";
 
 /*
@@ -55,14 +56,9 @@ function buildFilterSet(configs: MLPGridConfig[], mode: FilterMode): Set<string>
     return null;
 }
 
-const FILTER_BTNS: { mode: FilterMode; label: string; tip: string }[] = [
-    { mode: "all", label: "All", tip: "Show all configurations" },
-    { mode: "best", label: "Best ★", tip: "Top 25% by composite score" },
-    { mode: "worst", label: "Worst", tip: "Bottom 25% by score — highest loss, lowest quality" },
-    { mode: "anomalies", label: "Anomalies", tip: "Configs with generalization gap > 0.3 or score < 0.2" },
-];
 
 export function CrossConfigScatterPlot({ configs, selectedConfig, onSelect }: CrossConfigScatterPlotProps) {
+    const { t } = useI18n();
     const [hovered, setHovered] = useState<MLPGridConfig | null>(null);
     const [filter, setFilter] = useState<FilterMode>("all");
 
@@ -133,19 +129,24 @@ export function CrossConfigScatterPlot({ configs, selectedConfig, onSelect }: Cr
             {/* Header: description + filter buttons */}
             <div className="space-y-2">
                 <p className="text-[10px] text-white/30 font-mono leading-relaxed">
-                    Each dot is one trained model. X = parameter count (cost), Y = final validation loss (lower is better).
-                    Color = embedding dimension. The dashed line is the{" "}
-                    <span className="text-emerald-400/60">Pareto frontier</span> — best loss for each compute level.
+                    {t("models.mlp.scatterPlot.description")}{" "}
+                    <span className="text-emerald-400/60">{t("models.mlp.scatterPlot.paretoFrontier")}</span>
+                    {" "}{t("models.mlp.scatterPlot.paretoDesc")}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                    {FILTER_BTNS.map(({ mode, label, tip: btnTip }) => (
+                    {[
+                        { key: "all", label: t("models.mlp.scatterPlot.filters.all"), tip: t("models.mlp.scatterPlot.filters.allTip") },
+                        { key: "best", label: t("models.mlp.scatterPlot.filters.best"), tip: t("models.mlp.scatterPlot.filters.bestTip") },
+                        { key: "worst", label: t("models.mlp.scatterPlot.filters.worst"), tip: t("models.mlp.scatterPlot.filters.worstTip") },
+                        { key: "anomalies", label: t("models.mlp.scatterPlot.filters.anomalies"), tip: t("models.mlp.scatterPlot.filters.anomaliesTip") },
+                    ].map(({ key, label, tip: btnTip }) => (
                         <button
-                            key={mode}
+                            key={key}
                             title={btnTip}
-                            onClick={() => setFilter(mode)}
-                            className={`px-2.5 py-1 rounded text-[9px] font-mono border transition-all ${filter === mode
-                                    ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
-                                    : "bg-white/[0.03] text-white/30 border-white/[0.06] hover:text-white/50 hover:border-white/15"
+                            onClick={() => setFilter(key as FilterMode)}
+                            className={`px-2.5 py-1 rounded text-[9px] font-mono border transition-all ${filter === key
+                                ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
+                                : "bg-white/[0.03] text-white/30 border-white/[0.06] hover:text-white/50 hover:border-white/15"
                                 }`}
                         >
                             {label}
@@ -153,7 +154,7 @@ export function CrossConfigScatterPlot({ configs, selectedConfig, onSelect }: Cr
                     ))}
                     {filterSet && (
                         <span className="text-[9px] font-mono text-white/20 self-center ml-1">
-                            {filterSet.size} highlighted
+                            {filterSet.size} {t("models.mlp.scatterPlot.highlighted")}
                         </span>
                     )}
                 </div>
@@ -176,8 +177,8 @@ export function CrossConfigScatterPlot({ configs, selectedConfig, onSelect }: Cr
                     ))}
 
                     {/* Axis labels */}
-                    <text x={PAD.left + PLOT_W / 2} y={H - 18} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={9} fontFamily="monospace">Parameters</text>
-                    <text x={12} y={PAD.top + PLOT_H / 2} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={9} fontFamily="monospace" transform={`rotate(-90,12,${PAD.top + PLOT_H / 2})`}>Val Loss</text>
+                    <text x={PAD.left + PLOT_W / 2} y={H - 18} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={9} fontFamily="monospace">{t("models.mlp.scatterPlot.axisX")}</text>
+                    <text x={12} y={PAD.top + PLOT_H / 2} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={9} fontFamily="monospace" transform={`rotate(-90,12,${PAD.top + PLOT_H / 2})`}>{t("models.mlp.scatterPlot.axisY")}</text>
 
                     {/* Pareto frontier line */}
                     {paretoPoints.length > 1 && (
@@ -230,7 +231,7 @@ export function CrossConfigScatterPlot({ configs, selectedConfig, onSelect }: Cr
                     ))}
                     <span className="inline-flex items-center gap-1">
                         <span className="inline-block w-4 h-0 border-t border-dashed border-emerald-400/40" />
-                        Pareto frontier
+                        {t("models.mlp.scatterPlot.legend.paretoLine")}
                     </span>
                 </div>
 
@@ -248,7 +249,7 @@ export function CrossConfigScatterPlot({ configs, selectedConfig, onSelect }: Cr
             </div>
 
             <p className="text-[10px] text-white/20 font-mono">
-                {configs.length} configurations · Click any dot to select · Lower-right = more compute, less payoff
+                {t("models.mlp.scatterPlot.footer").replace("{count}", String(configs.length))}
             </p>
         </div>
     );

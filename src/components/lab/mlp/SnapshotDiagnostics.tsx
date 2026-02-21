@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useI18n } from "@/i18n/context";
 import type { MLPTimelineResponse, MLPTimelineSnapshot } from "@/types/lmLab";
 
 /*
@@ -83,6 +84,7 @@ export interface SnapshotDiagnosticsProps {
 }
 
 export function GradientHealthHeatmap({ timeline }: SnapshotDiagnosticsProps) {
+    const { t } = useI18n();
     const rows = useMemo(() => timeline ? parseSnapshots(timeline) : [], [timeline]);
 
     const maxNorm = useMemo(() => {
@@ -93,10 +95,10 @@ export function GradientHealthHeatmap({ timeline }: SnapshotDiagnosticsProps) {
         return max;
     }, [rows]);
 
-    if (rows.length === 0) return <p className="text-[10px] text-white/20 italic">No snapshot data available.</p>;
+    if (rows.length === 0) return <p className="text-[10px] text-white/20 italic">{t("models.mlp.snapshotDiagnostics.noSnapshotData")}</p>;
 
     const hasAnyGrads = rows.some(r => PARAM_GROUPS.some(pg => r.gradNorms[pg] > 0));
-    if (!hasAnyGrads) return <p className="text-[10px] text-white/20 italic">No gradient norm data in snapshots.</p>;
+    if (!hasAnyGrads) return <p className="text-[10px] text-white/20 italic">{t("models.mlp.snapshotDiagnostics.noGradData")}</p>;
 
     return (
         <div className="space-y-3">
@@ -104,7 +106,7 @@ export function GradientHealthHeatmap({ timeline }: SnapshotDiagnosticsProps) {
                 <table className="border-collapse">
                     <thead>
                         <tr>
-                            <th className="text-[8px] font-mono text-white/20 pr-3 pb-2 text-right align-bottom">Step</th>
+                            <th className="text-[8px] font-mono text-white/20 pr-3 pb-2 text-right align-bottom">{t("models.mlp.snapshotDiagnostics.step")}</th>
                             {PARAM_GROUPS.map(pg => (
                                 <th key={pg} className="text-[9px] font-mono text-white/35 text-center pb-2 px-1">{pg}</th>
                             ))}
@@ -133,17 +135,18 @@ export function GradientHealthHeatmap({ timeline }: SnapshotDiagnosticsProps) {
                 </table>
             </div>
             <p className="text-[9px] font-mono text-white/20 leading-relaxed">
-                Green = small gradients · Yellow/Red = large gradients · Consistent magnitudes across layers indicate healthy training.
+                {t("models.mlp.snapshotDiagnostics.gradLegend")}
             </p>
         </div>
     );
 }
 
 export function ActivationSaturationHeatmap({ timeline }: SnapshotDiagnosticsProps) {
+    const { t } = useI18n();
     const rows = useMemo(() => timeline ? parseSnapshots(timeline) : [], [timeline]);
 
     const hasSatData = rows.some(r => r.saturation > 0 || r.deadFraction > 0);
-    if (!hasSatData) return <p className="text-[10px] text-white/20 italic">No activation saturation data in snapshots.</p>;
+    if (!hasSatData) return <p className="text-[10px] text-white/20 italic">{t("models.mlp.snapshotDiagnostics.noSatData")}</p>;
 
     return (
         <div className="space-y-3">
@@ -175,15 +178,15 @@ export function ActivationSaturationHeatmap({ timeline }: SnapshotDiagnosticsPro
             <div className="flex gap-4 text-[9px] font-mono text-white/25">
                 <span className="inline-flex items-center gap-1">
                     <span className="inline-block w-3 h-3 rounded" style={{ backgroundColor: "rgba(250,204,21,0.35)" }} />
-                    Saturated activations (left)
+                    {t("models.mlp.snapshotDiagnostics.saturatedLeft")}
                 </span>
                 <span className="inline-flex items-center gap-1">
                     <span className="inline-block w-3 h-3 rounded bg-rose-500/30" />
-                    Dead neurons (right)
+                    {t("models.mlp.snapshotDiagnostics.deadRight")}
                 </span>
             </div>
             <p className="text-[8px] font-mono text-white/15">
-                High saturation means many neurons are pinned at tanh extremes (±1). Dead neurons never activate. Both waste capacity.
+                {t("models.mlp.snapshotDiagnostics.satLegend")}
             </p>
         </div>
     );

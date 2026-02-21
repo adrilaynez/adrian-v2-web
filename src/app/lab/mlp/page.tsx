@@ -88,7 +88,7 @@ function MlpFreeLab({ mlpGrid }: { mlpGrid: UseMLPGridReturn }) {
                     <span>LM-Lab · {t("models.mlp.hero.badge")}</span>
                 </div>
                 <p className="text-[10px] text-white/15 font-mono">
-                    Switch to Educational Mode for the full guided narrative
+                    {t("models.mlp.page.switchToEducational")}
                 </p>
             </motion.div>
         </div>

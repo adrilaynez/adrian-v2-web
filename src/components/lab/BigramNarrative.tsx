@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BookOpen, FlaskConical, ArrowDown, Lightbulb, AlertTriangle, ArrowRight } from "lucide-react";
+import { BookOpen, FlaskConical, ArrowDown, Lightbulb, ArrowRight } from "lucide-react";
 import { ModeToggle } from "@/components/lab/ModeToggle";
 import { InferenceConsole } from "@/components/lab/InferenceConsole";
 import { GenerationPlayground } from "@/components/lab/GenerationPlayground";
@@ -13,7 +13,12 @@ import "katex/dist/katex.min.css";
 import Link from "next/link";
 import { useLabMode } from "@/context/LabModeContext";
 import { BigramBuilder } from "@/components/lab/BigramBuilder";
-import { BigramDiagramExperience } from "@/components/lab/BigramDiagramExperience";
+import { TextToNumbersWidget } from "@/components/lab/TextToNumbersWidget";
+import { PairHighlighter } from "@/components/lab/PairHighlighter";
+import { HeroAutoComplete } from "@/components/lab/HeroAutoComplete";
+import { MemoryLimitDemo } from "@/components/lab/MemoryLimitDemo";
+import { MatrixGuidedOverlay } from "@/components/lab/MatrixGuidedOverlay";
+import { SoftmaxTemperatureVisualizer } from "@/components/lab/mlp/SoftmaxTemperatureVisualizer";
 
 /* ─────────────────────────────────────────────
    Primitive building blocks
@@ -73,14 +78,6 @@ function P({ children }: { children: React.ReactNode }) {
 
 function Highlight({ children }: { children: React.ReactNode }) {
     return <strong className="text-emerald-400 font-semibold">{children}</strong>;
-}
-
-function InlineCode({ children }: { children: React.ReactNode }) {
-    return (
-        <code className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/10 text-emerald-300 text-[0.9em] font-mono">
-            {children}
-        </code>
-    );
 }
 
 function Callout({
@@ -277,19 +274,41 @@ export function BigramNarrative({
                         <ModeToggle />
                     </div>
 
+                    <div className="mt-10 max-w-lg mx-auto">
+                        <HeroAutoComplete />
+                    </div>
+
                     <motion.div
                         animate={{ y: [0, 6, 0] }}
                         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="text-white/10"
+                        className="mt-8 text-white/10"
                     >
                         <ArrowDown className="w-5 h-5 mx-auto" />
                     </motion.div>
                 </motion.div>
             </header>
 
-            {/* ─────────── 1 · THE PROBLEM ─────────── */}
+            {/* ─────────── §1 · HOW COMPUTERS SEE TEXT ─────────── */}
             <Section>
-                <SectionLabel number="1" label={t("bigramNarrative.problem.label")} />
+                <SectionLabel number="1" label={t("bigramNarrative.textToNumbers.label")} />
+                <Heading>{t("bigramNarrative.textToNumbers.title")}</Heading>
+
+                <Lead>{t("bigramNarrative.textToNumbers.lead")}</Lead>
+
+                <P>{t("bigramNarrative.textToNumbers.p1")}</P>
+
+                <FigureWrapper label={t("bigramNarrative.textToNumbers.label")}>
+                    <TextToNumbersWidget />
+                </FigureWrapper>
+
+                <P>{t("bigramNarrative.textToNumbers.bridge")}</P>
+            </Section>
+
+            <SectionBreak />
+
+            {/* ─────────── §2 · THE PROBLEM ─────────── */}
+            <Section>
+                <SectionLabel number="2" label={t("bigramNarrative.problem.label")} />
                 <Heading>{t("bigramNarrative.problem.title")}</Heading>
 
                 <Lead>
@@ -310,39 +329,24 @@ export function BigramNarrative({
 
                 <P>
                     {t("bigramNarrative.problem.p4")}
-                    <InlineCode>{t("bigramNarrative.problem.h1")}</InlineCode>, {" "}
-                    <InlineCode>{t("bigramNarrative.problem.h2")}</InlineCode>, and {" "}
-                    <InlineCode>{t("bigramNarrative.problem.h3")}</InlineCode>
+                    <Highlight>{t("bigramNarrative.problem.h1")}</Highlight>
                     {t("bigramNarrative.problem.p5")}
                 </P>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 2 · CORE IDEA ─────────── */}
+            {/* ─────────── §3 · THE BIGRAM IDEA ─────────── */}
             <Section>
-                <SectionLabel number="2" label={t("bigramNarrative.coreIdea.label")} />
-                <Heading>{t("bigramNarrative.coreIdea.title")}</Heading>
-
-                <Lead>
-                    {t("bigramNarrative.coreIdea.lead")}
-                </Lead>
-
+                <SectionLabel number="3" label={t("bigramNarrative.coreIdea.label")} />
+                <Heading>{t("bigramNarrative.counting.title")}</Heading>
+                <Lead>{t("bigramNarrative.coreIdea.lead")}</Lead>
                 <P>
                     {t("bigramNarrative.coreIdea.p1")}
                     <Highlight>{t("bigramNarrative.coreIdea.h1")}</Highlight>
                     {t("bigramNarrative.coreIdea.p2")}
                 </P>
-
-                <FormulaBlock
-                    formula="P(x_{t+1} | x_t)"
-                    caption={t("bigramNarrative.coreIdea.caption")}
-                />
-
-                <P>
-                    {t("bigramNarrative.coreIdea.p3")}
-                </P>
-
+                <P>{t("bigramNarrative.coreIdea.p3")}</P>
                 <Callout title={t("bigramNarrative.coreIdea.calloutTitle")}>
                     <p>
                         {t("bigramNarrative.coreIdea.calloutP1")}
@@ -350,68 +354,13 @@ export function BigramNarrative({
                         {t("bigramNarrative.coreIdea.calloutP2")}
                     </p>
                 </Callout>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 3 · TOKENS ─────────── */}
-            <Section>
-                <SectionLabel number="3" label={t("bigramNarrative.tokens.title")} />
-                <Heading>{t("bigramNarrative.tokens.title")}</Heading>
-
-                <Lead>
-                    {t("bigramNarrative.tokens.lead")}
-                </Lead>
-
-                <div className="grid md:grid-cols-2 gap-6 my-10">
-                    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <h3 className="text-lg font-bold text-white">{t("bigramNarrative.tokens.charLevelTitle")}</h3>
-                        </div>
-                        <p className="text-white/50 text-sm leading-relaxed">
-                            {t("bigramNarrative.tokens.charLevelBody")}
-                        </p>
-                    </div>
-                    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-2 h-2 rounded-full bg-white/20" />
-                            <h3 className="text-lg font-bold text-white">{t("bigramNarrative.tokens.wordLevelTitle")}</h3>
-                        </div>
-                        <p className="text-white/50 text-sm leading-relaxed">
-                            {t("bigramNarrative.tokens.wordLevelBody")}
-                        </p>
-                    </div>
-                </div>
-
-                <P>{t("bigramNarrative.tokens.charLimitations")}</P>
-
-                <P>{t("bigramNarrative.tokens.wordLimitations")}</P>
-
-                <Callout title="Why character-level here?">
-                    <p>{t("bigramNarrative.tokens.whyCharHere")}</p>
-                </Callout>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 4 · COUNTING ─────────── */}
-            <Section>
-                <SectionLabel number="4" label={t("bigramNarrative.counting.title")} />
-                <Heading>{t("bigramNarrative.counting.title")}</Heading>
-
-                <Lead>
-                    {t("bigramNarrative.counting.lead")}
-                </Lead>
-
+                <Lead>{t("bigramNarrative.counting.lead")}</Lead>
                 <P>{t("bigramNarrative.counting.p1")}</P>
-
                 <P>{t("bigramNarrative.counting.p2")}</P>
-
-                <div className="my-10">
+                <FigureWrapper label={t("bigramNarrative.counting.title")}>
+                    <PairHighlighter />
                     <BigramBuilder />
-                </div>
-
+                </FigureWrapper>
                 <Callout title={t("bigramNarrative.counting.calloutTitle")}>
                     <p>{t("bigramNarrative.counting.calloutText")}</p>
                 </Callout>
@@ -419,22 +368,18 @@ export function BigramNarrative({
 
             <SectionBreak />
 
-            {/* ─────────── 5 · MECHANICS ─────────── */}
+            {/* ─────────── §4 · THE TRANSITION MATRIX ─────────── */}
             <Section>
-                <SectionLabel number="5" label={t("bigramNarrative.mechanics.label")} />
+                <SectionLabel number="4" label={t("bigramNarrative.mechanics.label")} />
                 <Heading>{t("bigramNarrative.mechanics.title")}</Heading>
-
-                <Lead>
-                    {t("bigramNarrative.mechanics.lead")}
-                </Lead>
-
+                <Lead>{t("bigramNarrative.mechanics.lead")}</Lead>
                 <P>
                     {t("bigramNarrative.mechanics.p1")}
                     <Highlight>{t("bigramNarrative.mechanics.h1")}</Highlight>
                     {t("bigramNarrative.mechanics.p2")}
                 </P>
-
-                <div className="my-8">
+                <FigureWrapper label={t("bigramNarrative.mechanics.title")}>
+                    <MatrixGuidedOverlay />
                     <TransitionMatrix
                         data={matrixData}
                         onCellClick={onCellClick}
@@ -445,46 +390,36 @@ export function BigramNarrative({
                             vocabSize: trainingData?.unique_characters,
                         }}
                     />
-                </div>
-
-                <P>
-                    {t("bigramNarrative.mechanics.p3")}
-                </P>
-
+                </FigureWrapper>
+                <P>{t("bigramNarrative.mechanics.p3")}</P>
                 <Callout title={t("bigramNarrative.mechanics.calloutTitle")}>
-                    <p>
-                        {t("bigramNarrative.mechanics.calloutP1")}
-                    </p>
+                    <p>{t("bigramNarrative.mechanics.calloutP1")}</p>
                 </Callout>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 6 · NORMALIZATION ─────────── */}
+            {/* ─────────── §5 · FROM COUNTS TO PROBABILITIES ─────────── */}
             <Section>
-                <SectionLabel number="6" label={t("bigramNarrative.normalization.label")} />
+                <SectionLabel number="5" label={t("bigramNarrative.normalization.label")} />
                 <Heading>{t("bigramNarrative.normalization.title")}</Heading>
-
-                <Lead>
-                    {t("bigramNarrative.normalization.lead")}
-                </Lead>
-
+                <Lead>{t("bigramNarrative.normalization.lead")}</Lead>
                 <P>
                     {t("bigramNarrative.normalization.p1")}
                     <Highlight>{t("bigramNarrative.normalization.h1")}</Highlight>
                     {t("bigramNarrative.normalization.p2")}
                 </P>
-
-                <P>
-                    {t("bigramNarrative.normalization.p3")}
-                </P>
-
+                <FormulaBlock
+                    formula="P(x_{t+1} \mid x_t) = \frac{\text{count}(x_t, x_{t+1})}{\sum_c \text{count}(x_t, c)}"
+                    caption={t("bigramNarrative.coreIdea.caption")}
+                />
+                <P>{t("bigramNarrative.normalization.p3")}</P>
                 <P>
                     {t("bigramNarrative.normalization.p4")}
                     <Highlight>{t("bigramNarrative.normalization.h2")}</Highlight>
                     {t("bigramNarrative.normalization.p5")}
                 </P>
-
+                <P>{t("bigramNarrative.probabilities.inferenceIntro")}</P>
                 <FigureWrapper
                     label={t("bigramNarrative.probabilities.overlayTitle")}
                     hint={t("bigramNarrative.probabilities.overlayDesc")}
@@ -498,59 +433,36 @@ export function BigramNarrative({
                         error={vizError}
                     />
                 </FigureWrapper>
-
-                <FigureWrapper
-                    label="Probability Flow Visualizer"
-                    hint="Select a context character, choose a normalization method, and sample the next token to see the full inference pipeline in action."
-                    showWindowDots={false}
-                >
-                    <BigramDiagramExperience
-                        mode="story"
-                        matrixData={matrixData}
-                        trainingData={trainingData}
-                        onCellClick={onCellClick}
-                    />
-                </FigureWrapper>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 7 · SAMPLING ─────────── */}
+            {/* ─────────── §6 · GENERATING TEXT ─────────── */}
             <Section>
-                <SectionLabel number="7" label={t("bigramNarrative.sampling.label")} />
+                <SectionLabel number="6" label={t("bigramNarrative.sampling.label")} />
                 <Heading>{t("bigramNarrative.sampling.title")}</Heading>
-
-                <Lead>
-                    {t("bigramNarrative.sampling.lead")}
-                </Lead>
-
+                <Lead>{t("bigramNarrative.sampling.lead")}</Lead>
                 <P>
                     {t("bigramNarrative.sampling.p1")}
                     <Highlight>{t("bigramNarrative.sampling.h1")}</Highlight>
                     {t("bigramNarrative.sampling.p2")}
                 </P>
-
-                <Callout title={t("bigramNarrative.sampling.calloutTitle")}>
-                    <p>
-                        {t("bigramNarrative.sampling.calloutP1")}
-                        <Highlight>{t("bigramNarrative.sampling.calloutH1")}</Highlight>
-                        {t("bigramNarrative.sampling.calloutP2")}
-                        <Highlight>{t("bigramNarrative.sampling.calloutH2")}</Highlight>
-                        {t("bigramNarrative.sampling.calloutP3")}
-                        <Highlight>{t("bigramNarrative.sampling.calloutH3")}</Highlight>
-                        {t("bigramNarrative.sampling.calloutP4")}
-                    </p>
-                </Callout>
-
                 <P>
-                    {t("bigramNarrative.sampling.p3")}
-                    <Highlight>{t("bigramNarrative.sampling.h2")}</Highlight>
-                    {t("bigramNarrative.sampling.p4")}
+                    {t("bigramNarrative.sampling.tempP1")}
+                    <Highlight>{t("bigramNarrative.sampling.tempH1")}</Highlight>
+                    {t("bigramNarrative.sampling.tempP2")}
                 </P>
-
                 <FigureWrapper
-                    label="Generation Playground"
-                    hint="Adjust temperature and observe how it affects the creativity of the generated text."
+                    label={t("bigramNarrative.sampling.softmaxFigureLabel")}
+                    hint={t("bigramNarrative.sampling.softmaxFigureHint")}
+                    showWindowDots={false}
+                >
+                    <SoftmaxTemperatureVisualizer />
+                </FigureWrapper>
+                <P>{t("bigramNarrative.sampling.tempBridge")}</P>
+                <FigureWrapper
+                    label={t("bigramNarrative.sampling.playgroundLabel")}
+                    hint={t("bigramNarrative.sampling.playgroundHint")}
                 >
                     <GenerationPlayground
                         onGenerate={onGenerate}
@@ -559,46 +471,50 @@ export function BigramNarrative({
                         error={genError}
                     />
                 </FigureWrapper>
+                <P>
+                    {t("bigramNarrative.sampling.p3")}
+                    <Highlight>{t("bigramNarrative.sampling.h2")}</Highlight>
+                    {t("bigramNarrative.sampling.p4")}
+                </P>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 8 · REFLECTION ─────────── */}
+            {/* ─────────── §7 · CHARACTERS VS WORDS ─────────── */}
             <Section>
-                <SectionLabel number="8" label={t("bigramNarrative.reflection.label")} />
-                <Heading>{t("bigramNarrative.reflection.title")}</Heading>
+                <SectionLabel number="7" label={t("bigramNarrative.tokens.label")} />
+                <Heading>{t("bigramNarrative.tokens.title")}</Heading>
+                <Lead>{t("bigramNarrative.tokens.lead")}</Lead>
+                <div className="grid md:grid-cols-2 gap-6 my-10">
+                    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                            <h3 className="text-lg font-bold text-white">{t("bigramNarrative.tokens.charLevelTitle")}</h3>
+                        </div>
+                        <p className="text-white/50 text-sm leading-relaxed">{t("bigramNarrative.tokens.charLevelBody")}</p>
+                    </div>
+                    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-2 h-2 rounded-full bg-white/20" />
+                            <h3 className="text-lg font-bold text-white">{t("bigramNarrative.tokens.wordLevelTitle")}</h3>
+                        </div>
+                        <p className="text-white/50 text-sm leading-relaxed">{t("bigramNarrative.tokens.wordLevelBody")}</p>
+                    </div>
+                </div>
+            </Section>
 
-                <Lead>
-                    {t("bigramNarrative.reflection.lead")}
-                </Lead>
+            <SectionBreak />
 
-                <P>
-                    {t("bigramNarrative.reflection.p1")}
-                    <Highlight>{t("bigramNarrative.reflection.h1")}</Highlight>
-                    {t("bigramNarrative.reflection.p2")}
-                </P>
-
-                <Callout title={t("bigramNarrative.reflection.calloutTitle")} icon={AlertTriangle}>
-                    <p>
-                        {t("bigramNarrative.reflection.calloutP1")}
-                        <Highlight>{t("bigramNarrative.reflection.calloutH1")}</Highlight>
-                        {t("bigramNarrative.reflection.calloutP2")}
-                    </p>
-                </Callout>
-
-                <P>
-                    {t("bigramNarrative.reflection.p3")}
-                    <InlineCode>{t("bigramNarrative.reflection.h2")}</InlineCode>
-                    {t("bigramNarrative.reflection.p4")}
-                    <InlineCode>{t("bigramNarrative.reflection.h3")}</InlineCode>
-                    {t("bigramNarrative.reflection.p5")}
-                    <InlineCode>{t("bigramNarrative.reflection.h4")}</InlineCode>
-                    {t("bigramNarrative.reflection.p6")}
-                </P>
-
-                <PullQuote>
-                    {t("bigramNarrative.reflection.quote")}
-                </PullQuote>
+            {/* ─────────── §8 · THE ONE-CHARACTER TRAP ─────────── */}
+            <Section>
+                <SectionLabel number="8" label={t("bigramNarrative.cliffhanger.label")} />
+                <Heading>{t("bigramNarrative.cliffhanger.title")}</Heading>
+                <Lead>{t("bigramNarrative.cliffhanger.lead")}</Lead>
+                <P>{t("bigramNarrative.cliffhanger.p1")}</P>
+                <FigureWrapper label={t("bigramNarrative.cliffhanger.label")}>
+                    <MemoryLimitDemo />
+                </FigureWrapper>
+                <PullQuote>{t("bigramNarrative.cliffhanger.hookLine")}</PullQuote>
             </Section>
 
             {/* ───────────────── CODA ───────────────── */}
@@ -611,24 +527,22 @@ export function BigramNarrative({
                 <p className="text-sm text-white/25 italic max-w-md mx-auto leading-relaxed mb-10">
                     {t("bigramNarrative.footer.text")}
                 </p>
-
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
                     <button
                         onClick={() => setMode("free")}
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-400 text-sm font-semibold transition-colors"
                     >
                         <FlaskConical className="w-4 h-4" />
-                        Explore in Free Lab
+                        {t("bigramNarrative.cta.freeLabButton")}
                     </button>
                     <Link
-                        href="/lab/neural-networks"
+                        href="/lab/ngram"
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/70 hover:text-white text-sm font-semibold transition-colors"
                     >
-                        Next: Neural Networks
+                        {t("bigramNarrative.cta.nextTitle")}
                         <ArrowRight className="w-4 h-4" />
                     </Link>
                 </div>
-
                 <div className="flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-white/10">
                     <FlaskConical className="h-3 w-3" />
                     {t("bigramNarrative.footer.brand")}

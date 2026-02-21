@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 import type { MLPEmbeddingResponse } from "@/types/lmLab";
 
 /* ─────────────────────────────────────────────
@@ -108,12 +109,12 @@ function categorizeToken(label: string): TokenCategory {
     return "punctuation";
 }
 
-const CATEGORY_STYLE: Record<TokenCategory, { color: string; radius: number; label: string }> = {
-    vowel: { color: "rgb(52,211,153)", radius: 5.5, label: "Vowels" },
-    consonant: { color: "rgb(96,165,250)", radius: 5, label: "Consonants" },
-    digit: { color: "rgb(250,204,21)", radius: 5, label: "Digits" },
-    punctuation: { color: "rgb(251,146,60)", radius: 4.5, label: "Punctuation" },
-    whitespace: { color: "rgb(168,85,247)", radius: 4, label: "Space / Special" },
+const CATEGORY_COLORS: Record<TokenCategory, { color: string; radius: number }> = {
+    vowel: { color: "rgb(52,211,153)", radius: 5.5 },
+    consonant: { color: "rgb(96,165,250)", radius: 5 },
+    digit: { color: "rgb(250,204,21)", radius: 5 },
+    punctuation: { color: "rgb(251,146,60)", radius: 4.5 },
+    whitespace: { color: "rgb(168,85,247)", radius: 4 },
 };
 
 const CANVAS = { w: 440, h: 360 };
@@ -131,7 +132,16 @@ export function EmbeddingSpaceVisualizer({
     embeddingLoading,
     embeddingError,
 }: EmbeddingSpaceVisualizerProps) {
+    const { t } = useI18n();
     const [selected, setSelected] = useState<string | null>(null);
+
+    const CATEGORY_STYLE: Record<TokenCategory, { color: string; radius: number; label: string }> = {
+        vowel: { ...CATEGORY_COLORS.vowel, label: t("models.mlp.embeddingViz.categories.vowels") },
+        consonant: { ...CATEGORY_COLORS.consonant, label: t("models.mlp.embeddingViz.categories.consonants") },
+        digit: { ...CATEGORY_COLORS.digit, label: t("models.mlp.embeddingViz.categories.digits") },
+        punctuation: { ...CATEGORY_COLORS.punctuation, label: t("models.mlp.embeddingViz.categories.punctuation") },
+        whitespace: { ...CATEGORY_COLORS.whitespace, label: t("models.mlp.embeddingViz.categories.spaceSpecial") },
+    };
 
     // Build tokens from real embedding data via PCA
     const tokens: Token[] = useMemo(() => {
@@ -172,7 +182,7 @@ export function EmbeddingSpaceVisualizer({
         return (
             <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="w-6 h-6 text-violet-400/50 animate-spin mb-3" />
-                <p className="text-xs text-white/30 font-mono">Loading embeddings…</p>
+                <p className="text-xs text-white/30 font-mono">{t("models.mlp.embeddingViz.loading")}</p>
             </div>
         );
     }
@@ -191,7 +201,7 @@ export function EmbeddingSpaceVisualizer({
     if (tokens.length === 0) {
         return (
             <div className="flex items-center justify-center py-8">
-                <p className="text-xs text-white/25 font-mono">Waiting for embedding data…</p>
+                <p className="text-xs text-white/25 font-mono">{t("models.mlp.embeddingViz.waiting")}</p>
             </div>
         );
     }
@@ -263,8 +273,8 @@ export function EmbeddingSpaceVisualizer({
                     })}
 
                     {/* Axis labels */}
-                    <text x={CANVAS.w / 2} y={CANVAS.h - 6} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={9} fontFamily="monospace">Dimension 1 (PCA)</text>
-                    <text x={10} y={CANVAS.h / 2} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={9} fontFamily="monospace" transform={`rotate(-90,10,${CANVAS.h / 2})`}>Dimension 2 (PCA)</text>
+                    <text x={CANVAS.w / 2} y={CANVAS.h - 6} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={9} fontFamily="monospace">{t("models.mlp.embeddingViz.dim1")}</text>
+                    <text x={10} y={CANVAS.h / 2} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={9} fontFamily="monospace" transform={`rotate(-90,10,${CANVAS.h / 2})`}>{t("models.mlp.embeddingViz.dim2")}</text>
                 </svg>
             </div>
 
@@ -277,7 +287,7 @@ export function EmbeddingSpaceVisualizer({
                     </span>
                 ))}
                 <span className="text-white/15">·</span>
-                <span>{tokens.length} tokens</span>
+                <span>{tokens.length} {t("models.mlp.embeddingViz.tokens")}</span>
                 {embedding?.config?.emb_dim && (
                     <>
                         <span className="text-white/15">·</span>
@@ -289,8 +299,8 @@ export function EmbeddingSpaceVisualizer({
             {/* Info */}
             <p className="text-[11px] text-white/25 leading-relaxed">
                 {selected
-                    ? `Click another token or click "${selected}" again to deselect. Dashed lines connect to the 4 nearest neighbors in embedding space.`
-                    : "Click any token to highlight its nearest neighbors. Similar tokens cluster together in the learned embedding space."}
+                    ? t("models.mlp.embeddingViz.clickToDeselect").replace("{token}", selected)
+                    : t("models.mlp.embeddingViz.clickToHighlight")}
             </p>
         </div>
     );

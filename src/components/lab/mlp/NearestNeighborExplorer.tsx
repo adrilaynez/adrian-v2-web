@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 import { fetchMLPEmbeddingQuality } from "@/lib/lmLabClient";
 import type { MLPEmbeddingQualityResponse } from "@/types/lmLab";
 import type { MLPGridConfig } from "@/types/lmLab";
@@ -18,6 +19,7 @@ export interface NearestNeighborExplorerProps {
 }
 
 export function NearestNeighborExplorer({ selectedConfig, highlightedToken }: NearestNeighborExplorerProps) {
+    const { t } = useI18n();
     const [data, setData] = useState<MLPEmbeddingQualityResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export function NearestNeighborExplorer({ selectedConfig, highlightedToken }: Ne
         return (
             <div className="flex items-center gap-2 py-4">
                 <Loader2 className="w-3.5 h-3.5 text-violet-400/50 animate-spin" />
-                <span className="text-[10px] font-mono text-white/25">Loading neighbor data…</span>
+                <span className="text-[10px] font-mono text-white/25">{t("models.mlp.nearestNeighbors.loading")}</span>
             </div>
         );
     }
@@ -88,7 +90,7 @@ export function NearestNeighborExplorer({ selectedConfig, highlightedToken }: Ne
     return (
         <div className="space-y-3">
             <div className="text-[10px] font-mono uppercase tracking-widest text-white/25">
-                Nearest Neighbors (Cosine Similarity)
+                {t("models.mlp.nearestNeighbors.title")}
             </div>
 
             {/* Token selector */}
@@ -116,7 +118,7 @@ export function NearestNeighborExplorer({ selectedConfig, highlightedToken }: Ne
                 <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] overflow-hidden">
                     <div className="px-3 py-2 border-b border-white/[0.06]">
                         <span className="text-[9px] font-mono uppercase tracking-widest text-white/25">
-                            Neighbors of &quot;{selectedToken === " " ? "⎵" : selectedToken === "\n" ? "↵" : selectedToken}&quot;
+                            {t("models.mlp.nearestNeighbors.neighborsOf")} &quot;{selectedToken === " " ? "⎵" : selectedToken === "\n" ? "↵" : selectedToken}&quot;
                         </span>
                     </div>
                     <div className="divide-y divide-white/[0.04]">
@@ -143,12 +145,12 @@ export function NearestNeighborExplorer({ selectedConfig, highlightedToken }: Ne
             )}
 
             {selectedToken && neighbors.length === 0 && (
-                <p className="text-[10px] text-white/20 font-mono italic">No neighbor data for this token.</p>
+                <p className="text-[10px] text-white/20 font-mono italic">{t("models.mlp.nearestNeighbors.noData")}</p>
             )}
 
             {!selectedToken && (
                 <p className="text-[10px] text-white/20 font-mono italic">
-                    Select a token above to see its nearest neighbors by cosine similarity in embedding space.
+                    {t("models.mlp.nearestNeighbors.selectPrompt")}
                 </p>
             )}
         </div>

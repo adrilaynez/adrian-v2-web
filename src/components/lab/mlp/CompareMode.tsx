@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useI18n } from "@/i18n/context";
 import { Loader2 } from "lucide-react";
 import { fetchMLPTimeline, generateMLP } from "@/lib/lmLabClient";
 import type { MLPGridConfig, MLPTimelineResponse, MLPGenerateResponse } from "@/types/lmLab";
@@ -28,7 +29,7 @@ function SimpleChart({
     const w = 320, h = 120, padL = 30, padB = 24, padT = 12, padR = 8;
     const allVals = [...trainLoss.map(e => e.value), ...valLoss.map(e => e.value)];
     const allSteps = [...trainLoss.map(e => e.step), ...valLoss.map(e => e.step)];
-    if (allVals.length < 2) return <p className="text-[10px] text-white/20 font-mono italic text-center py-4">No timeline data.</p>;
+    if (allVals.length < 2) return <p className="text-[10px] text-white/20 font-mono italic text-center py-4">{useI18n().t("models.mlp.compareMode.noTimelineData")}</p>;
 
     const minVal = Math.min(...allVals) * 0.95;
     const maxVal = Math.max(...allVals) * 1.02;
@@ -56,13 +57,13 @@ function SimpleChart({
                         {valLoss[valLoss.length - 1].value.toFixed(3)}
                     </text>
                 )}
-                <text x={padL + plotW / 2} y={h - 4} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={7} fontFamily="monospace">Steps</text>
+                <text x={padL + plotW / 2} y={h - 4} textAnchor="middle" fill="rgba(255,255,255,0.15)" fontSize={7} fontFamily="monospace">{useI18n().t("models.mlp.compareMode.steps")}</text>
                 <text x={padL - 2} y={toY(maxVal) + 3} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={7} fontFamily="monospace">{maxVal.toFixed(1)}</text>
                 <text x={padL - 2} y={toY(minVal) + 3} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={7} fontFamily="monospace">{minVal.toFixed(1)}</text>
             </svg>
             <div className="flex gap-4 text-[8px] font-mono text-white/20">
-                <span><span className="inline-block w-2 h-0.5 bg-violet-500/50 mr-1 align-middle" />train</span>
-                <span><span className="inline-block w-2 h-0.5 bg-emerald-400 mr-1 align-middle" />val (primary)</span>
+                <span><span className="inline-block w-2 h-0.5 bg-violet-500/50 mr-1 align-middle" />{useI18n().t("models.mlp.compareMode.train")}</span>
+                <span><span className="inline-block w-2 h-0.5 bg-emerald-400 mr-1 align-middle" />{useI18n().t("models.mlp.compareMode.val")}</span>
             </div>
         </div>
     );
@@ -77,6 +78,7 @@ interface ConfigPanelProps {
 }
 
 function ConfigPanel({ config, label, seed }: ConfigPanelProps) {
+    const { t } = useI18n();
     const [timeline, setTimeline] = useState<MLPTimelineResponse | null>(null);
     const [tlLoading, setTlLoading] = useState(false);
     const [generation, setGeneration] = useState<MLPGenerateResponse | null>(null);
@@ -131,10 +133,10 @@ function ConfigPanel({ config, label, seed }: ConfigPanelProps) {
             {/* Key metrics */}
             <div className="grid grid-cols-2 gap-2">
                 {[
-                    { label: "Val Loss", value: config.final_loss.toFixed(3) },
-                    { label: "Perplexity", value: config.perplexity.toFixed(1) },
-                    { label: "Gap", value: config.generalization_gap != null ? (config.generalization_gap > 0 ? "+" : "") + config.generalization_gap.toFixed(3) : "—" },
-                    { label: "Score", value: config.score != null ? config.score.toFixed(2) : "—" },
+                    { label: t("models.mlp.compareMode.metrics.valLoss"), value: config.final_loss.toFixed(3) },
+                    { label: t("models.mlp.compareMode.metrics.perplexity"), value: config.perplexity.toFixed(1) },
+                    { label: t("models.mlp.compareMode.metrics.gap"), value: config.generalization_gap != null ? (config.generalization_gap > 0 ? "+" : "") + config.generalization_gap.toFixed(3) : "—" },
+                    { label: t("models.mlp.compareMode.metrics.score"), value: config.score != null ? config.score.toFixed(2) : "—" },
                 ].map(({ label: l, value }) => (
                     <div key={l} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2 text-center">
                         <p className="text-[8px] font-mono uppercase tracking-widest text-white/20 mb-0.5">{l}</p>
@@ -150,21 +152,21 @@ function ConfigPanel({ config, label, seed }: ConfigPanelProps) {
                         <Loader2 className="w-4 h-4 animate-spin text-white/20" />
                     </div>
                 ) : (
-                    <SimpleChart trainLoss={trainLoss} valLoss={valLoss} label="Training Loss" />
+                    <SimpleChart trainLoss={trainLoss} valLoss={valLoss} label={t("models.mlp.compareMode.trainingLoss")} />
                 )}
             </div>
 
             {/* Embedding space */}
             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
-                <p className="text-[9px] font-mono uppercase tracking-widest text-white/20 mb-2">Embedding Space</p>
+                <p className="text-[9px] font-mono uppercase tracking-widest text-white/20 mb-2">{t("models.mlp.compareMode.embeddingSpace")}</p>
                 <EmbeddingDriftAnimator selectedConfig={config} />
             </div>
 
             {/* Generation */}
             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
-                <p className="text-[9px] font-mono uppercase tracking-widest text-white/20">Generated Text</p>
+                <p className="text-[9px] font-mono uppercase tracking-widest text-white/20">{t("models.mlp.compareMode.generatedText")}</p>
                 <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-mono text-white/25 shrink-0">T={temperature.toFixed(1)}</span>
+                    <span className="text-[9px] font-mono text-white/25 shrink-0">{t("models.mlp.compareMode.temperature")}={temperature.toFixed(1)}</span>
                     <input
                         type="range" min={1} max={20} value={Math.round(temperature * 10)}
                         onChange={e => setTemperature(Number(e.target.value) / 10)}
@@ -174,11 +176,11 @@ function ConfigPanel({ config, label, seed }: ConfigPanelProps) {
                         onClick={handleGenerate}
                         disabled={genLoading || !seed.trim()}
                         className={`px-2.5 py-1 rounded text-[9px] font-mono border transition-all disabled:opacity-40 disabled:cursor-not-allowed ${label === "A"
-                                ? "bg-violet-500/15 text-violet-300 border-violet-500/30 hover:bg-violet-500/25"
-                                : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/25"
+                            ? "bg-violet-500/15 text-violet-300 border-violet-500/30 hover:bg-violet-500/25"
+                            : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/25"
                             }`}
                     >
-                        {genLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Generate"}
+                        {genLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : t("models.mlp.compareMode.generate")}
                     </button>
                 </div>
                 {generation ? (
@@ -186,7 +188,7 @@ function ConfigPanel({ config, label, seed }: ConfigPanelProps) {
                         &quot;{generation.generated_text}&quot;
                     </p>
                 ) : (
-                    <p className="text-[9px] text-white/15 italic font-mono">Seed text above will be used.</p>
+                    <p className="text-[9px] text-white/15 italic font-mono">{t("models.mlp.compareMode.seedTextAboveWillBeUsed")}</p>
                 )}
             </div>
         </div>
@@ -204,6 +206,7 @@ interface SelectorProps {
 }
 
 function ConfigSelector({ configs, value, exclude, onChange, label }: SelectorProps) {
+    const { t } = useI18n();
     const options = configs.filter(c => c.config_id !== exclude);
     const accentClass = label === "A"
         ? "focus:border-violet-500/40"
@@ -211,7 +214,7 @@ function ConfigSelector({ configs, value, exclude, onChange, label }: SelectorPr
 
     return (
         <div className="space-y-1">
-            <p className="text-[9px] font-mono uppercase tracking-widest text-white/25">Config {label}</p>
+            <p className="text-[9px] font-mono uppercase tracking-widest text-white/25">{t("models.mlp.compareMode.config")} {label}</p>
             <select
                 value={value?.config_id ?? ""}
                 onChange={e => {
@@ -220,7 +223,7 @@ function ConfigSelector({ configs, value, exclude, onChange, label }: SelectorPr
                 }}
                 className={`w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-2 text-[11px] font-mono text-white/60 focus:outline-none ${accentClass} appearance-none cursor-pointer`}
             >
-                <option value="" disabled>Select a config…</option>
+                <option value="" disabled>{t("models.mlp.compareMode.selectAConfig")}</option>
                 {options.map(c => (
                     <option key={c.config_id} value={c.config_id}>
                         emb={c.embedding_dim} · h={c.hidden_size} · lr={c.learning_rate} · loss={c.final_loss.toFixed(3)}
@@ -240,6 +243,7 @@ export interface CompareModeProps {
 }
 
 export function CompareMode({ configs, primaryConfig, primarySeed }: CompareModeProps) {
+    const { t } = useI18n();
     const [configA, setConfigA] = useState<MLPGridConfig | null>(primaryConfig);
     const [configB, setConfigB] = useState<MLPGridConfig | null>(null);
 
@@ -248,14 +252,12 @@ export function CompareMode({ configs, primaryConfig, primarySeed }: CompareMode
     }, [primaryConfig]);
 
     if (configs.length < 2) {
-        return <p className="text-[10px] text-white/20 font-mono italic">Need at least 2 configurations to compare.</p>;
+        return <p className="text-[10px] text-white/20 font-mono italic">{t("models.mlp.compareMode.needAtLeastTwoConfigs")}</p>;
     }
 
     return (
         <div className="space-y-4">
-            <p className="text-[11px] text-white/30 font-mono leading-relaxed">
-                Select two configurations to compare side-by-side. The seed text from the main generator is synced to both.
-            </p>
+            <p className="text-[11px] text-white/30 font-mono leading-relaxed">{t("models.mlp.compareMode.selectTwoConfigsToCompare")}</p>
 
             {/* Selectors */}
             <div className="grid grid-cols-2 gap-4">
@@ -278,9 +280,9 @@ export function CompareMode({ configs, primaryConfig, primarySeed }: CompareMode
             {/* Seed display */}
             {primarySeed && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/[0.06] bg-white/[0.02]">
-                    <span className="text-[9px] font-mono text-white/20 shrink-0">Seed:</span>
+                    <span className="text-[9px] font-mono text-white/20 shrink-0">{t("models.mlp.compareMode.seed")}</span>
                     <span className="text-[11px] font-mono text-white/50">&quot;{primarySeed}&quot;</span>
-                    <span className="text-[8px] font-mono text-white/15 ml-auto">(edit in main generator above)</span>
+                    <span className="text-[8px] font-mono text-white/15 ml-auto">{t("models.mlp.compareMode.editInMainGeneratorAbove")}</span>
                 </div>
             )}
 
@@ -291,14 +293,14 @@ export function CompareMode({ configs, primaryConfig, primarySeed }: CompareMode
                         <ConfigPanel config={configA} label="A" seed={primarySeed} />
                     ) : (
                         <div className="flex items-center justify-center py-12 rounded-lg border border-dashed border-white/[0.06]">
-                            <p className="text-[10px] text-white/20 font-mono">Select Config A</p>
+                            <p className="text-[10px] text-white/20 font-mono">{t("models.mlp.compareMode.selectConfigA")}</p>
                         </div>
                     )}
                     {configB ? (
                         <ConfigPanel config={configB} label="B" seed={primarySeed} />
                     ) : (
                         <div className="flex items-center justify-center py-12 rounded-lg border border-dashed border-white/[0.06]">
-                            <p className="text-[10px] text-white/20 font-mono">Select Config B above</p>
+                            <p className="text-[10px] text-white/20 font-mono">{t("models.mlp.compareMode.selectConfigB")}</p>
                         </div>
                     )}
                 </div>
@@ -311,12 +313,12 @@ export function CompareMode({ configs, primaryConfig, primarySeed }: CompareMode
                 const paramDiff = (configB.total_parameters ?? 0) - (configA.total_parameters ?? 0);
                 return (
                     <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 space-y-2">
-                        <p className="text-[9px] font-mono uppercase tracking-widest text-white/20">B vs A — differences</p>
+                        <p className="text-[9px] font-mono uppercase tracking-widest text-white/20">{t("models.mlp.compareMode.diffSummary")}</p>
                         <div className="grid grid-cols-3 gap-4">
                             {[
-                                { label: "Val Loss", diff: lossDiff, unit: "", better: lossDiff < 0 },
-                                { label: "Gen Gap", diff: gapDiff, unit: "", better: gapDiff < 0 },
-                                { label: "Params", diff: paramDiff, unit: "", better: false, neutral: true },
+                                { label: t("models.mlp.compareMode.metrics.valLoss"), diff: lossDiff, unit: "", better: lossDiff < 0 },
+                                { label: t("models.mlp.compareMode.metrics.gap"), diff: gapDiff, unit: "", better: gapDiff < 0 },
+                                { label: t("models.mlp.compareMode.metrics.params"), diff: paramDiff, unit: "", better: false, neutral: true },
                             ].map(({ label, diff, unit, better, neutral }) => (
                                 <div key={label} className="text-center">
                                     <p className="text-[8px] font-mono text-white/20 mb-1">{label}</p>

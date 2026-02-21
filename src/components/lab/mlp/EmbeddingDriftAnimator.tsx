@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useI18n } from "@/i18n/context";
 import { Loader2 } from "lucide-react";
 import { EmbeddingSpaceVisualizer } from "./EmbeddingSpaceVisualizer";
 import { fetchMLPEmbedding } from "@/lib/lmLabClient";
@@ -18,20 +19,13 @@ import type { MLPEmbeddingResponse, MLPGridConfig } from "@/types/lmLab";
 const SNAPSHOT_STEPS = [0, 1000, 5000, 10000, 20000, 50000];
 const STEP_LABELS = ["0", "1k", "5k", "10k", "20k", "50k"];
 
-const PHASE_TEXT = [
-    "Random initialization — embeddings have no structure yet.",
-    "Early training — clusters are beginning to form.",
-    "Early-mid training — character categories becoming distinct.",
-    "Mid training — embedding space shows clear structure. Similar tokens cluster together.",
-    "Late training — structure consolidating, noise reducing.",
-    "Final checkpoint — fully trained embeddings. This is what the model uses for prediction.",
-];
 
 export interface EmbeddingDriftAnimatorProps {
     selectedConfig: MLPGridConfig | null;
 }
 
 export function EmbeddingDriftAnimator({ selectedConfig }: EmbeddingDriftAnimatorProps) {
+    const { t } = useI18n();
     const [stepIdx, setStepIdx] = useState(SNAPSHOT_STEPS.length - 1);
     const [embedding, setEmbedding] = useState<MLPEmbeddingResponse | null>(null);
     const [loading, setLoading] = useState(false);
@@ -106,16 +100,25 @@ export function EmbeddingDriftAnimator({ selectedConfig }: EmbeddingDriftAnimato
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedConfig, stepIdx]);
 
+    const phaseTexts = [
+        t("models.mlp.embeddingDrift.phases.0"),
+        t("models.mlp.embeddingDrift.phases.1"),
+        t("models.mlp.embeddingDrift.phases.2"),
+        t("models.mlp.embeddingDrift.phases.3"),
+        t("models.mlp.embeddingDrift.phases.4"),
+        t("models.mlp.embeddingDrift.phases.5"),
+    ];
+
     return (
         <div className="space-y-3">
             {/* Snapshot slider */}
             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">
-                        Training snapshot
+                        {t("models.mlp.embeddingDrift.trainingSnapshot")}
                     </span>
                     <span className="text-xs font-mono font-bold text-violet-400">
-                        Step {STEP_LABELS[stepIdx]}
+                        {t("models.mlp.embeddingDrift.step")} {STEP_LABELS[stepIdx]}
                         {loading && (
                             <Loader2 className="w-3 h-3 inline ml-1.5 animate-spin text-violet-400/50" />
                         )}
@@ -143,7 +146,7 @@ export function EmbeddingDriftAnimator({ selectedConfig }: EmbeddingDriftAnimato
                     ))}
                 </div>
                 <p className="text-[9px] text-white/20 mt-2 leading-relaxed">
-                    {PHASE_TEXT[stepIdx]}
+                    {phaseTexts[stepIdx]}
                 </p>
             </div>
 
@@ -152,7 +155,7 @@ export function EmbeddingDriftAnimator({ selectedConfig }: EmbeddingDriftAnimato
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/[0.04] border border-amber-500/15">
                     <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
                     <p className="text-[9px] text-amber-300/50 font-mono">
-                        Snapshot unavailable — showing nearest available checkpoint.
+                        {t("models.mlp.embeddingDrift.snapshotUnavailable")}
                     </p>
                 </div>
             )}

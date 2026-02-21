@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n } from "@/i18n/context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +25,7 @@ export function StepwisePrediction({
     loading,
     error,
 }: StepwisePredictionProps) {
+    const { t } = useI18n();
     const [text, setText] = useState("hel");
     const [numSteps, setNumSteps] = useState(5);
 
@@ -38,20 +40,20 @@ export function StepwisePrediction({
             <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
                 <GitBranch className="h-4 w-4 text-cyan-400" />
                 <span className="font-mono text-xs uppercase tracking-widest text-white/60">
-                    Stepwise Prediction
+                    {t("models.bigram.stepwise.title")}
                 </span>
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
                 <div className="space-y-2">
                     <label className="text-[11px] font-mono uppercase tracking-widest text-white/40">
-                        Input Text
+                        {t("models.bigram.stepwise.form.input")}
                     </label>
                     <input
                         type="text"
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        placeholder="Starting text..."
+                        placeholder={t("models.bigram.stepwise.form.placeholder")}
                         className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
                     />
                 </div>
@@ -59,7 +61,7 @@ export function StepwisePrediction({
                 <div className="space-y-2">
                     <div className="flex justify-between">
                         <label className="text-[11px] font-mono uppercase tracking-widest text-white/40">
-                            Prediction Steps
+                            {t("models.bigram.stepwise.form.steps")}
                         </label>
                         <span className="text-xs font-mono text-cyan-400">{numSteps}</span>
                     </div>
@@ -83,11 +85,11 @@ export function StepwisePrediction({
                             animate={{ opacity: [0.4, 1, 0.4] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
                         >
-                            Predicting...
+                            {t("models.bigram.stepwise.form.predicting")}
                         </motion.span>
                     ) : (
                         <>
-                            <Zap className="h-3.5 w-3.5 mr-2" /> Predict Steps
+                            <Zap className="h-3.5 w-3.5 mr-2" /> {t("models.bigram.stepwise.form.predict")}
                         </>
                     )}
                 </Button>
@@ -122,9 +124,9 @@ export function StepwisePrediction({
                             <div className="bg-white/[0.02] rounded-lg border border-white/[0.06] overflow-hidden">
                                 {/* Header */}
                                 <div className="grid grid-cols-[3rem_3rem_1fr] gap-2 px-4 py-2 border-b border-white/[0.06] text-[10px] font-mono uppercase tracking-widest text-white/30">
-                                    <span>Step</span>
-                                    <span>Char</span>
-                                    <span>Probability</span>
+                                    <span>{t("models.bigram.stepwise.table.step")}</span>
+                                    <span>{t("models.bigram.stepwise.table.char")}</span>
+                                    <span>{t("models.bigram.stepwise.table.prob")}</span>
                                 </div>
                                 {/* Rows */}
                                 {steps.map((s, i) => (
@@ -168,7 +170,7 @@ export function StepwisePrediction({
                             {finalPrediction && (
                                 <div className="flex items-center gap-2 pt-2">
                                     <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">
-                                        Result:
+                                        {t("models.bigram.stepwise.result")}
                                     </span>
                                     <Badge className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 text-sm font-mono px-3 py-1">
                                         {finalPrediction}

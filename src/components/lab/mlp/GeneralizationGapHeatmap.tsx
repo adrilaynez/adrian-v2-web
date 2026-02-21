@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useI18n } from "@/i18n/context";
 import type { MLPGridConfig } from "@/types/lmLab";
 
 /*
@@ -38,6 +39,7 @@ interface CellData {
 }
 
 export function GeneralizationGapHeatmap({ configs }: GeneralizationGapHeatmapProps) {
+    const { t } = useI18n();
     const [hovered, setHovered] = useState<CellData | null>(null);
 
     const { embDims, hiddenSizes, cells } = useMemo(() => {
@@ -78,7 +80,7 @@ export function GeneralizationGapHeatmap({ configs }: GeneralizationGapHeatmapPr
                     <thead>
                         <tr>
                             <th className="text-[8px] font-mono text-white/20 pr-2 pb-1 text-right align-bottom">
-                                hidden ↓ / emb →
+                                {t("models.mlp.genGapHeatmap.axisLabel")}
                             </th>
                             {embDims.map(ed => (
                                 <th key={ed} className="text-[9px] font-mono text-white/30 text-center pb-1" style={{ width: cellW }}>
@@ -125,13 +127,13 @@ export function GeneralizationGapHeatmap({ configs }: GeneralizationGapHeatmapPr
 
             {/* Color legend */}
             <div className="flex items-center gap-3 text-[8px] font-mono text-white/25">
-                <span>Gap:</span>
+                <span>{t("models.mlp.genGapHeatmap.gapLabel")}</span>
                 {[
-                    { label: "< 0 (healthy)", color: "rgba(52,211,153,0.5)" },
-                    { label: "0–0.1", color: "rgba(52,211,153,0.35)" },
-                    { label: "0.1–0.2", color: "rgba(250,204,21,0.35)" },
-                    { label: "0.2–0.3", color: "rgba(251,146,60,0.45)" },
-                    { label: "> 0.3 (overfit)", color: "rgba(244,63,94,0.5)" },
+                    { label: t("models.mlp.genGapHeatmap.legend.healthy"), color: "rgba(52,211,153,0.5)" },
+                    { label: t("models.mlp.genGapHeatmap.legend.low"), color: "rgba(52,211,153,0.35)" },
+                    { label: t("models.mlp.genGapHeatmap.legend.medium"), color: "rgba(250,204,21,0.35)" },
+                    { label: t("models.mlp.genGapHeatmap.legend.high"), color: "rgba(251,146,60,0.45)" },
+                    { label: t("models.mlp.genGapHeatmap.legend.overfit"), color: "rgba(244,63,94,0.5)" },
                 ].map(({ label, color }) => (
                     <span key={label} className="inline-flex items-center gap-1">
                         <span className="inline-block w-3 h-3 rounded" style={{ backgroundColor: color }} />
@@ -144,15 +146,14 @@ export function GeneralizationGapHeatmap({ configs }: GeneralizationGapHeatmapPr
             {hovered && (
                 <div className="text-[9px] font-mono text-white/40 leading-relaxed">
                     <span className="text-white/60">emb={hovered.embDim} hidden={hovered.hiddenSize}</span>
-                    {" · "}{hovered.count} configs (across LRs)
-                    {" · "}avg gap={gapLabel(hovered.avgGap)}
-                    {" · "}best loss={hovered.bestLoss.toFixed(3)}
+                    {" · "}{hovered.count} {t("models.mlp.genGapHeatmap.configs")}
+                    {" · "}{t("models.mlp.genGapHeatmap.avgGap")}{gapLabel(hovered.avgGap)}
+                    {" · "}{t("models.mlp.genGapHeatmap.bestLoss")}{hovered.bestLoss.toFixed(3)}
                 </div>
             )}
 
             <p className="text-[9px] font-mono text-white/15">
-                Each cell averages the train–val gap across all learning rates for that (emb_dim, hidden_size) pair.
-                Red = overfitting. Green = healthy generalization.
+                {t("models.mlp.genGapHeatmap.description")}
             </p>
         </div>
     );

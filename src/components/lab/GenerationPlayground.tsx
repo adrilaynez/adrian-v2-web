@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/i18n/context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +25,7 @@ export function GenerationPlayground({
     loading,
     error,
 }: GenerationPlaygroundProps) {
+    const { t } = useI18n();
     const [startChar, setStartChar] = useState("a");
     const [numTokens, setNumTokens] = useState(50);
     const [temperature, setTemperature] = useState(0.8);
@@ -47,7 +49,7 @@ export function GenerationPlayground({
             <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
                 <Sparkles className="h-4 w-4 text-pink-400" />
                 <span className="font-mono text-xs uppercase tracking-widest text-white/60">
-                    Generation Playground
+                    {t("models.bigram.generation.title")}
                 </span>
 
                 {/* Educational Tooltip */}
@@ -56,12 +58,12 @@ export function GenerationPlayground({
                         <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60">?</span>
                     </div>
                     <div className="absolute left-0 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/10 p-4 rounded-2xl z-50 w-72 text-[11px] text-slate-400 pointer-events-none shadow-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">How is text generated?</p>
+                        <p className="font-bold text-white mb-2 uppercase tracking-widest text-[10px]">{t("models.bigram.generation.tooltip.title")}</p>
                         <div className="space-y-2">
-                            <p><strong className="text-pink-400">Sampling:</strong> The model doesn't just pick the #1 answer. It "rolls a dice" weighted by probabilities. This is why it can generate different text every time.</p>
-                            <p><strong className="text-amber-400">Temperature:</strong> Higher values make the dice roll "wilder" (more random). Lower values make it "safer" and more repetitive.</p>
+                            <p><strong className="text-pink-400">{t("models.bigram.generation.tooltip.sampling")}</strong> {t("models.bigram.generation.tooltip.samplingDesc")}</p>
+                            <p><strong className="text-amber-400">{t("models.bigram.generation.tooltip.temp")}</strong> {t("models.bigram.generation.tooltip.tempDesc")}</p>
                             <div className="mt-3 pt-3 border-t border-white/5 text-[10px] italic">
-                                Try temperature 2.0 to see complete gibberish, or 0.1 to see it get stuck in loops!
+                                {t("models.bigram.generation.tooltip.note")}
                             </div>
                         </div>
                     </div>
@@ -72,7 +74,7 @@ export function GenerationPlayground({
                 {/* Start Char */}
                 <div className="space-y-2">
                     <label className="text-[11px] font-mono uppercase tracking-widest text-white/40">
-                        Start Character
+                        {t("models.bigram.generation.form.startChar")}
                     </label>
                     <input
                         type="text"
@@ -87,7 +89,7 @@ export function GenerationPlayground({
                 <div className="space-y-2">
                     <div className="flex justify-between">
                         <label className="text-[11px] font-mono uppercase tracking-widest text-white/40">
-                            Number of Tokens
+                            {t("models.bigram.generation.form.numTokens")}
                         </label>
                         <span className="text-xs font-mono text-pink-400">
                             {numTokens}
@@ -107,7 +109,7 @@ export function GenerationPlayground({
                 <div className="space-y-2">
                     <div className="flex justify-between">
                         <label className="text-[11px] font-mono uppercase tracking-widest text-white/40">
-                            Temperature
+                            {t("models.bigram.generation.form.temp")}
                         </label>
                         <span className="text-xs font-mono text-pink-400">
                             {temperature.toFixed(2)}
@@ -134,11 +136,11 @@ export function GenerationPlayground({
                             animate={{ opacity: [0.4, 1, 0.4] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
                         >
-                            Generating...
+                            {t("models.bigram.generation.form.generating")}
                         </motion.span>
                     ) : (
                         <>
-                            <Sparkles className="h-3.5 w-3.5 mr-2" /> Generate
+                            <Sparkles className="h-3.5 w-3.5 mr-2" /> {t("models.bigram.generation.form.generate")}
                         </>
                     )}
                 </Button>

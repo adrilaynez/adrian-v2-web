@@ -301,7 +301,7 @@ export function BigramBuilder() {
                 {steps.length > 0 && currentStepIndex >= 0 ? (
                     <div className="mb-8 p-4 border border-emerald-500/30 bg-emerald-500/5 rounded-lg flex gap-4 items-center animate-in fade-in slide-in-from-top-4 duration-300">
                         <div className="text-right">
-                            <div className="text-[10px] uppercase tracking-widest text-emerald-500/60 mb-1">Current Step</div>
+                            <div className="text-[10px] uppercase tracking-widest text-emerald-500/60 mb-1">{t("bigramBuilder.currentStep")}</div>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-2xl font-bold text-white font-mono">
                                     '{renderCell(steps[currentStepIndex].char)}'
@@ -314,8 +314,8 @@ export function BigramBuilder() {
                         </div>
                         <div className="h-8 w-px bg-emerald-500/20" />
                         <div className="text-xs text-white/60 font-mono">
-                            Updating cell at row <span className="text-white font-bold">'{renderCell(steps[currentStepIndex].char)}'</span>,
-                            col <span className="text-emerald-400 font-bold">'{renderCell(steps[currentStepIndex].nextChar)}'</span>
+                            {t("bigramBuilder.updatingCell")} <span className="text-white font-bold">'{renderCell(steps[currentStepIndex].char)}'</span>,
+                            {t("bigramBuilder.updatingCellCol")} <span className="text-emerald-400 font-bold">'{renderCell(steps[currentStepIndex].nextChar)}'</span>
                         </div>
                     </div>
                 ) : (

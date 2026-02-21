@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { en } from './en';
 import { es } from './es';
 import { Language, TranslationDictionary } from './types';
@@ -38,7 +38,10 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 export function I18nProvider({ children }: { children: React.ReactNode }) {
     // Initialize from storage or default to 'en', but avoid hydration mismatch via useEffect
     const [language, setLanguageState] = useState<Language>('en');
-    const [isInitialized, setIsInitialized] = useState(false);
+
+    // Per-language lookup cache — persists across renders, cleared on language change is not needed
+    // because we keep a separate map per language key.
+    const lookupCaches = useRef<Partial<Record<Language, Map<string, string>>>>({});
 
     useEffect(() => {
         const saved = localStorage.getItem('lm-lab-language') as Language;
@@ -46,34 +49,37 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
             setLanguageState(saved);
             document.cookie = `lm-lab-language=${saved}; path=/; max-age=31536000; samesite=lax`;
         }
-        setIsInitialized(true);
+        document.documentElement.lang = saved && (saved === 'en' || saved === 'es') ? saved : 'en';
     }, []);
 
     const setLanguage = useCallback((lang: Language) => {
         setLanguageState(lang);
         localStorage.setItem('lm-lab-language', lang);
         document.cookie = `lm-lab-language=${lang}; path=/; max-age=31536000; samesite=lax`;
+        document.documentElement.lang = lang;
     }, []);
 
     const t = useCallback((key: string): string => {
-        return (
+        if (!lookupCaches.current[language]) {
+            lookupCaches.current[language] = new Map();
+        }
+        const cache = lookupCaches.current[language]!;
+        const cached = cache.get(key);
+        if (cached !== undefined) return cached;
+        const result =
             getNestedValue(dictionaries[language], key) ??
             getNestedValue(dictionaries.en, key) ??
-            key
-        );
+            key;
+        cache.set(key, result);
+        return result;
     }, [language]);
 
-    useEffect(() => {
-        if (isInitialized) {
-            document.documentElement.lang = language;
-        }
-    }, [language, isInitialized]);
-
-    // Prevent flash of wrong content if needed, though for text replacement it might be fine to default to EN
-    // For this tasks requirement "English is source of truth", defaulting to EN is correct.
+    // FIX: Memoize the context value so consumers only re-render when language actually changes,
+    // not on every render of I18nProvider (which previously caused all 44+ consumers to re-render).
+    const value = useMemo(() => ({ language, setLanguage, t }), [language, setLanguage, t]);
 
     return (
-        <I18nContext.Provider value={{ language, setLanguage, t }}>
+        <I18nContext.Provider value={value}>
             {children}
         </I18nContext.Provider>
     );
