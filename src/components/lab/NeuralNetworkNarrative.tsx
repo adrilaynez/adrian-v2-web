@@ -1,15 +1,20 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { BookOpen, FlaskConical, ArrowDown, Lightbulb, AlertTriangle } from "lucide-react";
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BookOpen, FlaskConical, ArrowDown, Lightbulb, AlertTriangle, Beaker, Layers, ChevronDown, History } from "lucide-react";
 import { ModeToggle } from "@/components/lab/ModeToggle";
 import { useI18n } from "@/i18n/context";
+import { useRouter } from "next/navigation";
+import { useLabMode } from "@/context/LabModeContext";
 import { NNPerceptronDiagram } from "@/components/lab/NNPerceptronDiagram";
-import { NNWeightBiasExplorer } from "@/components/lab/NNWeightBiasExplorer";
 import { NNActivationExplorer } from "@/components/lab/NNActivationExplorer";
 import { NNBackpropVisualizer } from "@/components/lab/NNBackpropVisualizer";
 import { NNTrainingDemo } from "@/components/lab/NNTrainingDemo";
+import type { TrainingStep } from "@/components/lab/NNTrainingDemo";
+import { NNLossLandscape } from "@/components/lab/NNLossLandscape";
 import { NNBigramComparison } from "@/components/lab/NNBigramComparison";
+import { XORDecisionBoundary } from "@/components/lab/XORDecisionBoundary";
 
 import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -196,12 +201,59 @@ function SectionBreak() {
     );
 }
 
-function ActivationCard({ title, description }: { title: string; description: string }) {
+/* ─────────────────────────────────────────────
+   Collapsible History Sidebar
+   ───────────────────────────────────────────── */
+
+function HistorySidebar({ t }: { t: (key: string) => string }) {
+    const [open, setOpen] = useState(false);
+
     return (
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
-            <p className="text-xs font-mono font-bold text-rose-400/70 mb-1.5">{title}</p>
-            <p className="text-sm text-white/40 leading-relaxed">{description}</p>
-        </div>
+        <motion.aside
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            className="my-12 rounded-xl border border-white/[0.06] bg-white/[0.015] overflow-hidden"
+        >
+            <button
+                onClick={() => setOpen(!open)}
+                className="w-full flex items-center gap-3 px-5 py-4 text-left group hover:bg-white/[0.02] transition-colors"
+            >
+                <div className="shrink-0 p-1.5 rounded-lg bg-amber-500/10">
+                    <History className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.history.title")}</p>
+                    <p className="text-xs text-white/30 mt-0.5">{t("neuralNetworkNarrative.history.summary")}</p>
+                </div>
+                <motion.div
+                    animate={{ rotate: open ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <ChevronDown className="w-4 h-4 text-white/20" />
+                </motion.div>
+            </button>
+
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="px-5 pb-5 space-y-3 border-t border-white/[0.04] pt-4">
+                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p1")}</p>
+                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p2")}</p>
+                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p3")}</p>
+                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p4")}</p>
+                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p5")}</p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.aside>
     );
 }
 
@@ -211,6 +263,15 @@ function ActivationCard({ title, description }: { title: string; description: st
 
 export function NeuralNetworkNarrative() {
     const { t } = useI18n();
+    const router = useRouter();
+    const { mode, setMode } = useLabMode();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [landscapeHistory, setLandscapeHistory] = useState<TrainingStep[]>([]);
+    const [landscapeTarget, setLandscapeTarget] = useState(0.8);
+    const handleTrainingHistory = useCallback((history: TrainingStep[], target: number) => {
+        setLandscapeHistory(history);
+        setLandscapeTarget(target);
+    }, []);
 
     return (
         <article className="max-w-[920px] mx-auto px-6 pt-8 pb-24">
@@ -252,312 +313,545 @@ export function NeuralNetworkNarrative() {
                 </motion.div>
             </header>
 
-            {/* ─────────── 01 · HISTORICAL ORIGINS ─────────── */}
+            {/* ─────────── 01 · THE ARTIFICIAL NEURON ─────────── */}
             <Section>
                 <SectionLabel
-                    number={t("models.neuralNetworks.sections.historicalOrigins.number")}
-                    label={t("models.neuralNetworks.sections.historicalOrigins.label")}
+                    number={t("models.neuralNetworks.sections.artificialNeuron.number")}
+                    label={t("models.neuralNetworks.sections.artificialNeuron.label")}
                 />
-                <Heading>{t("neuralNetworkNarrative.historical.title")}</Heading>
+                <Heading>{t("neuralNetworkNarrative.artificialNeuron.title")}</Heading>
 
-                <Lead>{t("neuralNetworkNarrative.historical.lead")}</Lead>
-
-                <P>
-                    {t("neuralNetworkNarrative.historical.p1")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.historical.p1Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.historical.p1End")}
-                </P>
-
-                <P>{t("neuralNetworkNarrative.historical.p2")}</P>
+                <Lead>{t("neuralNetworkNarrative.artificialNeuron.lead")}</Lead>
 
                 <P>
-                    {t("neuralNetworkNarrative.historical.p3")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.historical.p3Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.historical.p3End")}
+                    {t("neuralNetworkNarrative.artificialNeuron.p1")}{" "}
+                    <Highlight>{t("neuralNetworkNarrative.artificialNeuron.p1Highlight")}</Highlight>
+                    {t("neuralNetworkNarrative.artificialNeuron.p1End")}
                 </P>
 
-                <PullQuote>{t("neuralNetworkNarrative.historical.quote")}</PullQuote>
-
-                <P>{t("neuralNetworkNarrative.historical.p4")}</P>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 02 · FROM COUNTING TO LEARNING ─────────── */}
-            <Section>
-                <SectionLabel
-                    number={t("models.neuralNetworks.sections.countingToLearning.number")}
-                    label={t("models.neuralNetworks.sections.countingToLearning.label")}
-                />
-                <Heading>{t("neuralNetworkNarrative.countingToLearning.title")}</Heading>
-
-                <Lead>{t("neuralNetworkNarrative.countingToLearning.lead")}</Lead>
-
-                <P>
-                    {t("neuralNetworkNarrative.countingToLearning.p1")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.countingToLearning.p1Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.countingToLearning.p1End")}
-                </P>
-
-                <P>
-                    {t("neuralNetworkNarrative.countingToLearning.p2")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.countingToLearning.p2Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.countingToLearning.p2End")}
-                </P>
-
-                <Callout icon={Lightbulb} accent="rose" title={t("neuralNetworkNarrative.countingToLearning.insightTitle")}>
-                    <p>{t("neuralNetworkNarrative.countingToLearning.insightText")}</p>
-                </Callout>
-
-                <P>{t("neuralNetworkNarrative.countingToLearning.p3")}</P>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 03 · THE PERCEPTRON ─────────── */}
-            <Section>
-                <SectionLabel
-                    number={t("models.neuralNetworks.sections.perceptron.number")}
-                    label={t("models.neuralNetworks.sections.perceptron.label")}
-                />
-                <Heading>{t("neuralNetworkNarrative.perceptron.title")}</Heading>
-
-                <Lead>{t("neuralNetworkNarrative.perceptron.lead")}</Lead>
-
-                <P>
-                    {t("neuralNetworkNarrative.perceptron.p1")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.perceptron.p1Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.perceptron.p1End")}
-                </P>
-
-                <P>{t("neuralNetworkNarrative.perceptron.p2")}</P>
+                <P>{t("neuralNetworkNarrative.artificialNeuron.p2")}</P>
 
                 <FormulaBlock
                     formula="y = f\left(\sum_{i=1}^{n} w_i \, x_i + b\right)"
-                    caption={t("neuralNetworkNarrative.perceptron.formulaCaption")}
+                    caption={t("neuralNetworkNarrative.artificialNeuron.formulaCaption")}
                 />
+
+                {/* Visual Formula Example */}
+                <div className="my-8 -mx-2 sm:mx-0 rounded-2xl border border-indigo-500/[0.15] bg-indigo-500/[0.02] overflow-hidden">
+                    <div className="flex items-center gap-3 px-5 py-3 border-b border-indigo-500/[0.1] bg-indigo-500/[0.03]">
+                        <Lightbulb className="w-4 h-4 text-indigo-400" />
+                        <span className="text-xs font-mono uppercase tracking-widest text-indigo-400/80">Breaking it down with a real example</span>
+                    </div>
+                    <div className="p-5 sm:p-6">
+                        <p className="text-sm text-white/50 mb-2">
+                            <strong className="text-indigo-400">Scenario:</strong> A neuron is trying to predict if you&apos;ll enjoy a movie.
+                        </p>
+                        <p className="text-xs text-white/40 mb-6">
+                            It considers two inputs: how much action it has (x₁) and how good the reviews are (x₂). Let&apos;s watch it make a prediction.
+                        </p>
+
+                        {/* Step 1: Inputs */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">1</div>
+                                <span className="text-sm font-semibold text-white/70">Start with the Inputs</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
+                                    <span className="text-white/40 text-xs block mb-1">x₁: Action level</span>
+                                    <span className="font-mono font-bold text-white/70">0.8</span>
+                                    <span className="text-[10px] text-white/30 block mt-0.5">(on scale 0–1)</span>
+                                </div>
+                                <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
+                                    <span className="text-white/40 text-xs block mb-1">x₂: Review score</span>
+                                    <span className="font-mono font-bold text-white/70">0.6</span>
+                                    <span className="text-[10px] text-white/30 block mt-0.5">(on scale 0–1)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Step 2: Multiply by Weights */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">2</div>
+                                <span className="text-sm font-semibold text-white/70">Multiply Each Input by Its Weight</span>
+                            </div>
+                            <p className="text-xs text-white/40 mb-3">
+                                Weights determine importance. You <em>love</em> action movies (w₁ is high) but don&apos;t care much about reviews (w₂ is low).
+                            </p>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm">
+                                    <code className="font-mono text-xs bg-rose-500/[0.08] border border-rose-500/[0.15] px-2 py-1 rounded text-rose-400">
+                                        w₁ = 1.5
+                                    </code>
+                                    <span className="text-white/30">×</span>
+                                    <code className="font-mono text-xs bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded">
+                                        x₁ = 0.8
+                                    </code>
+                                    <span className="text-white/30">=</span>
+                                    <code className="font-mono text-xs bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded font-bold">
+                                        1.2
+                                    </code>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                    <code className="font-mono text-xs bg-rose-500/[0.08] border border-rose-500/[0.15] px-2 py-1 rounded text-rose-400">
+                                        w₂ = 0.3
+                                    </code>
+                                    <span className="text-white/30">×</span>
+                                    <code className="font-mono text-xs bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded">
+                                        x₂ = 0.6
+                                    </code>
+                                    <span className="text-white/30">=</span>
+                                    <code className="font-mono text-xs bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded font-bold">
+                                        0.18
+                                    </code>
+                                </div>
+                            </div>
+                            <p className="text-xs text-white/30 italic mt-3">
+                                High action contributed 1.2 points, mediocre reviews contributed only 0.18 points.
+                            </p>
+                        </div>
+
+                        {/* Step 3: Sum Everything */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">3</div>
+                                <span className="text-sm font-semibold text-white/70">Add the Weighted Inputs Together (Σ)</span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <code className="font-mono text-xs bg-white/[0.04] px-2 py-1 rounded border border-white/[0.06]">
+                                    1.2 + 0.18 = <span className="text-white/70 font-bold">1.38</span>
+                                </code>
+                            </div>
+                            <p className="text-xs text-white/35 italic mt-2">
+                                This is the Σ (sigma) — just means &quot;add them all up.&quot;
+                            </p>
+                        </div>
+
+                        {/* Step 4: Add Bias */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">4</div>
+                                <span className="text-sm font-semibold text-white/70">Add the Bias</span>
+                            </div>
+                            <p className="text-xs text-white/40 mb-3">
+                                The bias is your baseline mood. A positive bias means you&apos;re already inclined to like movies; negative means you&apos;re picky.
+                            </p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <code className="font-mono text-xs bg-white/[0.04] px-2 py-1 rounded border border-white/[0.06]">
+                                    1.38
+                                </code>
+                                <span className="text-white/30">+</span>
+                                <code className="font-mono text-xs bg-amber-500/[0.08] border border-amber-500/[0.15] px-2 py-1 rounded text-amber-400">
+                                    b = −0.5
+                                </code>
+                                <span className="text-white/30">=</span>
+                                <code className="font-mono text-xs bg-white/[0.04] px-2 py-1 rounded border border-white/[0.06] font-bold">
+                                    z = 0.88
+                                </code>
+                            </div>
+                            <p className="text-xs text-white/30 italic mt-2">
+                                You&apos;re a bit picky (negative bias), so the score dropped from 1.38 to 0.88.
+                            </p>
+                        </div>
+
+                        {/* Step 5: Activation */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">5</div>
+                                <span className="text-sm font-semibold text-white/70">Apply the Activation Function</span>
+                            </div>
+                            <p className="text-xs text-white/40 mb-3">
+                                The activation decides how strongly the neuron &quot;fires.&quot; ReLU is simple: if the sum is positive, keep it; if negative, output 0.
+                            </p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <code className="font-mono text-xs bg-white/[0.04] px-2 py-1 rounded border border-white/[0.06]">
+                                    y = ReLU(0.88) = max(0, 0.88) = <span className="text-emerald-400 font-bold">0.88</span>
+                                </code>
+                            </div>
+                            <p className="text-xs text-white/35 italic mt-2">
+                                Since 0.88 is positive, it passes through unchanged.
+                            </p>
+                        </div>
+
+                        {/* Final Result */}
+                        <div className="rounded-xl border border-indigo-500/[0.2] bg-gradient-to-br from-indigo-500/[0.08] to-transparent p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-sm font-semibold text-indigo-400">✓ Final Output</span>
+                            </div>
+                            <p className="text-sm text-white/60">
+                                The neuron outputs <code className="font-mono font-bold text-emerald-400 bg-white/[0.04] px-2 py-0.5 rounded">0.88</code>
+                            </p>
+                            <p className="text-xs text-indigo-300/60 mt-2">
+                                This could mean &quot;88% likely you&apos;ll enjoy this movie.&quot; The neuron combined your preference for action, the review score, and your pickiness to make a prediction!
+                            </p>
+                        </div>
+
+                        <div className="mt-5 pt-4 border-t border-white/[0.06] text-xs text-white/35 italic text-center">
+                            That&apos;s all a neuron does: multiply inputs by weights, add bias, then apply an activation. Simple math, powerful results.
+                        </div>
+                    </div>
+                </div>
 
                 <NNPerceptronDiagram />
 
                 <P>
-                    {t("neuralNetworkNarrative.perceptron.p3")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.perceptron.p3Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.perceptron.p3End")}
+                    {t("neuralNetworkNarrative.artificialNeuron.p3")}{" "}
+                    <Highlight>{t("neuralNetworkNarrative.artificialNeuron.p3Highlight")}</Highlight>
+                    {t("neuralNetworkNarrative.artificialNeuron.p3End")}
                 </P>
 
-                <P>{t("neuralNetworkNarrative.perceptron.p4")}</P>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 04 · WEIGHTS AND BIAS ─────────── */}
-            <Section>
-                <SectionLabel
-                    number={t("models.neuralNetworks.sections.weightsAndBias.number")}
-                    label={t("models.neuralNetworks.sections.weightsAndBias.label")}
-                />
-                <Heading>{t("neuralNetworkNarrative.weightsAndBias.title")}</Heading>
-
-                <Lead>{t("neuralNetworkNarrative.weightsAndBias.lead")}</Lead>
-
-                <P>
-                    {t("neuralNetworkNarrative.weightsAndBias.p1")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.weightsAndBias.p1Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.weightsAndBias.p1End")}
-                </P>
-
-                <P>
-                    {t("neuralNetworkNarrative.weightsAndBias.p2")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.weightsAndBias.p2Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.weightsAndBias.p2End")}
-                </P>
-
-                <NNWeightBiasExplorer />
-
-                <P>{t("neuralNetworkNarrative.weightsAndBias.p3")}</P>
-
-                <Callout icon={Lightbulb} accent="indigo" title={t("neuralNetworkNarrative.weightsAndBias.calloutTitle")}>
-                    <p>{t("neuralNetworkNarrative.weightsAndBias.calloutText")}</p>
+                <Callout icon={Lightbulb} accent="indigo" title={t("neuralNetworkNarrative.artificialNeuron.calloutTitle")}>
+                    <p>{t("neuralNetworkNarrative.artificialNeuron.calloutText")}</p>
                 </Callout>
+
+                {/* ─────────── COLLAPSIBLE HISTORY SIDEBAR ─────────── */}
+                <HistorySidebar t={t} />
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 05 · ACTIVATION FUNCTIONS ─────────── */}
+            {/* ─────────── 02 · WHY NON-LINEARITY? ─────────── */}
             <Section>
                 <SectionLabel
-                    number={t("models.neuralNetworks.sections.activationFunctions.number")}
-                    label={t("models.neuralNetworks.sections.activationFunctions.label")}
+                    number={t("models.neuralNetworks.sections.nonLinearity.number")}
+                    label={t("models.neuralNetworks.sections.nonLinearity.label")}
                 />
-                <Heading>{t("neuralNetworkNarrative.activations.title")}</Heading>
+                <Heading>{t("neuralNetworkNarrative.nonLinearity.title")}</Heading>
 
-                <Lead>{t("neuralNetworkNarrative.activations.lead")}</Lead>
+                <Lead>{t("neuralNetworkNarrative.nonLinearity.lead")}</Lead>
 
-                <P>{t("neuralNetworkNarrative.activations.p1")}</P>
+                <P>{t("neuralNetworkNarrative.nonLinearity.p1")}</P>
 
-                <P>{t("neuralNetworkNarrative.activations.p2")}</P>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-40px" }}
-                    className="grid grid-cols-1 gap-3 my-8"
-                >
-                    <ActivationCard
-                        title={t("neuralNetworkNarrative.activations.reluTitle")}
-                        description={t("neuralNetworkNarrative.activations.reluDesc")}
-                    />
-                    <ActivationCard
-                        title={t("neuralNetworkNarrative.activations.sigmoidTitle")}
-                        description={t("neuralNetworkNarrative.activations.sigmoidDesc")}
-                    />
-                    <ActivationCard
-                        title={t("neuralNetworkNarrative.activations.tanhTitle")}
-                        description={t("neuralNetworkNarrative.activations.tanhDesc")}
-                    />
-                </motion.div>
+                <P>{t("neuralNetworkNarrative.nonLinearity.p2")}</P>
 
                 <NNActivationExplorer />
 
                 <P>
-                    {t("neuralNetworkNarrative.activations.p3")}{" "}
-                    <Highlight color="indigo">{t("neuralNetworkNarrative.activations.p3Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.activations.p3End")}
+                    {t("neuralNetworkNarrative.nonLinearity.p3")}{" "}
+                    <Highlight color="indigo">{t("neuralNetworkNarrative.nonLinearity.p3Highlight")}</Highlight>{" "}
+                    {t("neuralNetworkNarrative.nonLinearity.p3End")}
                 </P>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 06 · BACKPROPAGATION ─────────── */}
+            {/* ─────────── 03 · HOW A NETWORK LEARNS ─────────── */}
             <Section>
                 <SectionLabel
-                    number={t("models.neuralNetworks.sections.backpropagation.number")}
-                    label={t("models.neuralNetworks.sections.backpropagation.label")}
+                    number={t("models.neuralNetworks.sections.howItLearns.number")}
+                    label={t("models.neuralNetworks.sections.howItLearns.label")}
                 />
-                <Heading>{t("neuralNetworkNarrative.backpropagation.title")}</Heading>
+                <Heading>{t("neuralNetworkNarrative.howItLearns.title")}</Heading>
 
-                <Lead>{t("neuralNetworkNarrative.backpropagation.lead")}</Lead>
+                <Lead>{t("neuralNetworkNarrative.howItLearns.lead")}</Lead>
 
                 <P>
-                    {t("neuralNetworkNarrative.backpropagation.p1")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.backpropagation.p1Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.backpropagation.p1End")}
+                    {t("neuralNetworkNarrative.howItLearns.p1")}{" "}
+                    <Highlight>{t("neuralNetworkNarrative.howItLearns.p1Highlight")}</Highlight>
+                    {t("neuralNetworkNarrative.howItLearns.p1End")}
                 </P>
 
-                <FormulaBlock
-                    formula="\mathcal{L}(y, \hat{y})"
-                    caption={t("neuralNetworkNarrative.backpropagation.lossCaption")}
-                />
+                {/* Visual Training Example */}
+                <div className="my-10 -mx-2 sm:mx-0 rounded-2xl border border-amber-500/[0.15] bg-amber-500/[0.02] overflow-hidden">
+                    <div className="flex items-center gap-3 px-5 py-3 border-b border-amber-500/[0.1] bg-amber-500/[0.03]">
+                        <Lightbulb className="w-4 h-4 text-amber-400" />
+                        <span className="text-xs font-mono uppercase tracking-widest text-amber-400/80">A Concrete Example</span>
+                    </div>
+                    <div className="p-5 sm:p-6">
+                        <p className="text-sm text-white/50 mb-6">
+                            Let&apos;s watch a single neuron learn from one example, step by step.
+                        </p>
+
+                        {/* Step 1: Setup */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">1</div>
+                                <span className="text-sm font-semibold text-white/70">Starting Values</span>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                                <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
+                                    <span className="text-white/40 block mb-1">Input x</span>
+                                    <span className="font-mono font-bold text-white/70">1.0</span>
+                                </div>
+                                <div className="rounded-lg bg-rose-500/[0.08] border border-rose-500/[0.15] px-3 py-2">
+                                    <span className="text-rose-300/60 block mb-1">Weight w</span>
+                                    <span className="font-mono font-bold text-rose-400">0.50</span>
+                                </div>
+                                <div className="rounded-lg bg-amber-500/[0.08] border border-amber-500/[0.15] px-3 py-2">
+                                    <span className="text-amber-300/60 block mb-1">Bias b</span>
+                                    <span className="font-mono font-bold text-amber-400">−0.20</span>
+                                </div>
+                                <div className="rounded-lg bg-indigo-500/[0.08] border border-indigo-500/[0.15] px-3 py-2">
+                                    <span className="text-indigo-300/60 block mb-1">Target</span>
+                                    <span className="font-mono font-bold text-indigo-400">0.80</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Step 2: Forward Pass */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">2</div>
+                                <span className="text-sm font-semibold text-white/70">Forward Pass — Make a Prediction</span>
+                            </div>
+                            <div className="space-y-2 text-sm text-white/50">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-white/40">Weighted sum:</span>
+                                    <code className="font-mono text-xs bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
+                                        z = w × x + b = 0.50 × 1.0 + (−0.20) = <span className="text-rose-400 font-bold">0.30</span>
+                                    </code>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-white/40">After sigmoid:</span>
+                                    <code className="font-mono text-xs bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
+                                        ŷ = σ(0.30) = <span className="text-indigo-400 font-bold">0.5744</span>
+                                    </code>
+                                </div>
+                                <p className="text-xs text-white/35 italic mt-2">
+                                    The neuron predicted 0.5744, but the target was 0.80. We&apos;re off by quite a bit!
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Step 3: Loss */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">3</div>
+                                <span className="text-sm font-semibold text-white/70">Measure the Error</span>
+                            </div>
+                            <div className="space-y-2 text-sm text-white/50">
+                                <div className="flex items-center gap-2">
+                                    <code className="font-mono text-xs bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
+                                        Loss = (ŷ − target)² = (0.5744 − 0.80)² = <span className="text-emerald-400 font-bold">0.0509</span>
+                                    </code>
+                                </div>
+                                <p className="text-xs text-white/35 italic">
+                                    The loss tells us how bad our prediction was. Lower is better. Now we need to figure out how to reduce it.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Step 4: Backward Pass */}
+                        <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">4</div>
+                                <span className="text-sm font-semibold text-white/70">Backward Pass — Calculate the Gradient</span>
+                            </div>
+                            <div className="space-y-2 text-sm text-white/50">
+                                <p className="text-xs text-white/40 mb-2">
+                                    The gradient tells us <em>which direction to adjust the weight</em>. Think of it like following the slope downhill.
+                                </p>
+                                <div className="space-y-1.5 text-xs font-mono bg-white/[0.03] p-3 rounded-lg border border-white/[0.06]">
+                                    <div>∂L/∂ŷ = 2(ŷ − target) = 2(0.5744 − 0.80) = <span className="text-white/60">−0.4512</span></div>
+                                    <div>∂ŷ/∂z = ŷ(1 − ŷ) = 0.5744 × 0.2456 = <span className="text-white/60">0.2445</span></div>
+                                    <div className="border-t border-white/[0.06] pt-1.5 mt-1.5">∂L/∂w = (−0.4512) × 0.2445 × 1.0 = <span className="text-rose-400 font-bold">−0.1103</span></div>
+                                </div>
+                                <p className="text-xs text-white/35 italic mt-2">
+                                    The negative gradient means we should <em>increase</em> the weight to reduce the loss.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Step 5: Update */}
+                        <div className="rounded-xl border border-amber-500/[0.2] bg-gradient-to-br from-amber-500/[0.08] to-transparent p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-6 h-6 rounded-full bg-amber-500/30 flex items-center justify-center text-xs font-bold text-amber-400">5</div>
+                                <span className="text-sm font-semibold text-amber-400">Update the Weight</span>
+                            </div>
+                            <div className="space-y-2 text-sm text-white/50">
+                                <div className="flex items-center gap-2">
+                                    <code className="font-mono text-xs bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
+                                        w<sub>new</sub> = w − η × gradient = 0.50 − 1.0 × (−0.1103) = <span className="text-amber-400 font-bold">0.6103</span>
+                                    </code>
+                                </div>
+                                <p className="text-xs text-amber-300/60 font-semibold mt-3">
+                                    ✓ The weight increased from 0.50 → 0.6103. Next time, the neuron will predict closer to 0.80!
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-5 pt-4 border-t border-white/[0.06] text-xs text-white/35 italic text-center">
+                            This entire process — forward, loss, backward, update — happens thousands of times during training.
+                        </div>
+                    </div>
+                </div>
 
                 <P>
-                    {t("neuralNetworkNarrative.backpropagation.p2")}{" "}
-                    <Highlight color="amber">{t("neuralNetworkNarrative.backpropagation.p2Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.backpropagation.p2End")}
-                </P>
-
-                <P>
-                    {t("neuralNetworkNarrative.backpropagation.p3")}{" "}
-                    <Highlight color="indigo">{t("neuralNetworkNarrative.backpropagation.p3Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.backpropagation.p3End")}
+                    {t("neuralNetworkNarrative.howItLearns.p2")}{" "}
+                    <Highlight color="amber">{t("neuralNetworkNarrative.howItLearns.p2Highlight")}</Highlight>
+                    {t("neuralNetworkNarrative.howItLearns.p2End")}
                 </P>
 
                 <NNBackpropVisualizer />
 
-                <P>{t("neuralNetworkNarrative.backpropagation.p4")}</P>
-
                 <FormulaBlock
                     formula="w \leftarrow w - \eta \, \frac{\partial \mathcal{L}}{\partial w}"
-                    caption={t("neuralNetworkNarrative.backpropagation.updateCaption")}
+                    caption={t("neuralNetworkNarrative.howItLearns.formulaCaption")}
                 />
 
-                <P>{t("neuralNetworkNarrative.backpropagation.p5")}</P>
+                <P>{t("neuralNetworkNarrative.howItLearns.p3")}</P>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 07 · LEARNING AS PARAMETER UPDATES ─────────── */}
+            {/* ─────────── 04 · WATCHING IT LEARN ─────────── */}
             <Section>
                 <SectionLabel
-                    number={t("models.neuralNetworks.sections.parameterUpdates.number")}
-                    label={t("models.neuralNetworks.sections.parameterUpdates.label")}
+                    number={t("models.neuralNetworks.sections.watchingItLearn.number")}
+                    label={t("models.neuralNetworks.sections.watchingItLearn.label")}
                 />
-                <Heading>{t("neuralNetworkNarrative.parameterUpdates.title")}</Heading>
+                <Heading>{t("neuralNetworkNarrative.watchingItLearn.title")}</Heading>
 
-                <Lead>{t("neuralNetworkNarrative.parameterUpdates.lead")}</Lead>
+                <Lead>{t("neuralNetworkNarrative.watchingItLearn.lead")}</Lead>
 
-                <P>
-                    {t("neuralNetworkNarrative.parameterUpdates.p1")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.parameterUpdates.p1Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.parameterUpdates.p1End")}
-                </P>
+                <P>{t("neuralNetworkNarrative.watchingItLearn.p1")}</P>
 
-                <P>{t("neuralNetworkNarrative.parameterUpdates.p2")}</P>
+                <NNTrainingDemo onHistoryChange={handleTrainingHistory} />
 
-                <Callout icon={Lightbulb} accent="amber" title={t("neuralNetworkNarrative.parameterUpdates.insightTitle")}>
-                    <p>{t("neuralNetworkNarrative.parameterUpdates.insightText")}</p>
-                </Callout>
+                {landscapeHistory.length > 3 &&
+                    landscapeHistory[landscapeHistory.length - 1].loss > landscapeHistory[0].loss && (
+                        <Callout icon={AlertTriangle} accent="amber" title="Loss is increasing!">
+                            <p>
+                                When the learning rate is too high, gradient descent can overshoot the minimum and cause the loss to diverge.
+                                Try reducing η to below 2.0 for stable convergence.
+                            </p>
+                        </Callout>
+                    )}
 
-                <P>{t("neuralNetworkNarrative.parameterUpdates.p3")}</P>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 mt-8 mb-1">
+                    Loss Landscape
+                </p>
+                <p className="text-sm text-white/50 leading-relaxed mb-2">
+                    The heatmap below shows how loss varies across all possible weight and bias combinations.
+                    Train above and watch the red dot descend toward the dark low-loss valley.
+                </p>
 
-                <NNTrainingDemo />
+                {landscapeHistory.length > 0 && (
+                    <NNLossLandscape history={landscapeHistory} target={landscapeTarget} />
+                )}
+
+                <P>{t("neuralNetworkNarrative.watchingItLearn.p2")}</P>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 08 · CONNECTION TO BIGRAM MODELS ─────────── */}
+            {/* ─────────── 05 · THE BRIDGE: TABLES TO PARAMETERS ─────────── */}
             <Section>
                 <SectionLabel
-                    number={t("models.neuralNetworks.sections.bigramConnection.number")}
-                    label={t("models.neuralNetworks.sections.bigramConnection.label")}
+                    number={t("models.neuralNetworks.sections.bridge.number")}
+                    label={t("models.neuralNetworks.sections.bridge.label")}
                 />
-                <Heading>{t("neuralNetworkNarrative.bigramConnection.title")}</Heading>
+                <Heading>{t("neuralNetworkNarrative.bridge.title")}</Heading>
 
-                <Lead>{t("neuralNetworkNarrative.bigramConnection.lead")}</Lead>
+                <Lead>{t("neuralNetworkNarrative.bridge.lead")}</Lead>
 
-                <P>{t("neuralNetworkNarrative.bigramConnection.p1")}</P>
+                <P>{t("neuralNetworkNarrative.bridge.p1")}</P>
 
                 <P>
-                    {t("neuralNetworkNarrative.bigramConnection.p2")}{" "}
-                    <Highlight color="emerald">{t("neuralNetworkNarrative.bigramConnection.p2Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.bigramConnection.p2End")}
+                    {t("neuralNetworkNarrative.bridge.p2")}{" "}
+                    <Highlight color="emerald">{t("neuralNetworkNarrative.bridge.p2Highlight")}</Highlight>
+                    {t("neuralNetworkNarrative.bridge.p2End")}
                 </P>
 
-                <Callout icon={Lightbulb} accent="rose" title={t("neuralNetworkNarrative.bigramConnection.insightTitle")}>
-                    <p>{t("neuralNetworkNarrative.bigramConnection.insightText")}</p>
+                <Callout icon={Lightbulb} accent="rose" title={t("neuralNetworkNarrative.bridge.insightTitle")}>
+                    <p>{t("neuralNetworkNarrative.bridge.insightText")}</p>
                 </Callout>
 
                 <NNBigramComparison />
 
-                <P>{t("neuralNetworkNarrative.bigramConnection.p3")}</P>
+                <P>{t("neuralNetworkNarrative.bridge.p3")}</P>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 09 · POWER AND LIMITATIONS ─────────── */}
+            {/* ─────────── 06 · POWER, LIMITS, AND WHAT COMES NEXT ─────────── */}
             <Section>
                 <SectionLabel
-                    number={t("models.neuralNetworks.sections.limitations.number")}
-                    label={t("models.neuralNetworks.sections.limitations.label")}
+                    number={t("models.neuralNetworks.sections.powerAndLimits.number")}
+                    label={t("models.neuralNetworks.sections.powerAndLimits.label")}
                 />
-                <Heading>{t("neuralNetworkNarrative.limitations.title")}</Heading>
+                <Heading>{t("neuralNetworkNarrative.powerAndLimits.title")}</Heading>
 
-                <Lead>{t("neuralNetworkNarrative.limitations.lead")}</Lead>
+                <Lead>{t("neuralNetworkNarrative.powerAndLimits.lead")}</Lead>
 
                 <P>
-                    {t("neuralNetworkNarrative.limitations.p1")}{" "}
-                    <Highlight>{t("neuralNetworkNarrative.limitations.p1Highlight")}</Highlight>{" "}
-                    {t("neuralNetworkNarrative.limitations.p1End")}
+                    {t("neuralNetworkNarrative.powerAndLimits.p1")}{" "}
+                    <Highlight>{t("neuralNetworkNarrative.powerAndLimits.p1Highlight")}</Highlight>{" "}
+                    {t("neuralNetworkNarrative.powerAndLimits.p1End")}
                 </P>
 
                 <Callout icon={AlertTriangle} accent="amber" title="XOR Problem">
-                    <p>{t("neuralNetworkNarrative.limitations.p2")}</p>
+                    <p>{t("neuralNetworkNarrative.powerAndLimits.p2")}</p>
                 </Callout>
 
-                <P>{t("neuralNetworkNarrative.limitations.p3")}</P>
+                <XORDecisionBoundary />
 
-                <PullQuote>{t("neuralNetworkNarrative.limitations.quote")}</PullQuote>
+                <P>{t("neuralNetworkNarrative.powerAndLimits.p3")}</P>
 
-                <P>{t("neuralNetworkNarrative.limitations.p4")}</P>
+                <P>{t("neuralNetworkNarrative.powerAndLimits.p4")}</P>
+
+                <Callout icon={Layers} accent="indigo" title={t("neuralNetworkNarrative.powerAndLimits.calloutTitle")}>
+                    <p>{t("neuralNetworkNarrative.powerAndLimits.calloutText")}</p>
+                </Callout>
+            </Section>
+
+            {/* ───────────────── CTA ───────────────── */}
+            <Section>
+                <div className="text-center mb-10">
+                    <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-3">
+                        {t("neuralNetworkNarrative.cta.title")}
+                    </h2>
+                    <p className="text-sm text-white/35 max-w-md mx-auto leading-relaxed">
+                        {t("neuralNetworkNarrative.cta.subtitle")}
+                    </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setMode("free")}
+                        className="group relative rounded-2xl border border-rose-500/20 bg-gradient-to-br from-rose-950/20 to-black/60 p-6 text-left transition-colors hover:border-rose-500/40 overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2 rounded-xl bg-rose-500/15">
+                                    <Beaker className="w-5 h-5 text-rose-300" />
+                                </div>
+                                <span className="text-lg font-bold text-white">
+                                    {t("neuralNetworkNarrative.cta.labButton")}
+                                </span>
+                            </div>
+                            <p className="text-sm text-white/45 leading-relaxed">
+                                {t("neuralNetworkNarrative.cta.labDesc")}
+                            </p>
+                        </div>
+                    </motion.button>
+
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => router.push("/lab/mlp")}
+                        className="group relative rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-950/20 to-black/60 p-6 text-left transition-colors hover:border-violet-500/40 overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2 rounded-xl bg-violet-500/15">
+                                    <Layers className="w-5 h-5 text-violet-300" />
+                                </div>
+                                <span className="text-lg font-bold text-white">
+                                    {t("neuralNetworkNarrative.cta.mlpButton")}
+                                </span>
+                            </div>
+                            <p className="text-sm text-white/45 leading-relaxed">
+                                {t("neuralNetworkNarrative.cta.mlpDesc")}
+                            </p>
+                        </div>
+                    </motion.button>
+                </div>
             </Section>
 
             {/* ───────────────── CODA ───────────────── */}
@@ -575,25 +869,6 @@ export function NeuralNetworkNarrative() {
                     {t("neuralNetworkNarrative.footer.brand")}
                 </div>
             </motion.footer>
-
-            {/*
-                ═══════════════════════════════════════════════════════════
-                TODO: Future Interactive Enhancements
-                ═══════════════════════════════════════════════════════════
-                - Multi-layer network extension: add a hidden layer to the
-                  perceptron diagram to show how depth adds expressivity.
-                - Deeper micrograd-style computation graph: expand the
-                  backprop visualizer with intermediate multiply/add nodes
-                  for a full Karpathy-style trace.
-                - Real-time training curves: plot loss over steps as a
-                  smooth SVG line chart alongside the training demo.
-                - Advanced N-gram comparison: extend the bigram comparison
-                  to show how N-gram context matrices compare to multi-layer
-                  neural approaches.
-                - i18n for interactive component labels: translate all
-                  button labels, headings, and captions in the viz components.
-                ═══════════════════════════════════════════════════════════
-            */}
         </article>
     );
 }

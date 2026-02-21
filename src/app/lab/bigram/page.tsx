@@ -258,20 +258,20 @@ function BigramPageContent() {
                         viewport={{ once: true }}
                         className="mt-32 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-6"
                     >
+                        <p className="text-xs text-white/30 max-w-sm text-center leading-relaxed">
+                            {t("bigramNarrative.cliffhanger.hookLine")}
+                        </p>
                         <Link
                             href="/lab/ngram"
-                            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/70 hover:text-white text-sm font-semibold transition-colors"
+                            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 text-amber-300 hover:text-amber-200 text-sm font-semibold transition-colors"
                         >
-                            Next: N-Gram Model
+                            {t("bigramNarrative.cta.nextTitle")}
                             <ArrowRight className="w-4 h-4" />
                         </Link>
                         <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-white/20">
                             <FlaskConical className="h-3 w-3" />
                             <span>LM-Lab · {t("models.bigram.hero.scientificInstrument")}</span>
                         </div>
-                        <p className="text-[10px] text-white/15 font-mono">
-                            Switch to Story Mode for the guided narrative experience
-                        </p>
                     </motion.div>
                 </div>
             )}

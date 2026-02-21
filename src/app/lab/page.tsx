@@ -94,17 +94,6 @@ export default function LabLandingPage() {
             complexity: 1,
         },
         {
-            id: "neural-networks",
-            name: t("lab.models.neuralNetworks.name"),
-            subtitle: t("lab.models.neuralNetworks.subtitle"),
-            description: t("lab.models.neuralNetworks.description"),
-            status: "ready" as const,
-            icon: Network,
-            href: "/lab/neural-networks",
-            accent: "rose",
-            complexity: 2,
-        },
-        {
             id: "ngram",
             name: t("lab.models.ngram.name"),
             subtitle: t("lab.models.ngram.subtitle"),
@@ -113,6 +102,17 @@ export default function LabLandingPage() {
             icon: Activity,
             href: "/lab/ngram",
             accent: "blue",
+            complexity: 2,
+        },
+        {
+            id: "neural-networks",
+            name: t("lab.models.neuralNetworks.name"),
+            subtitle: t("lab.models.neuralNetworks.subtitle"),
+            description: t("lab.models.neuralNetworks.description"),
+            status: "ready" as const,
+            icon: Network,
+            href: "/lab/neural-networks",
+            accent: "rose",
             complexity: 3,
         },
         {
@@ -272,7 +272,7 @@ export default function LabLandingPage() {
                         {/* Horizontal timeline */}
                         <div className="relative flex items-center justify-between px-4 py-6">
                             {/* Connecting line */}
-                            <div className="absolute top-1/2 left-8 right-8 h-px bg-gradient-to-r from-emerald-500/40 via-blue-500/30 via-violet-500/20 to-white/[0.06] -translate-y-1/2" />
+                            <div className="absolute top-1/2 left-8 right-8 h-px bg-gradient-to-r from-emerald-500/40 via-blue-500/30 via-rose-500/25 via-violet-500/15 to-white/[0.06] -translate-y-1/2" />
 
                             {models.map((model, idx) => {
                                 const a = accentStyles[model.accent];
@@ -302,7 +302,7 @@ export default function LabLandingPage() {
                                                 isReady ? "text-white/50" : "text-white/20"
                                             )}
                                         >
-                                            {model.id === "mlp" ? "MLP" : model.id === "neural-networks" ? "Neural Nets" : model.id.charAt(0).toUpperCase() + model.id.slice(1)}
+                                            {model.id === "mlp" ? "MLP" : model.id === "neural-networks" ? "Neural Nets" : model.id === "ngram" ? "N-gram" : model.id.charAt(0).toUpperCase() + model.id.slice(1)}
                                         </span>
                                         {!isReady && (
                                             <span className="text-[8px] font-mono text-white/15 uppercase">

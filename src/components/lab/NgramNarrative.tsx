@@ -16,10 +16,14 @@ import { useI18n } from "@/i18n/context";
 import { useRouter } from "next/navigation";
 import { useLabMode } from "@/context/LabModeContext";
 
-import { NgramContextGrowthAnimation } from "@/components/lab/NgramPedagogyPanels";
 import { NgramMiniTransitionTable } from "@/components/lab/NgramPedagogyPanels";
 import { NgramComparison } from "@/components/lab/NgramPedagogyPanels";
 import { NgramFiveGramScale } from "@/components/lab/NgramPedagogyPanels";
+import { CountingComparisonWidget } from "@/components/lab/CountingComparisonWidget";
+import { ConcreteImprovementExample } from "@/components/lab/ConcreteImprovementExample";
+import { ExponentialGrowthAnimator } from "@/components/lab/ExponentialGrowthAnimator";
+import { GeneralizationFailureDemo } from "@/components/lab/GeneralizationFailureDemo";
+import { StatisticalEraTimeline } from "@/components/lab/StatisticalEraTimeline";
 
 /* ─────────────────────────────────────────────
    Primitive building blocks (matches Bigram / NN narrative style)
@@ -242,47 +246,6 @@ function ContextWindowVisualizer() {
 }
 
 /* ─────────────────────────────────────────────
-   Vocabulary scale comparison
-   ───────────────────────────────────────────── */
-
-function VocabularyScaleVisual() {
-    return (
-        <div className="grid md:grid-cols-2 gap-6 my-10">
-            <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-amber-400" />
-                    <h3 className="text-lg font-bold text-white">Character-level</h3>
-                </div>
-                <div className="font-mono text-3xl font-bold text-amber-300 mb-2">~96</div>
-                <p className="text-xs text-white/40 uppercase tracking-wider font-semibold mb-3">tokens</p>
-                <p className="text-white/50 text-sm leading-relaxed">
-                    Small tables, but individual characters carry almost no semantic meaning. Easy to manage, hard to capture intent.
-                </p>
-                <div className="mt-4 h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                    <div className="h-full rounded-full bg-amber-500/50 w-[2%]" />
-                </div>
-                <p className="text-[10px] text-white/30 mt-1">Relative vocabulary size</p>
-            </div>
-            <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-red-400" />
-                    <h3 className="text-lg font-bold text-white">Word-level</h3>
-                </div>
-                <div className="font-mono text-3xl font-bold text-red-300 mb-2">50,000+</div>
-                <p className="text-xs text-white/40 uppercase tracking-wider font-semibold mb-3">tokens</p>
-                <p className="text-white/50 text-sm leading-relaxed">
-                    Rich semantics per token, but even a bigram matrix needs 2.5 billion cells. Trigrams require trillions.
-                </p>
-                <div className="mt-4 h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                    <div className="h-full rounded-full bg-red-500/50 w-full" />
-                </div>
-                <p className="text-[10px] text-white/30 mt-1">Relative vocabulary size</p>
-            </div>
-        </div>
-    );
-}
-
-/* ─────────────────────────────────────────────
    Metrics legend for comparison chart
    ───────────────────────────────────────────── */
 
@@ -374,14 +337,12 @@ export function NgramNarrative({
                 </motion.div>
             </header>
 
-            {/* ─────────── 1 · THE NEW IDEA: MORE CONTEXT ─────────── */}
+            {/* ─────────── §1 · THE FIX: MORE CONTEXT ─────────── */}
             <Section>
                 <SectionLabel number="01" label={t("ngramNarrative.moreContext.label")} />
                 <Heading>{t("ngramNarrative.moreContext.title")}</Heading>
 
-                <Lead>
-                    {t("ngramNarrative.moreContext.lead")}
-                </Lead>
+                <Lead>{t("ngramNarrative.moreContext.lead")}</Lead>
 
                 <P>
                     {t("ngramNarrative.moreContext.p1")}{" "}
@@ -390,8 +351,14 @@ export function NgramNarrative({
                 </P>
 
                 <P>{t("ngramNarrative.moreContext.p2")}</P>
-
                 <P>{t("ngramNarrative.moreContext.p3")}</P>
+
+                <FigureWrapper
+                    label="Context window · Natural language example"
+                    hint={t("ngramNarrative.contextWindow.caption")}
+                >
+                    <ContextWindowVisualizer />
+                </FigureWrapper>
 
                 <Callout title={t("ngramNarrative.moreContext.calloutTitle")}>
                     <p>{t("ngramNarrative.moreContext.calloutText")}</p>
@@ -400,51 +367,12 @@ export function NgramNarrative({
 
             <SectionBreak />
 
-            {/* ─────────── 2 · INTERACTIVE CONTEXT WINDOW VISUALIZER ─────────── */}
+            {/* ─────────── §2 · COUNTING WITH CONTEXT ─────────── */}
             <Section>
-                <SectionLabel number="02" label={t("ngramNarrative.contextWindow.label")} />
-                <Heading>{t("ngramNarrative.contextWindow.title")}</Heading>
-
-                <Lead>
-                    {t("ngramNarrative.contextWindow.lead")}
-                </Lead>
-
-                <FigureWrapper
-                    label="Context window · Natural language example"
-                    hint="How the context window looks on a real sentence. Each N value highlights a different amount of history."
-                >
-                    <ContextWindowVisualizer />
-                </FigureWrapper>
-
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    className="text-center text-sm text-amber-300/60 italic font-light my-6"
-                >
-                    {t("ngramNarrative.contextWindow.caption")}
-                </motion.p>
-
-                <FigureWrapper
-                    label="Context growth · Character-level"
-                    hint={t("ngramNarrative.contextWindow.hint")}
-                >
-                    <NgramContextGrowthAnimation />
-                </FigureWrapper>
-
-                <P>{t("ngramNarrative.contextWindow.p1")}</P>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 3 · HOW N-GRAM WORKS INTERNALLY ─────────── */}
-            <Section>
-                <SectionLabel number="03" label={t("ngramNarrative.howItWorks.label")} />
+                <SectionLabel number="02" label={t("ngramNarrative.howItWorks.label")} />
                 <Heading>{t("ngramNarrative.howItWorks.title")}</Heading>
 
-                <Lead>
-                    {t("ngramNarrative.howItWorks.lead")}
-                </Lead>
+                <Lead>{t("ngramNarrative.howItWorks.lead")}</Lead>
 
                 <P>
                     {t("ngramNarrative.howItWorks.p1")}{" "}
@@ -460,133 +388,131 @@ export function NgramNarrative({
                 >
                     <NgramMiniTransitionTable n={contextSize} />
                 </FigureWrapper>
+
+                <FigureWrapper
+                    label="Counting comparison · Bigram vs. Trigram"
+                    hint="Same training text, different granularity. Notice how longer contexts produce more specific counts."
+                >
+                    <CountingComparisonWidget />
+                </FigureWrapper>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 4 · PURELY STATISTICAL MODEL ─────────── */}
+            {/* ─────────── §3 · THE PREDICTION GETS BETTER ─────────── */}
             <Section>
-                <SectionLabel number="04" label={t("ngramNarrative.statistical.label")} />
-                <Heading>{t("ngramNarrative.statistical.title")}</Heading>
+                <SectionLabel number="03" label={t("ngramNarrative.improvement.label")} />
+                <Heading>{t("ngramNarrative.improvement.title")}</Heading>
 
-                <Lead>
-                    {t("ngramNarrative.statistical.lead")}
-                </Lead>
+                <Lead>{t("ngramNarrative.improvement.lead")}</Lead>
 
-                <P>
-                    {t("ngramNarrative.statistical.p1")}{" "}
-                    <Highlight>{t("ngramNarrative.statistical.p1Highlight")}</Highlight>{" "}
-                    {t("ngramNarrative.statistical.p1End")}
-                </P>
+                <P>{t("ngramNarrative.improvement.example")}</P>
 
-                <P>{t("ngramNarrative.statistical.p2")}</P>
-
-                <Callout icon={AlertTriangle} title={t("ngramNarrative.statistical.calloutTitle")}>
-                    <p>{t("ngramNarrative.statistical.calloutText")}</p>
-                </Callout>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 5 · INCREASING CONTEXT VS EXPLODING COMPLEXITY ─────────── */}
-            <Section>
-                <SectionLabel number="05" label={t("ngramNarrative.complexity.label")} />
-                <Heading>{t("ngramNarrative.complexity.title")}</Heading>
-
-                <Lead>
-                    {t("ngramNarrative.complexity.lead")}
-                </Lead>
-
-                <P>
-                    {t("ngramNarrative.complexity.p1")}{" "}
-                    <Highlight>{t("ngramNarrative.complexity.p1Highlight")}</Highlight>
-                    {t("ngramNarrative.complexity.p1End")}
-                </P>
-
-                <P>{t("ngramNarrative.complexity.p2")}</P>
+                <FigureWrapper
+                    label="Confidence improvement · Context length effect"
+                    hint="Each extra character of context sharpens the prediction."
+                >
+                    <ConcreteImprovementExample />
+                </FigureWrapper>
 
                 <FigureWrapper
                     label={t("ngramNarrative.complexity.comparisonLabel")}
                     hint={t("ngramNarrative.complexity.comparisonHint")}
                 >
                     <NgramComparison vocabSize={vocabSize} metricsByN={comparisonMetrics} />
+                    <MetricsLegend />
+                </FigureWrapper>
+            </Section>
+
+            <SectionBreak />
+
+            {/* ─────────── §4 · THE PRICE OF MEMORY ─────────── */}
+            <Section>
+                <SectionLabel number="04" label={t("ngramNarrative.complexity.label")} />
+                <Heading>{t("ngramNarrative.complexity.title")}</Heading>
+
+                <Lead>{t("ngramNarrative.complexity.lead")}</Lead>
+
+                <P>{t("ngramNarrative.complexity.p1")}</P>
+
+                <FigureWrapper
+                    label="Exponential growth · Table size by N"
+                    hint="Each step multiplies the previous count by the vocabulary size."
+                >
+                    <ExponentialGrowthAnimator />
                 </FigureWrapper>
 
-                <MetricsLegend />
+                <P>{t("ngramNarrative.complexity.p2")}</P>
 
                 <div className="my-10">
                     <NgramFiveGramScale vocabSize={vocabSize} />
                 </div>
+
+                <Callout icon={AlertTriangle} title={t("ngramNarrative.complexity.vocabCalloutTitle")}>
+                    <p>{t("ngramNarrative.complexity.vocabCalloutText")}</p>
+                </Callout>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 6 · CHARACTERS VS WORDS: VOCABULARY EXPLOSION ─────────── */}
+            {/* ─────────── §5 · THE DEEPER PROBLEM ─────────── */}
             <Section>
-                <SectionLabel number="06" label={t("ngramNarrative.vocabulary.label")} />
-                <Heading>{t("ngramNarrative.vocabulary.title")}</Heading>
+                <SectionLabel number="05" label={t("ngramNarrative.deeperProblem.label")} />
+                <Heading>{t("ngramNarrative.deeperProblem.title")}</Heading>
 
-                <Lead>
-                    {t("ngramNarrative.vocabulary.lead")}
-                </Lead>
+                <Lead>{t("ngramNarrative.deeperProblem.lead")}</Lead>
 
-                <P>
-                    {t("ngramNarrative.vocabulary.p1")}{" "}
-                    <Highlight>{t("ngramNarrative.vocabulary.p1Highlight")}</Highlight>
-                    {t("ngramNarrative.vocabulary.p1End")}
-                </P>
+                <P>{t("ngramNarrative.deeperProblem.p1")}</P>
+                <P>{t("ngramNarrative.deeperProblem.p2")}</P>
+                <P>{t("ngramNarrative.deeperProblem.p3")}</P>
 
-                <P>{t("ngramNarrative.vocabulary.p2")}</P>
+                <FigureWrapper
+                    label="Generalization failure · Cat vs. Dog"
+                    hint="Hover the right column to see what the model returns for an unseen context."
+                >
+                    <GeneralizationFailureDemo />
+                </FigureWrapper>
 
-                <VocabularyScaleVisual />
+                <Callout icon={AlertTriangle} title={t("ngramNarrative.deeperProblem.calloutTitle")}>
+                    <p>{t("ngramNarrative.deeperProblem.calloutText")}</p>
+                </Callout>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 7 · LACK OF TRUE UNDERSTANDING ─────────── */}
+            {/* ─────────── §6 · THE END OF COUNTING ─────────── */}
             <Section>
-                <SectionLabel number="07" label={t("ngramNarrative.noUnderstanding.label")} />
-                <Heading>{t("ngramNarrative.noUnderstanding.title")}</Heading>
+                <SectionLabel number="06" label={t("ngramNarrative.endOfCounting.label")} />
+                <Heading>{t("ngramNarrative.endOfCounting.title")}</Heading>
 
-                <Lead>
-                    {t("ngramNarrative.noUnderstanding.lead")}
-                </Lead>
+                <Lead>{t("ngramNarrative.endOfCounting.lead")}</Lead>
 
-                <P>{t("ngramNarrative.noUnderstanding.p1")}</P>
+                <P>{t("ngramNarrative.endOfCounting.p1")}</P>
+                <P>{t("ngramNarrative.endOfCounting.p2")}</P>
+                <P>{t("ngramNarrative.endOfCounting.p3")}</P>
 
-                <P>
-                    {t("ngramNarrative.noUnderstanding.p2")}{" "}
-                    <Highlight>{t("ngramNarrative.noUnderstanding.p2Highlight")}</Highlight>{" "}
-                    {t("ngramNarrative.noUnderstanding.p2End")}
-                </P>
+                <FigureWrapper
+                    label="Statistical era · Learning path"
+                    hint="The counting era is complete. Something fundamentally different comes next."
+                >
+                    <StatisticalEraTimeline />
+                </FigureWrapper>
 
-                <P>{t("ngramNarrative.noUnderstanding.p3")}</P>
+                <PullQuote>{t("ngramNarrative.endOfCounting.quote")}</PullQuote>
+
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    className="text-center text-sm text-amber-300/50 italic font-light mt-2"
+                >
+                    {t("ngramNarrative.endOfCounting.hookLine")}
+                </motion.p>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 8 · CONCLUSION ─────────── */}
-            <Section>
-                <SectionLabel number="08" label={t("ngramNarrative.conclusion.label")} />
-                <Heading>{t("ngramNarrative.conclusion.title")}</Heading>
-
-                <Lead>
-                    {t("ngramNarrative.conclusion.lead")}
-                </Lead>
-
-                <P>{t("ngramNarrative.conclusion.p1")}</P>
-                <P>{t("ngramNarrative.conclusion.p2")}</P>
-                <P>{t("ngramNarrative.conclusion.p3")}</P>
-                <P>{t("ngramNarrative.conclusion.p4")}</P>
-
-                <PullQuote>
-                    {t("ngramNarrative.conclusion.quote")}
-                </PullQuote>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 9 · CALL TO ACTION ─────────── */}
+            {/* ─────────── CTA ─────────── */}
             <Section>
                 <div className="text-center mb-10">
                     <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-3">

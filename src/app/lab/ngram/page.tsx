@@ -3,6 +3,7 @@
 import { LabShell } from "@/components/lab/LabShell";
 import { ModelHero } from "@/components/lab/ModelHero";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 import { useNgramVisualization } from "@/hooks/useNgramVisualization";
 import { useNgramStepwise } from "@/hooks/useNgramStepwise";
@@ -23,6 +24,9 @@ import {
     Sparkles,
     AlertTriangle,
     Gauge,
+    ChevronDown,
+    Microscope,
+    ArrowRight,
 } from "lucide-react";
 import { useEffect, useCallback, useRef, useState, useMemo } from "react";
 import { useI18n } from "@/i18n/context";
@@ -118,6 +122,175 @@ function FlowHint({ text }: { text: string }) {
         >
             {text}
         </motion.p>
+    );
+}
+
+/* ─────────────────────────────────────────────
+   Guided Experiments panel
+   ───────────────────────────────────────────── */
+
+const EXPERIMENTS = [
+    {
+        id: 1,
+        title: "The Context Effect",
+        instruction: "Set N=1, generate 50 characters, and save the output. Then set N=3 and generate again from the same seed phrase.",
+        observation: "N=3 output reads more naturally — you'll see common prefixes like 'th', 'the', 'in' appear more reliably than with N=1.",
+        accent: "amber",
+    },
+    {
+        id: 2,
+        title: "Finding the Wall",
+        instruction: "Step through N=1 → N=2 → N=3 → N=4 and watch the Sparsity panel after each change. Record the perplexity and context utilization at each N.",
+        observation: "Perplexity drops with each step, but context utilization also plummets. At N=4, most rows in the table are empty — the model runs out of evidence.",
+        accent: "cyan",
+    },
+    {
+        id: 3,
+        title: "The Impossible Context",
+        instruction: "Set N=4. In the Inference Console, type a phrase the model has never seen — try 'zqxj' or any unusual 4-character combination.",
+        observation: "The model returns no confident prediction. It has no entry for this exact 4-character context and cannot reason by analogy.",
+        accent: "red",
+    },
+    {
+        id: 4,
+        title: "Bigram vs 4-gram Showdown",
+        instruction: "Generate 80 characters at N=1 and save it. Then switch to N=4 and generate 80 characters from the same seed. Read both outputs aloud.",
+        observation: "N=1 sounds random. N=4 produces recognizable fragments but breaks down mid-sequence when it hits unseen contexts and has to guess randomly.",
+        accent: "violet",
+    },
+    {
+        id: 5,
+        title: "Diminishing Returns",
+        instruction: "Record the perplexity from the Performance Summary at N=1, 2, 3, and 4. Calculate the drop from each step to the next.",
+        observation: "The improvement from N=1→2 is large. N=2→3 is smaller. N=3→4 is smaller still. More memory helps less and less as sparsity grows.",
+        accent: "emerald",
+    },
+] as const;
+
+type ExperimentAccent = typeof EXPERIMENTS[number]["accent"];
+
+const EXP_BORDER: Record<ExperimentAccent, string> = {
+    amber: "border-amber-500/20",
+    cyan: "border-cyan-500/20",
+    red: "border-red-500/20",
+    violet: "border-violet-500/20",
+    emerald: "border-emerald-500/20",
+};
+const EXP_DOT: Record<ExperimentAccent, string> = {
+    amber: "bg-amber-400",
+    cyan: "bg-cyan-400",
+    red: "bg-red-400",
+    violet: "bg-violet-400",
+    emerald: "bg-emerald-400",
+};
+const EXP_TEXT: Record<ExperimentAccent, string> = {
+    amber: "text-amber-300",
+    cyan: "text-cyan-300",
+    red: "text-red-300",
+    violet: "text-violet-300",
+    emerald: "text-emerald-300",
+};
+
+function GuidedExperiments() {
+    const [open, setOpen] = useState(false);
+    const [expanded, setExpanded] = useState<number | null>(null);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="max-w-6xl mx-auto px-6 mb-6"
+        >
+            {/* Toggle header */}
+            <button
+                onClick={() => setOpen(o => !o)}
+                className="w-full flex items-center gap-3 px-5 py-3.5 rounded-xl border border-amber-500/15 bg-amber-500/[0.03] hover:bg-amber-500/[0.05] transition-colors group"
+            >
+                <Microscope className="w-4 h-4 text-amber-400/60 shrink-0" />
+                <div className="flex-1 text-left">
+                    <span className="text-sm font-bold text-white/60 group-hover:text-white/80 transition-colors">
+                        Guided Experiments
+                    </span>
+                    <span className="ml-2.5 text-[10px] font-mono text-amber-400/35 uppercase tracking-widest">
+                        5 challenges
+                    </span>
+                </div>
+                <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown className="w-4 h-4 text-white/20" />
+                </motion.div>
+            </button>
+
+            {/* Experiment cards */}
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.28, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3">
+                            {EXPERIMENTS.map((exp) => {
+                                const isExpanded = expanded === exp.id;
+                                return (
+                                    <div
+                                        key={exp.id}
+                                        className={`rounded-xl border ${EXP_BORDER[exp.accent]} bg-white/[0.02] cursor-pointer select-none`}
+                                        onClick={() => setExpanded(isExpanded ? null : exp.id)}
+                                    >
+                                        <div className="flex items-center gap-3 px-4 py-3">
+                                            <div className={`w-2 h-2 rounded-full shrink-0 ${EXP_DOT[exp.accent]}`} />
+                                            <span className={`text-sm font-bold flex-1 leading-tight ${EXP_TEXT[exp.accent]}`}>
+                                                {exp.title}
+                                            </span>
+                                            <motion.div
+                                                animate={{ rotate: isExpanded ? 180 : 0 }}
+                                                transition={{ duration: 0.15 }}
+                                            >
+                                                <ChevronDown className="w-3.5 h-3.5 text-white/20 shrink-0" />
+                                            </motion.div>
+                                        </div>
+
+                                        <AnimatePresence>
+                                            {isExpanded && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: "auto", opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    transition={{ duration: 0.18 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="px-4 pb-4 pt-3 border-t border-white/[0.05] flex flex-col gap-3">
+                                                        <div>
+                                                            <p className="text-[9px] font-mono font-bold uppercase tracking-widest text-white/25 mb-1.5">
+                                                                Instructions
+                                                            </p>
+                                                            <p className="text-xs text-white/45 leading-relaxed">
+                                                                {exp.instruction}
+                                                            </p>
+                                                        </div>
+                                                        <div className={`rounded-lg border ${EXP_BORDER[exp.accent]} bg-white/[0.015] px-3 py-2.5`}>
+                                                            <p className="text-[9px] font-mono font-bold uppercase tracking-widest text-white/20 mb-1.5">
+                                                                Expected observation
+                                                            </p>
+                                                            <p className={`text-xs leading-relaxed ${EXP_TEXT[exp.accent]} opacity-60`}>
+                                                                {exp.observation}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 }
 
@@ -286,6 +459,9 @@ function NgramPageContent() {
                         {t("models.ngram.lab.badge")}
                     </p>
                 </motion.div>
+
+                {/* Guided Experiments */}
+                <GuidedExperiments />
 
                 {/* ROW 1: Context Controller */}
                 <div className="max-w-6xl mx-auto px-6 mb-4">
@@ -486,10 +662,22 @@ function NgramPageContent() {
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    className="mt-16 flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-cyan-300/15"
+                    className="mt-16 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-6"
                 >
-                    <FlaskConical className="h-3 w-3" />
-                    {t("models.ngram.lab.footer")}
+                    <p className="text-xs text-white/30 max-w-sm text-center leading-relaxed">
+                        {t("ngramNarrative.endOfCounting.hookLine")}
+                    </p>
+                    <Link
+                        href="/lab/neural-networks"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 text-rose-300 hover:text-rose-200 text-sm font-semibold transition-colors"
+                    >
+                        {t("ngramNarrative.cta.neuralButton")}
+                        <ArrowRight className="w-4 h-4" />
+                    </Link>
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-cyan-300/15">
+                        <FlaskConical className="h-3 w-3" />
+                        {t("models.ngram.lab.footer")}
+                    </div>
                 </motion.div>
             </div>
         </LabShell>
