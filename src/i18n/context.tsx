@@ -30,7 +30,7 @@ function getNestedValue(obj: any, key: string): string | undefined {
 interface I18nContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
-    t: (key: string) => string;
+    t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -59,18 +59,28 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.lang = lang;
     }, []);
 
-    const t = useCallback((key: string): string => {
-        if (!lookupCaches.current[language]) {
-            lookupCaches.current[language] = new Map();
+    const t = useCallback((key: string, params?: Record<string, string | number>): string => {
+        // Only cache non-parameterized lookups for now to keep it simple
+        if (!params && lookupCaches.current[language]) {
+            const cache = lookupCaches.current[language]!;
+            const cached = cache.get(key);
+            if (cached !== undefined) return cached;
         }
-        const cache = lookupCaches.current[language]!;
-        const cached = cache.get(key);
-        if (cached !== undefined) return cached;
-        const result =
+
+        let result =
             getNestedValue(dictionaries[language], key) ??
             getNestedValue(dictionaries.en, key) ??
             key;
-        cache.set(key, result);
+
+        if (params) {
+            Object.entries(params).forEach(([k, v]) => {
+                result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+            });
+        }
+
+        if (!params && lookupCaches.current[language]) {
+            lookupCaches.current[language]!.set(key, result);
+        }
         return result;
     }, [language]);
 

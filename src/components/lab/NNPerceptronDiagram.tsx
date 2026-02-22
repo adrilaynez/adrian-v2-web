@@ -80,12 +80,12 @@ export function NNPerceptronDiagram() {
                         <span className="w-2.5 h-2.5 rounded-full bg-green-500/30" />
                     </div>
                     <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">
-                        Interactive · Perceptron
+                        {t(`${PK}.diagram.title`)}
                     </span>
                 </div>
 
                 <div className="p-4 sm:p-6">
-                    <svg viewBox="0 0 640 245" className="w-full mb-6" role="img" aria-label="Perceptron flow diagram">
+                    <svg viewBox="0 0 640 245" className="w-full mb-6" role="img" aria-label={t(`${PK}.diagram.ariaLabel`)}>
                         {/* Connections */}
                         <line x1="86" y1="70" x2="250" y2="116" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
                         <line x1="86" y1="180" x2="250" y2="134" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
@@ -102,13 +102,13 @@ export function NNPerceptronDiagram() {
 
                         {/* Weight labels */}
                         <g>
-                            <title>Weight w₁ = {w1.toFixed(2)} — Controls how much input x₁ influences the sum</title>
+                            <title>{t(`${PK}.diagram.tooltipW1`, { val: w1.toFixed(2) })}</title>
                             <text x="160" y="82" textAnchor="middle" fontSize="10" fontFamily={FONT} fill="rgb(251,113,133)" fontWeight="600" className="cursor-help">
                                 w₁ = {w1.toFixed(2)}
                             </text>
                         </g>
                         <g>
-                            <title>Weight w₂ = {w2.toFixed(2)} — Controls how much input x₂ influences the sum</title>
+                            <title>{t(`${PK}.diagram.tooltipW2`, { val: w2.toFixed(2) })}</title>
                             <text x="160" y="166" textAnchor="middle" fontSize="10" fontFamily={FONT} fill="rgb(251,113,133)" fontWeight="600" className="cursor-help">
                                 w₂ = {w2.toFixed(2)}
                             </text>
@@ -116,7 +116,7 @@ export function NNPerceptronDiagram() {
 
                         {/* Input x₁ */}
                         <g className="cursor-help">
-                            <title>Input x₁ = {x1.toFixed(1)} — The first input feature fed into the neuron</title>
+                            <title>{t(`${PK}.diagram.tooltipX1`, { val: x1.toFixed(1) })}</title>
                             <circle cx="60" cy="70" r="26" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
                             <text x="60" y="63" textAnchor="middle" fontSize="9" fontFamily={FONT} fill="rgba(255,255,255,0.3)">x₁</text>
                             <text x="60" y="79" textAnchor="middle" fontSize="14" fontFamily={FONT} fill="rgba(255,255,255,0.7)" fontWeight="700">{x1.toFixed(1)}</text>
@@ -124,7 +124,7 @@ export function NNPerceptronDiagram() {
 
                         {/* Input x₂ */}
                         <g className="cursor-help">
-                            <title>Input x₂ = {x2.toFixed(1)} — The second input feature fed into the neuron</title>
+                            <title>{t(`${PK}.diagram.tooltipX2`, { val: x2.toFixed(1) })}</title>
                             <circle cx="60" cy="180" r="26" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
                             <text x="60" y="173" textAnchor="middle" fontSize="9" fontFamily={FONT} fill="rgba(255,255,255,0.3)">x₂</text>
                             <text x="60" y="189" textAnchor="middle" fontSize="14" fontFamily={FONT} fill="rgba(255,255,255,0.7)" fontWeight="700">{x2.toFixed(1)}</text>
@@ -132,7 +132,7 @@ export function NNPerceptronDiagram() {
 
                         {/* Sum + bias node */}
                         <g className="cursor-help">
-                            <title>Weighted Sum z = {z.toFixed(2)} — Calculated as (w₁×x₁) + (w₂×x₂) + b</title>
+                            <title>{t(`${PK}.diagram.tooltipSum`, { val: z.toFixed(2) })}</title>
                             <circle cx="285" cy="125" r="32" fill="rgba(251,113,133,0.04)" stroke="rgba(251,113,133,0.2)" strokeWidth="1.5" />
                             <text x="285" y="118" textAnchor="middle" fontSize="9" fontFamily={FONT} fill="rgba(255,255,255,0.3)">Σ + b</text>
                             <text x="285" y="136" textAnchor="middle" fontSize="14" fontFamily={FONT} fill="rgb(251,113,133)" fontWeight="700">{z.toFixed(2)}</text>
@@ -140,7 +140,7 @@ export function NNPerceptronDiagram() {
 
                         {/* Bias label */}
                         <g>
-                            <title>Bias b = {b.toFixed(2)} — Shifts the decision threshold; positive = easier to activate, negative = harder</title>
+                            <title>{t(`${PK}.diagram.tooltipBias`, { val: b.toFixed(2) })}</title>
                             <text x="285" y="228" textAnchor="middle" fontSize="10" fontFamily={FONT} fill="rgba(251,191,36,0.6)" fontWeight="600" className="cursor-help">
                                 b = {b.toFixed(2)}
                             </text>
@@ -148,7 +148,7 @@ export function NNPerceptronDiagram() {
 
                         {/* Activation node */}
                         <g className="cursor-help">
-                            <title>ReLU Activation = {y.toFixed(2)} — ReLU(z) = max(0, z). Outputs z if positive, otherwise 0</title>
+                            <title>{t(`${PK}.diagram.tooltipActivation`, { val: y.toFixed(2) })}</title>
                             <rect x="388" y="97" width="72" height="56" rx="10" fill="rgba(129,140,248,0.04)" stroke="rgba(129,140,248,0.2)" strokeWidth="1.5" />
                             <text x="424" y="118" textAnchor="middle" fontSize="9" fontFamily={FONT} fill="rgba(255,255,255,0.3)">ReLU</text>
                             <text x="424" y="136" textAnchor="middle" fontSize="14" fontFamily={FONT} fill="rgb(129,140,248)" fontWeight="700">{y.toFixed(2)}</text>
@@ -156,7 +156,7 @@ export function NNPerceptronDiagram() {
 
                         {/* Output node */}
                         <g className="cursor-help">
-                            <title>Final Output = {y.toFixed(2)} — The neuron's prediction after applying ReLU to the weighted sum</title>
+                            <title>{t(`${PK}.diagram.tooltipOutput`, { val: y.toFixed(2) })}</title>
                             <circle cx="560" cy="125" r="26" fill="rgba(52,211,153,0.04)" stroke="rgba(52,211,153,0.2)" strokeWidth="1.5" />
                             <text x="560" y="118" textAnchor="middle" fontSize="9" fontFamily={FONT} fill="rgba(255,255,255,0.3)">output</text>
                             <text x="560" y="136" textAnchor="middle" fontSize="14" fontFamily={FONT} fill="rgb(52,211,153)" fontWeight="700">{y.toFixed(2)}</text>
@@ -177,7 +177,7 @@ export function NNPerceptronDiagram() {
                     {/* Contribution breakdown */}
                     <div className="mt-5 rounded-xl border border-white/[0.06] bg-white/[0.015] p-4">
                         <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 mb-3">
-                            Contribution Breakdown
+                            {t(`${PK}.diagram.breakdownTitle`)}
                         </p>
                         <div className="space-y-2">
                             <ContribBar label="w₁·x₁" value={contrib1} color="text-rose-400" />

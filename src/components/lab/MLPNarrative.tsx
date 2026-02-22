@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { BookOpen, FlaskConical, ArrowDown, Lightbulb, AlertTriangle, ArrowRight, Beaker, BrainCircuit } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BookOpen, FlaskConical, ArrowDown, Lightbulb, AlertTriangle, Beaker, BrainCircuit } from "lucide-react";
 import { ModeToggle } from "@/components/lab/ModeToggle";
 import { useRouter } from "next/navigation";
 import { useLabMode } from "@/context/LabModeContext";
@@ -22,6 +23,10 @@ import { LongRangeDependencyDemo } from "@/components/lab/mlp/LongRangeDependenc
 import { LossIntuitionVisualizer } from "@/components/lab/mlp/LossIntuitionVisualizer";
 import { MLPPipelineVisualizer } from "@/components/lab/mlp/MLPPipelineVisualizer";
 import { SoftmaxTemperatureVisualizer } from "@/components/lab/mlp/SoftmaxTemperatureVisualizer";
+import { MLPArchitectureDiagram } from "@/components/lab/mlp/MLPArchitectureDiagram";
+import { OneHotDimensionalityVisual } from "@/components/lab/mlp/OneHotDimensionalityVisual";
+import { ThinkFirst } from "@/components/lab/mlp/ThinkFirst";
+import { MLPGuidedExperiments } from "@/components/lab/mlp/MLPGuidedExperiments";
 import type { UseMLPGridReturn } from "@/hooks/useMLPGrid";
 import { useI18n } from "@/i18n/context";
 
@@ -219,6 +224,51 @@ function SectionBreak() {
     );
 }
 
+function TrainingChallengePanel({ title, preview, defaultOpen = false, children }: { title: string; preview: string; defaultOpen?: boolean; children: React.ReactNode }) {
+    const [open, setOpen] = useState(defaultOpen);
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            className="my-6 rounded-xl border border-white/[0.08] bg-white/[0.02] overflow-hidden"
+        >
+            <button
+                onClick={() => setOpen(!open)}
+                className="flex items-center justify-between w-full p-4 text-left hover:bg-white/[0.02] transition-colors"
+                aria-expanded={open}
+            >
+                <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-mono font-bold text-violet-300 mb-1">{title}</h4>
+                    <p className="text-xs text-white/40">{preview}</p>
+                </div>
+                <motion.div
+                    animate={{ rotate: open ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="ml-3 shrink-0"
+                >
+                    <ArrowDown className="w-4 h-4 text-white/30" />
+                </motion.div>
+            </button>
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="px-4 pb-4 pt-2 border-t border-white/[0.06]">
+                            {children}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+}
+
 function FigureWrapper({
     label,
     hint,
@@ -330,55 +380,6 @@ function OneHotVsEmbeddingVisual() {
 }
 
 /* ─────────────────────────────────────────────
-   Inline visual: MLP architecture diagram (static)
-   ───────────────────────────────────────────── */
-
-function MLPArchitectureDiagram() {
-    const { t } = useI18n();
-    const layers = [
-        { label: t("models.mlp.narrative.mlpDiagram.input"), desc: t("models.mlp.narrative.mlpDiagram.inputDesc"), nodes: 5, color: "violet" },
-        { label: t("models.mlp.narrative.mlpDiagram.hidden1"), desc: t("models.mlp.narrative.mlpDiagram.hidden1Desc"), nodes: 4, color: "indigo" },
-        { label: t("models.mlp.narrative.mlpDiagram.hidden2"), desc: t("models.mlp.narrative.mlpDiagram.hidden2Desc"), nodes: 4, color: "blue" },
-        { label: t("models.mlp.narrative.mlpDiagram.output"), desc: t("models.mlp.narrative.mlpDiagram.outputDesc"), nodes: 3, color: "emerald" },
-    ];
-
-    const colorMap: Record<string, { dot: string; label: string; border: string }> = {
-        violet: { dot: "bg-violet-400", label: "text-violet-400", border: "border-violet-500/30" },
-        indigo: { dot: "bg-indigo-400", label: "text-indigo-400", border: "border-indigo-500/30" },
-        blue: { dot: "bg-blue-400", label: "text-blue-400", border: "border-blue-500/30" },
-        emerald: { dot: "bg-emerald-400", label: "text-emerald-400", border: "border-emerald-500/30" },
-    };
-
-    return (
-        <div className="flex items-stretch justify-center gap-4 md:gap-8 py-6 overflow-x-auto">
-            {layers.map((layer, li) => {
-                const c = colorMap[layer.color];
-                return (
-                    <div key={layer.label} className="flex items-center gap-4 md:gap-8">
-                        <div className="flex flex-col items-center gap-2">
-                            <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${c.label}`}>
-                                {layer.label}
-                            </span>
-                            <div className={`flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border ${c.border} bg-white/[0.02]`}>
-                                {Array.from({ length: layer.nodes }).map((_, i) => (
-                                    <div key={i} className={`w-4 h-4 rounded-full ${c.dot} opacity-70`} />
-                                ))}
-                            </div>
-                            <span className="text-[9px] text-white/25 text-center max-w-[80px]">
-                                {layer.desc}
-                            </span>
-                        </div>
-                        {li < layers.length - 1 && (
-                            <ArrowRight className="w-4 h-4 text-white/15 shrink-0" />
-                        )}
-                    </div>
-                );
-            })}
-        </div>
-    );
-}
-
-/* ─────────────────────────────────────────────
    Main narrative component
    ───────────────────────────────────────────── */
 
@@ -427,80 +428,41 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                 </motion.div>
             </header>
 
-            {/* ─────────── 00 · BRIDGE FROM N-GRAMS ─────────── */}
+            {/* ─────────── 00 · FROM BUILDING BLOCKS TO LANGUAGE ─────────── */}
             <Section>
                 <SectionLabel number={t("models.mlp.narrative.sections.s00.number")} label={t("models.mlp.narrative.sections.s00.label")} />
                 <Heading>{t("models.mlp.narrative.s00.heading")}</Heading>
 
                 <Lead>{t("models.mlp.narrative.s00.lead")}</Lead>
 
-                <P>
-                    {t("models.mlp.narrative.s00.p1")}{" "}
-                    <Highlight color="rose">{t("models.mlp.narrative.s00.p1H1")}</Highlight>
-                    {t("models.mlp.narrative.s00.p1End")}
-                </P>
-
-                <P>
-                    {t("models.mlp.narrative.s00.p2")}{" "}
-                    <Highlight color="rose">{t("models.mlp.narrative.s00.p2H1")}</Highlight>
-                    {t("models.mlp.narrative.s00.p2End")}
-                </P>
-
-                <Callout accent="violet" title={t("models.mlp.narrative.s00.calloutTitle")}>
-                    <p>{t("models.mlp.narrative.s00.calloutText")}</p>
-                </Callout>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 01 · WHAT IS AN MLP? ─────────── */}
-            <Section>
-                <SectionLabel number={t("models.mlp.narrative.sections.s01.number")} label={t("models.mlp.narrative.sections.s01.label")} />
-                <Heading>{t("models.mlp.narrative.s01.heading")}</Heading>
-
-                <Lead>{t("models.mlp.narrative.s01.lead")}</Lead>
-
-                <P>
-                    {t("models.mlp.narrative.s01.p1")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s01.p1H1")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s01.p1Mid")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s01.p1H2")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s01.p1End")}
-                </P>
-
-                <Callout accent="violet" title={t("models.mlp.narrative.s01.calloutTitle1")}>
-                    <p>{t("models.mlp.narrative.s01.calloutText1")}</p>
-                </Callout>
-
-                <P>
-                    {t("models.mlp.narrative.s01.p2")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s01.p2H1")}</Highlight>
-                    {t("models.mlp.narrative.s01.p2Mid")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s01.p2H2")}</Highlight>
-                    {t("models.mlp.narrative.s01.p2Tail")}
-                </P>
+                <P>{t("models.mlp.narrative.s00.p1")}</P>
 
                 <FigureWrapper
-                    label={t("models.mlp.narrative.s01.figLabel1")}
-                    hint={t("models.mlp.narrative.s01.figHint1")}
+                    label={t("models.mlp.narrative.s00.figLabel1")}
+                    hint={t("models.mlp.narrative.s00.figHint1")}
                 >
                     <MLPArchitectureDiagram />
                 </FigureWrapper>
 
-                <P>{t("models.mlp.narrative.s01.p3")}</P>
+                <P>{t("models.mlp.narrative.s00.p2")}</P>
 
                 <FormulaBlock
                     formula="h = \sigma(W_1 x + b_1), \quad \hat{y} = \text{softmax}(W_2 h + b_2)"
-                    caption={t("models.mlp.narrative.s01.formulaCaption")}
+                    caption={t("models.mlp.narrative.s00.formulaCaption")}
                 />
 
-                <Callout title={t("models.mlp.narrative.s01.calloutTitle2")}>
-                    <p>{t("models.mlp.narrative.s01.calloutText2")}</p>
+                <Callout accent="violet" title={t("models.mlp.narrative.s00.calloutTitle")}>
+                    <p>{t("models.mlp.narrative.s00.calloutText")}</p>
                 </Callout>
 
+                <ThinkFirst
+                    question={t("models.mlp.narrative.thinkFirst.xor.question")}
+                    reveal={t("models.mlp.narrative.thinkFirst.xor.reveal")}
+                />
+
                 <FigureWrapper
-                    label={t("models.mlp.narrative.s01.figLabel2")}
-                    hint={t("models.mlp.narrative.s01.figHint2")}
+                    label={t("models.mlp.narrative.s00.figLabel2")}
+                    hint={t("models.mlp.narrative.s00.figHint2")}
                 >
                     <MLPNonLinearityVisualizer />
                 </FigureWrapper>
@@ -508,134 +470,165 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
 
             <SectionBreak />
 
-            {/* ─────────── 02 · MLP APPLIED TO LANGUAGE ─────────── */}
+            {/* ─────────── 01 · FEEDING LANGUAGE TO A NEURAL NETWORK ─────────── */}
             <Section>
-                <SectionLabel number={t("models.mlp.narrative.sections.s02.number")} label={t("models.mlp.narrative.sections.s02.label")} />
-                <Heading>{t("models.mlp.narrative.s02.heading")}</Heading>
-
-                <Lead>{t("models.mlp.narrative.s02.lead")}</Lead>
-
+                <SectionLabel number={t("models.mlp.narrative.sections.s01.number")} label={t("models.mlp.narrative.sections.s01.label")} />
+                <Heading>{t("models.mlp.narrative.s01.heading")}</Heading>
+                <Lead>{t("models.mlp.narrative.s01.lead")}</Lead>
                 <P>
-                    {t("models.mlp.narrative.s02.p1")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s02.p1H1")}</Highlight>
-                    {t("models.mlp.narrative.s02.p1Mid")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s02.p1H2")}</Highlight>
-                    {t("models.mlp.narrative.s02.p1End")}
+                    {t("models.mlp.narrative.s01.p1")}{" "}
+                    <Highlight>{t("models.mlp.narrative.s01.p1H1")}</Highlight>
+                    {t("models.mlp.narrative.s01.p1Mid")}{" "}
+                    <Highlight>{t("models.mlp.narrative.s01.p1H2")}</Highlight>
+                    {t("models.mlp.narrative.s01.p1End")}
                 </P>
-
                 <FormulaBlock
                     formula="x = [\text{onehot}(t_{i-N}); \ldots; \text{onehot}(t_{i-1})] \in \mathbb{R}^{N \cdot V}"
-                    caption={t("models.mlp.narrative.s02.formulaCaption")}
+                    caption={t("models.mlp.narrative.s01.formulaCaption")}
                 />
-
-                <Callout icon={AlertTriangle} accent="amber" title={t("models.mlp.narrative.s02.calloutTitle")}>
-                    <p>{t("models.mlp.narrative.s02.calloutP1")}</p>
-                    <p>{t("models.mlp.narrative.s02.calloutP2")}</p>
-                    <p>{t("models.mlp.narrative.s02.calloutP3")}</p>
-                    <p>{t("models.mlp.narrative.s02.calloutP4")}</p>
+                <Callout icon={AlertTriangle} accent="amber" title={t("models.mlp.narrative.s01.calloutTitle")}>
+                    <p>{t("models.mlp.narrative.s01.calloutP1")}</p>
+                    <p>{t("models.mlp.narrative.s01.calloutP2")}</p>
                 </Callout>
-
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s02.figLabel1")}
-                    hint={t("models.mlp.narrative.s02.figHint1")}
-                >
+                <FigureWrapper label={t("models.mlp.narrative.s01.figLabel1")} hint={t("models.mlp.narrative.s01.figHint1")}>
                     <LossIntuitionVisualizer />
                 </FigureWrapper>
-
                 <P>
-                    {t("models.mlp.narrative.s02.p2")}{" "}
-                    <Highlight color="emerald">{t("models.mlp.narrative.s02.p2H1")}</Highlight>
-                    {t("models.mlp.narrative.s02.p2End")}
+                    {t("models.mlp.narrative.s01.p2")}{" "}
+                    <Highlight color="emerald">{t("models.mlp.narrative.s01.p2H1")}</Highlight>
+                    {t("models.mlp.narrative.s01.p2End")}
                 </P>
-
-                <P>{t("models.mlp.narrative.s02.p3")}</P>
-
-                <Callout icon={Lightbulb} accent="emerald" title={t("models.mlp.narrative.s02.calloutTitle2")}>
-                    <p>{t("models.mlp.narrative.s02.calloutText2")}</p>
+                <P>{t("models.mlp.narrative.s01.p3")}</P>
+                <Callout icon={Lightbulb} accent="emerald" title={t("models.mlp.narrative.s01.calloutTitle2")}>
+                    <p>{t("models.mlp.narrative.s01.calloutText2")}</p>
                 </Callout>
-
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s02.figLabel2")}
-                    hint={t("models.mlp.narrative.s02.figHint2")}
-                >
+                <FigureWrapper label={t("models.mlp.narrative.s01.figLabel2")} hint={t("models.mlp.narrative.s01.figHint2")}>
                     <MLPPipelineVisualizer selectedConfig={mlpGrid.selectedConfig} />
                 </FigureWrapper>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 03 · SCALABILITY PROBLEMS ─────────── */}
+            {/* ─────────── 02 · THE ONE-HOT PROBLEM ─────────── */}
             <Section>
-                <SectionLabel number={t("models.mlp.narrative.sections.s03.number")} label={t("models.mlp.narrative.sections.s03.label")} />
-                <Heading>{t("models.mlp.narrative.s03.heading")}</Heading>
-
-                <Lead>{t("models.mlp.narrative.s03.lead")}</Lead>
-
-                <P>
-                    <Highlight color="rose">{t("models.mlp.narrative.s03.p1H1")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s03.p1")}
-                </P>
-
-                <P>
-                    <Highlight color="rose">{t("models.mlp.narrative.s03.p2H1")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s03.p2")}
-                </P>
-
-                <P>
-                    <Highlight color="rose">{t("models.mlp.narrative.s03.p3H1")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s03.p3")}
-                </P>
-
+                <SectionLabel number={t("models.mlp.narrative.sections.s02.number")} label={t("models.mlp.narrative.sections.s02.label")} />
+                <Heading>{t("models.mlp.narrative.s02.heading")}</Heading>
+                <Lead>{t("models.mlp.narrative.s02.lead")}</Lead>
+                <P><Highlight color="rose">{t("models.mlp.narrative.s02.p1H1")}</Highlight>{" "}{t("models.mlp.narrative.s02.p1")}</P>
+                <P><Highlight color="rose">{t("models.mlp.narrative.s02.p2H1")}</Highlight>{" "}{t("models.mlp.narrative.s02.p2")}</P>
+                <P><Highlight color="rose">{t("models.mlp.narrative.s02.p3H1")}</Highlight>{" "}{t("models.mlp.narrative.s02.p3")}</P>
                 <FormulaBlock
                     formula="\|\text{onehot}(\text{cat}) - \text{onehot}(\text{kitten})\|_2 = \sqrt{2} = \|\text{onehot}(\text{cat}) - \text{onehot}(\text{quantum})\|_2"
-                    caption={t("models.mlp.narrative.s03.formulaCaption")}
+                    caption={t("models.mlp.narrative.s02.formulaCaption")}
                 />
-
-                <Callout icon={AlertTriangle} accent="rose" title={t("models.mlp.narrative.s03.calloutTitle")}>
-                    <p>{t("models.mlp.narrative.s03.calloutText")}</p>
+                <Callout icon={AlertTriangle} accent="rose" title={t("models.mlp.narrative.s02.calloutTitle")}>
+                    <p>{t("models.mlp.narrative.s02.calloutText")}</p>
                 </Callout>
+
+                <FigureWrapper
+                    label={t("models.mlp.narrative.s02.figLabel1")}
+                    hint={t("models.mlp.narrative.s02.figHint1")}
+                >
+                    <OneHotDimensionalityVisual />
+                </FigureWrapper>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 04 · WORD EMBEDDINGS ─────────── */}
+            {/* ─────────── 03 · THE GAME CHANGER: WORD EMBEDDINGS ─────────── */}
+            <Section>
+                <SectionLabel number={t("models.mlp.narrative.sections.s03.number")} label={t("models.mlp.narrative.sections.s03.label")} />
+                <Heading>{t("models.mlp.narrative.s03.heading")}</Heading>
+                <Lead>{t("models.mlp.narrative.s03.lead")}</Lead>
+
+                <ThinkFirst
+                    question={t("models.mlp.narrative.thinkFirst.embedding.question")}
+                    reveal={t("models.mlp.narrative.thinkFirst.embedding.reveal")}
+                />
+                <P>{t("models.mlp.narrative.s03.p1")}</P>
+                <FormulaBlock
+                    formula="e_t = E[t] = E^\top \cdot \text{onehot}(t) \in \mathbb{R}^D"
+                    caption={t("models.mlp.narrative.s03.formulaCaption")}
+                />
+                <P>
+                    {t("models.mlp.narrative.s03.p2")}{" "}
+                    <Highlight color="emerald">{t("models.mlp.narrative.s03.p2H1")}</Highlight>
+                    {t("models.mlp.narrative.s03.p2End")}
+                </P>
+                <OneHotVsEmbeddingVisual />
+                <P>
+                    {t("models.mlp.narrative.s03.p3")}{" "}
+                    <Highlight>{t("models.mlp.narrative.s03.p3H1")}</Highlight>
+                    {t("models.mlp.narrative.s03.p3End")}
+                </P>
+                <P>{t("models.mlp.narrative.s03.p4")}</P>
+                <PullQuote>{t("models.mlp.narrative.s03.pullQuote")}</PullQuote>
+                <FigureWrapper label={t("models.mlp.narrative.s03.figLabel1")} hint={t("models.mlp.narrative.s03.figHint1")}>
+                    <PedagogicalEmbeddingVisualizer />
+                </FigureWrapper>
+            </Section>
+
+            <SectionBreak />
+
+            {/* ─────────── 04 · EXPLORING CONFIGURATIONS ─────────── */}
             <Section>
                 <SectionLabel number={t("models.mlp.narrative.sections.s04.number")} label={t("models.mlp.narrative.sections.s04.label")} />
                 <Heading>{t("models.mlp.narrative.s04.heading")}</Heading>
-
                 <Lead>{t("models.mlp.narrative.s04.lead")}</Lead>
 
-                <P>{t("models.mlp.narrative.s04.p1")}</P>
-
-                <FormulaBlock
-                    formula="e_t = E[t] = E^\top \cdot \text{onehot}(t) \in \mathbb{R}^D"
-                    caption={t("models.mlp.narrative.s04.formulaCaption")}
+                <ThinkFirst
+                    question={t("models.mlp.narrative.thinkFirst.hyperparams.question")}
+                    reveal={t("models.mlp.narrative.thinkFirst.hyperparams.reveal")}
                 />
-
                 <P>
-                    {t("models.mlp.narrative.s04.p2")}{" "}
-                    <Highlight color="emerald">{t("models.mlp.narrative.s04.p2H1")}</Highlight>
-                    {t("models.mlp.narrative.s04.p2End")}
+                    {t("models.mlp.narrative.s04.p1")}{" "}
+                    <Highlight>{t("models.mlp.narrative.s04.p1H1")}</Highlight>
+                    {t("models.mlp.narrative.s04.p1Mid1")}{" "}
+                    <Highlight>{t("models.mlp.narrative.s04.p1H2")}</Highlight>
+                    {t("models.mlp.narrative.s04.p1Mid2")}{" "}
+                    <Highlight>{t("models.mlp.narrative.s04.p1H3")}</Highlight>
+                    {t("models.mlp.narrative.s04.p1End")}
                 </P>
-
-                <OneHotVsEmbeddingVisual />
-
-                <P>
-                    {t("models.mlp.narrative.s04.p3")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s04.p3H1")}</Highlight>
-                    {t("models.mlp.narrative.s04.p3End")}
-                </P>
-
-                <P>{t("models.mlp.narrative.s04.p4")}</P>
-
-                <PullQuote>{t("models.mlp.narrative.s04.pullQuote")}</PullQuote>
-
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s04.figLabel1")}
-                    hint={t("models.mlp.narrative.s04.figHint1")}
+                <P>{t("models.mlp.narrative.s04.p2")}</P>
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-3 my-8"
                 >
-                    <PedagogicalEmbeddingVisualizer />
+                    {(["embDim", "hiddenSize", "numLayers", "contextWindow"] as const).map((key) => (
+                        <div key={key} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
+                            <p className="text-xs font-mono font-bold text-violet-400/70 mb-1.5">{t(`models.mlp.narrative.s04.hyperparamCards.${key}.title`)}</p>
+                            <p className="text-sm text-white/40 leading-relaxed">{t(`models.mlp.narrative.s04.hyperparamCards.${key}.desc`)}</p>
+                        </div>
+                    ))}
+                </motion.div>
+                <FigureWrapper label={t("models.mlp.narrative.s04.figLabel1")} hint={t("models.mlp.narrative.s04.figHint1")}>
+                    <SoftmaxTemperatureVisualizer />
                 </FigureWrapper>
+                <Callout title={t("models.mlp.narrative.s04.calloutTitle")}>
+                    <p>{t("models.mlp.narrative.s04.calloutText")}</p>
+                </Callout>
+
+                <MLPGuidedExperiments />
+
+                <FigureWrapper label={t("models.mlp.narrative.s04.figLabel2")} hint={t("models.mlp.narrative.s04.figHint2")}>
+                    <MLPHyperparameterExplorer
+                        configs={mlpGrid.configs}
+                        selectedConfig={mlpGrid.selectedConfig}
+                        onSelectClosest={mlpGrid.selectClosest}
+                        timeline={mlpGrid.timeline}
+                        timelineLoading={mlpGrid.timelineLoading}
+                        onFetchTimeline={mlpGrid.fetchTimelineData}
+                        generation={mlpGrid.generation}
+                        generationLoading={mlpGrid.generationLoading}
+                        onGenerate={mlpGrid.generateText}
+                        gridLoading={mlpGrid.gridLoading}
+                        gridError={mlpGrid.gridError}
+                        isNarrativeMode={true}
+                    />
+                </FigureWrapper>
+                <P>{t("models.mlp.narrative.s04.p3")}</P>
             </Section>
 
             <SectionBreak />
@@ -654,6 +647,11 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                 </P>
 
                 <P>{t("models.mlp.narrative.s05.p2")}</P>
+
+                <ThinkFirst
+                    question={t("models.mlp.narrative.thinkFirst.contextWindow.question")}
+                    reveal={t("models.mlp.narrative.thinkFirst.contextWindow.reveal")}
+                />
 
                 <FigureWrapper
                     label={t("models.mlp.narrative.s05.figLabel1")}
@@ -708,170 +706,77 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
 
             <SectionBreak />
 
-            {/* ─────────── 06 · EXPLORING CONFIGURATIONS ─────────── */}
+            {/* ─────────── 06 · TRAINING CHALLENGES ─────────── */}
             <Section>
                 <SectionLabel number={t("models.mlp.narrative.sections.s06.number")} label={t("models.mlp.narrative.sections.s06.label")} />
                 <Heading>{t("models.mlp.narrative.s06.heading")}</Heading>
-
                 <Lead>{t("models.mlp.narrative.s06.lead")}</Lead>
 
-                <P>
-                    {t("models.mlp.narrative.s06.p1")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s06.p1H1")}</Highlight>
-                    {t("models.mlp.narrative.s06.p1Mid1")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s06.p1H2")}</Highlight>
-                    {t("models.mlp.narrative.s06.p1Mid2")}{" "}
-                    <Highlight>{t("models.mlp.narrative.s06.p1H3")}</Highlight>
-                    {t("models.mlp.narrative.s06.p1End")}
-                </P>
-
-                <P>{t("models.mlp.narrative.s06.p2")}</P>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-40px" }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-3 my-8"
+                <TrainingChallengePanel
+                    title={t("models.mlp.narrative.s06.panels.initialization.title")}
+                    preview={t("models.mlp.narrative.s06.panels.initialization.preview")}
+                    defaultOpen={true}
                 >
-                    {([
-                        { key: "embDim" as const },
-                        { key: "hiddenSize" as const },
-                        { key: "numLayers" as const },
-                        { key: "contextWindow" as const },
-                    ] as const).map(({ key }) => (
-                        <div key={key} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
-                            <p className="text-xs font-mono font-bold text-violet-400/70 mb-1.5">{t(`models.mlp.narrative.s06.hyperparamCards.${key}.title`)}</p>
-                            <p className="text-sm text-white/40 leading-relaxed">{t(`models.mlp.narrative.s06.hyperparamCards.${key}.desc`)}</p>
-                        </div>
-                    ))}
-                </motion.div>
-
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s06.figLabel1")}
-                    hint={t("models.mlp.narrative.s06.figHint1")}
-                >
-                    <SoftmaxTemperatureVisualizer />
-                </FigureWrapper>
-
-                <Callout title={t("models.mlp.narrative.s06.calloutTitle")}>
-                    <p>{t("models.mlp.narrative.s06.calloutText")}</p>
-                </Callout>
-
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s06.figLabel2")}
-                    hint={t("models.mlp.narrative.s06.figHint2")}
-                >
-                    <MLPHyperparameterExplorer
-                        configs={mlpGrid.configs}
-                        selectedConfig={mlpGrid.selectedConfig}
-                        onSelectClosest={mlpGrid.selectClosest}
-                        timeline={mlpGrid.timeline}
-                        timelineLoading={mlpGrid.timelineLoading}
-                        onFetchTimeline={mlpGrid.fetchTimelineData}
-                        generation={mlpGrid.generation}
-                        generationLoading={mlpGrid.generationLoading}
-                        onGenerate={mlpGrid.generateText}
-                        gridLoading={mlpGrid.gridLoading}
-                        gridError={mlpGrid.gridError}
+                    <P><Highlight color="rose">{t("models.mlp.narrative.s06.p1H1")}</Highlight>{" "}{t("models.mlp.narrative.s06.p1")}</P>
+                    <FormulaBlock
+                        formula="W_{ij} \sim \mathcal{N}\!\left(0,\; \frac{2}{n_{\text{in}}}\right)"
+                        caption={t("models.mlp.narrative.s06.formulaCaption1")}
                     />
-                </FigureWrapper>
+                    <FigureWrapper label={t("models.mlp.narrative.s06.figLabel1")} hint={t("models.mlp.narrative.s06.figHint1")}>
+                        <InitializationSensitivityVisualizer timeline={mlpGrid.timeline} />
+                    </FigureWrapper>
+                </TrainingChallengePanel>
 
-                <P>{t("models.mlp.narrative.s06.p3")}</P>
+                <TrainingChallengePanel
+                    title={t("models.mlp.narrative.s06.panels.gradients.title")}
+                    preview={t("models.mlp.narrative.s06.panels.gradients.preview")}
+                >
+                    <P><Highlight color="rose">{t("models.mlp.narrative.s06.p2H1")}</Highlight>{" "}{t("models.mlp.narrative.s06.p2")}</P>
+                    <FormulaBlock
+                        formula="\frac{\partial \mathcal{L}}{\partial W_1} = \frac{\partial \mathcal{L}}{\partial h_L} \cdot \prod_{l=2}^{L} \frac{\partial h_l}{\partial h_{l-1}} \cdot \frac{\partial h_1}{\partial W_1}"
+                        caption={t("models.mlp.narrative.s06.formulaCaption2")}
+                    />
+                    <FigureWrapper label={t("models.mlp.narrative.s06.figLabel2")} hint={t("models.mlp.narrative.s06.figHint2")}>
+                        <GradientFlowVisualizer timeline={mlpGrid.timeline} />
+                    </FigureWrapper>
+                    <P>{t("models.mlp.narrative.s06.p3")}</P>
+                </TrainingChallengePanel>
+
+                <TrainingChallengePanel
+                    title={t("models.mlp.narrative.s06.panels.batchnorm.title")}
+                    preview={t("models.mlp.narrative.s06.panels.batchnorm.preview")}
+                >
+                    <P><Highlight color="indigo">{t("models.mlp.narrative.s06.p4H1")}</Highlight>{" "}{t("models.mlp.narrative.s06.p4")}</P>
+                    <FormulaBlock
+                        formula="\hat{h} = \frac{h - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}, \quad y = \gamma \hat{h} + \beta"
+                        caption={t("models.mlp.narrative.s06.formulaCaption3")}
+                    />
+                    <Callout icon={Lightbulb} accent="indigo" title={t("models.mlp.narrative.s06.calloutTitle")}>
+                        <p>{t("models.mlp.narrative.s06.calloutText")}</p>
+                    </Callout>
+                    <FigureWrapper label={t("models.mlp.narrative.s06.figLabel3")} hint={t("models.mlp.narrative.s06.figHint3")}>
+                        <BatchNormEffectVisualizer />
+                    </FigureWrapper>
+                </TrainingChallengePanel>
             </Section>
 
             <SectionBreak />
 
-            {/* ─────────── 07 · TRAINING CHALLENGES ─────────── */}
+            {/* ─────────── 07 · THE PATH AHEAD ─────────── */}
             <Section>
                 <SectionLabel number={t("models.mlp.narrative.sections.s07.number")} label={t("models.mlp.narrative.sections.s07.label")} />
                 <Heading>{t("models.mlp.narrative.s07.heading")}</Heading>
-
                 <Lead>{t("models.mlp.narrative.s07.lead")}</Lead>
-
-                <P>
-                    <Highlight color="rose">{t("models.mlp.narrative.s07.p1H1")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s07.p1")}
-                </P>
-
-                <FormulaBlock
-                    formula="W_{ij} \sim \mathcal{N}\!\left(0,\; \frac{2}{n_{\text{in}}}\right)"
-                    caption={t("models.mlp.narrative.s07.formulaCaption1")}
-                />
-
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s07.figLabel1")}
-                    hint={t("models.mlp.narrative.s07.figHint1")}
-                >
-                    <InitializationSensitivityVisualizer timeline={mlpGrid.timeline} />
-                </FigureWrapper>
-
-                <P>
-                    <Highlight color="rose">{t("models.mlp.narrative.s07.p2H1")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s07.p2")}
-                </P>
-
-                <FormulaBlock
-                    formula="\frac{\partial \mathcal{L}}{\partial W_1} = \frac{\partial \mathcal{L}}{\partial h_L} \cdot \prod_{l=2}^{L} \frac{\partial h_l}{\partial h_{l-1}} \cdot \frac{\partial h_1}{\partial W_1}"
-                    caption={t("models.mlp.narrative.s07.formulaCaption2")}
-                />
-
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s07.figLabel2")}
-                    hint={t("models.mlp.narrative.s07.figHint2")}
-                >
-                    <GradientFlowVisualizer timeline={mlpGrid.timeline} />
-                </FigureWrapper>
-
+                <P>{t("models.mlp.narrative.s07.p1")}</P>
+                <P>{t("models.mlp.narrative.s07.p2")}</P>
+                <div className="my-6 space-y-3 pl-4 border-l-2 border-violet-500/20">
+                    <p className="text-white/60 text-sm leading-relaxed">{t("models.mlp.narrative.s07.rnnQ1")}</p>
+                    <p className="text-white/60 text-sm leading-relaxed">{t("models.mlp.narrative.s07.rnnQ2")}</p>
+                    <p className="text-white/60 text-sm leading-relaxed">{t("models.mlp.narrative.s07.rnnQ3")}</p>
+                </div>
+                <PullQuote>{t("models.mlp.narrative.s07.pullQuote")}</PullQuote>
                 <P>{t("models.mlp.narrative.s07.p3")}</P>
-
-                <P>
-                    <Highlight color="indigo">{t("models.mlp.narrative.s07.p4H1")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s07.p4")}
-                </P>
-
-                <FormulaBlock
-                    formula="\hat{h} = \frac{h - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}, \quad y = \gamma \hat{h} + \beta"
-                    caption={t("models.mlp.narrative.s07.formulaCaption3")}
-                />
-
-                <Callout icon={Lightbulb} accent="indigo" title={t("models.mlp.narrative.s07.calloutTitle")}>
-                    <p>{t("models.mlp.narrative.s07.calloutText")}</p>
-                </Callout>
-
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s07.figLabel3")}
-                    hint={t("models.mlp.narrative.s07.figHint3")}
-                >
-                    <BatchNormEffectVisualizer />
-                </FigureWrapper>
-            </Section>
-
-            <SectionBreak />
-
-            {/* ─────────── 08 · HISTORICAL TRANSITION ─────────── */}
-            <Section>
-                <SectionLabel number={t("models.mlp.narrative.sections.s08.number")} label={t("models.mlp.narrative.sections.s08.label")} />
-                <Heading>{t("models.mlp.narrative.s08.heading")}</Heading>
-
-                <Lead>{t("models.mlp.narrative.s08.lead")}</Lead>
-
-                <P>{t("models.mlp.narrative.s08.p1")}</P>
-
-                <P>{t("models.mlp.narrative.s08.p2")}</P>
-
-                <P>
-                    {t("models.mlp.narrative.s08.p3")}{" "}
-                    <Highlight color="emerald">{t("models.mlp.narrative.s08.p3H1")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s08.p3Mid1")}{" "}
-                    <Highlight color="amber">{t("models.mlp.narrative.s08.p3H2")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s08.p3Mid2")}{" "}
-                    <Highlight color="rose">{t("models.mlp.narrative.s08.p3H3")}</Highlight>{" "}
-                    {t("models.mlp.narrative.s08.p3End")}
-                </P>
-
-                <PullQuote>{t("models.mlp.narrative.s08.pullQuote")}</PullQuote>
-
-                <P>{t("models.mlp.narrative.s08.p4")}</P>
+                <P>{t("models.mlp.narrative.s07.p4")}</P>
             </Section>
 
             <SectionBreak />
@@ -910,7 +815,7 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => router.push("/lab/transformer")}
+                        onClick={() => router.push("/lab/rnn")}
                         className="group relative rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/20 to-black/60 p-6 text-left transition-colors hover:border-cyan-500/40 overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />

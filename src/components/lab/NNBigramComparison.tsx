@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useI18n } from "@/i18n/context";
 
 const CHARS = ["a", "b", "c", "d", "e"];
 
@@ -69,6 +70,7 @@ function HeatCell({ value, maxVal }: { value: number; maxVal: number }) {
 }
 
 export function NNBigramComparison() {
+    const { t } = useI18n();
     const [weights, setWeights] = useState(() => initWeights(5, 5));
     const [stepCount, setStepCount] = useState(0);
 
@@ -106,7 +108,7 @@ export function NNBigramComparison() {
                         <span className="w-2.5 h-2.5 rounded-full bg-green-500/30" />
                     </div>
                     <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">
-                        Interactive · Bigram vs. Neural Network
+                        {t("bigramWidgets.nnComparison.title")}
                     </span>
                 </div>
 
@@ -115,7 +117,7 @@ export function NNBigramComparison() {
                         {/* Bigram matrix */}
                         <div>
                             <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-400/60 mb-3">
-                                Bigram Probabilities (counting)
+                                {t("bigramWidgets.nnComparison.bigramTitle")}
                             </p>
                             <div className="overflow-hidden rounded-lg border border-white/[0.06]">
                                 <table className="w-full border-collapse">
@@ -144,7 +146,7 @@ export function NNBigramComparison() {
                         {/* Neural weights */}
                         <div>
                             <p className="text-[10px] font-mono uppercase tracking-widest text-rose-400/60 mb-3">
-                                Neural Network Weights (learned)
+                                {t("bigramWidgets.nnComparison.neuralTitle")}
                             </p>
                             <div className="overflow-hidden rounded-lg border border-white/[0.06]">
                                 <table className="w-full border-collapse">
@@ -173,12 +175,12 @@ export function NNBigramComparison() {
 
                     {/* Stats */}
                     <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 mb-5 text-[11px] font-mono">
-                        <span className="text-white/30">Training steps: <span className="text-white/60 font-bold">{stepCount}</span></span>
-                        <span className="text-white/30">Distance: <span className={`font-bold ${distance < 0.1 ? "text-emerald-400" : distance < 0.3 ? "text-amber-400" : "text-rose-400"}`}>
+                        <span className="text-white/30">{t("bigramWidgets.nnComparison.stats.steps")} <span className="text-white/60 font-bold">{stepCount}</span></span>
+                        <span className="text-white/30">{t("bigramWidgets.nnComparison.stats.distance")} <span className={`font-bold ${distance < 0.1 ? "text-emerald-400" : distance < 0.3 ? "text-amber-400" : "text-rose-400"}`}>
                             {distance.toFixed(4)}
                         </span></span>
                         {distance < 0.1 && (
-                            <span className="text-emerald-400/70">✓ Neural weights closely match bigram probabilities</span>
+                            <span className="text-emerald-400/70">{t("bigramWidgets.nnComparison.stats.match")}</span>
                         )}
                     </div>
 
@@ -186,21 +188,21 @@ export function NNBigramComparison() {
                     <div className="flex gap-3">
                         <button onClick={doStep}
                             className="px-4 py-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] font-mono font-bold hover:bg-rose-500/20 transition-colors">
-                            Train 1 Step
+                            {t("bigramWidgets.nnComparison.buttons.train")}
                         </button>
                         <button onClick={doAutoTrain}
                             className="px-4 py-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[11px] font-mono font-bold hover:bg-indigo-500/20 transition-colors">
-                            Auto-Train ×20
+                            {t("bigramWidgets.nnComparison.buttons.auto")}
                         </button>
                         <button onClick={handleReset}
                             className="px-4 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white/40 text-[11px] font-mono font-bold hover:text-white/60 transition-colors">
-                            Reset
+                            {t("bigramWidgets.nnComparison.buttons.reset")}
                         </button>
                     </div>
                 </div>
             </div>
             <figcaption className="mt-3 text-center text-xs text-white/25 italic">
-                The neural network learns weights that converge to the same transition probabilities the bigram model computes by counting.
+                {t("bigramWidgets.nnComparison.caption")}
             </figcaption>
         </figure>
     );

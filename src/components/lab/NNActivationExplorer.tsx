@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useI18n } from "@/i18n/context";
+
+const PK = "models.neuralNetworks.sections.playground";
 
 type ActivationFn = "relu" | "sigmoid" | "tanh";
 
@@ -34,6 +37,7 @@ function toSvgY(wy: number) {
 }
 
 export function NNActivationExplorer() {
+    const { t } = useI18n();
     const [selected, setSelected] = useState<ActivationFn>("relu");
     const [zVal, setZVal] = useState(1.5);
 
@@ -68,34 +72,34 @@ export function NNActivationExplorer() {
                         <span className="w-2.5 h-2.5 rounded-full bg-green-500/30" />
                     </div>
                     <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">
-                        Interactive · Activation Functions
+                        {t(`${PK}.activation.explorerTitle`)}
                     </span>
                 </div>
 
                 <div className="p-4 sm:p-6">
                     {/* Toggle */}
                     <div className="flex gap-2 mb-5">
-                        {(Object.keys(FN_LABELS) as ActivationFn[]).map(key => {
+                        {(Object.keys(FN_MAP) as ActivationFn[]).map(key => {
                             const c = FN_COLORS[key];
                             const active = selected === key;
+                            const label = t(`${PK}.activation.labels.${key}`);
                             return (
                                 <button
                                     key={key}
                                     onClick={() => handleToggle(key)}
-                                    className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold border transition-all ${
-                                        active
+                                    className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold border transition-all ${active
                                             ? `${c.bg} ${c.border} ${c.text}`
                                             : "border-white/[0.06] bg-white/[0.02] text-white/30 hover:text-white/50"
-                                    }`}
+                                        }`}
                                 >
-                                    {FN_LABELS[key]}
+                                    {label}
                                 </button>
                             );
                         })}
                     </div>
 
                     {/* SVG Graph */}
-                    <svg viewBox="0 0 500 260" className="w-full mb-4" role="img" aria-label={`${FN_LABELS[selected]} activation function graph`}>
+                    <svg viewBox="0 0 500 260" className="w-full mb-4" role="img" aria-label={t(`${PK}.activation.ariaLabel`, { name: t(`${PK}.activation.labels.${selected}`) })}>
                         {/* Grid lines */}
                         {[-4, -3, -2, -1, 0, 1, 2, 3, 4].map(v => (
                             <line key={`gx${v}`} x1={toSvgX(v)} y1={PLOT.top} x2={toSvgX(v)} y2={PLOT.bottom}
@@ -147,7 +151,7 @@ export function NNActivationExplorer() {
                     <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                         <label className="flex-1 block">
                             <div className="flex justify-between mb-1">
-                                <span className="text-[10px] font-mono text-white/40">Weighted sum z (input to activation)</span>
+                                <span className="text-[10px] font-mono text-white/40">{t(`${PK}.activation.inputLabel`)}</span>
                                 <span className="text-[11px] font-mono font-bold text-white/60">{zVal.toFixed(2)}</span>
                             </div>
                             <input type="range" min={-5} max={5} step={0.1} value={zVal}
@@ -162,7 +166,7 @@ export function NNActivationExplorer() {
                 </div>
             </div>
             <figcaption className="mt-3 text-center text-xs text-white/25 italic">
-                Toggle between activation functions and drag the z slider to see how each transforms the weighted sum.
+                {t(`${PK}.activation.caption`)}
             </figcaption>
         </figure>
     );

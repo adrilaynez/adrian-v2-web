@@ -22,6 +22,17 @@ export const en = {
         mlp: "MLP",
         transformer: "Transformer",
         neuralNetworks: "Neural Nets",
+        playground: {
+            inputs: {
+                x1Label: "x₁ (input 1)",
+                x2Label: "x₂ (input 2)",
+                scaleHint: "(on scale 0–1)",
+                xLabel: "Input x",
+                wLabel: "Weight w",
+                bLabel: "Bias b",
+                targetLabel: "Target",
+            },
+        },
         shell: {
             allModels: "Back to Lab",
         },
@@ -388,6 +399,7 @@ export const en = {
                 inference: {
                     title: "Inference and Generation",
                     description: "Interact with the model in real-time. Watch how it 'guesses' the next character based on learned probabilities.",
+                    placeholder: "Type text to analyze...",
                 },
                 architecture: {
                     title: "Model Architecture",
@@ -413,6 +425,9 @@ export const en = {
                 },
                 searchPlaceholder: "Highlight character…",
                 runInference: "Run inference to generate the transition matrix",
+                nextChar: "Next char",
+                probability: "P (%)",
+                distribution: "Distribution",
                 tooltip: {
                     title: "How to read this chart?",
                     desc: "Rows represent the current character and columns represent the next character. Brighter cells indicate higher transition probability.",
@@ -672,6 +687,7 @@ export const en = {
                 inference: {
                     title: "Inference & Generation",
                     description: "Interact with the model in real-time. Observe how it selects the next token based on the learned probabilities.",
+                    placeholder: "Type text to analyze...",
                     distribution: {
                         title: "Probability Distribution",
                         desc: "Type a phrase to see the top-k most likely next characters.",
@@ -711,6 +727,7 @@ export const en = {
                 explosion: "Explosion (5+)",
             },
             lab: {
+                guidedExperiments: "Guided Experiments",
                 badge: "Free Lab Mode · Full instrument access",
                 contextLevels: {
                     1: "No context — each character is predicted independently from the corpus frequency. Fastest but least accurate.",
@@ -869,84 +886,59 @@ export const en = {
             },
             narrative: {
                 hero: {
-                    eyebrow: "Educational Narrative",
+                    eyebrow: "Chapter 4 · Neural Language Modeling",
                     titlePrefix: "Beyond Tables:",
                     titleHighlight: "MLP + Embeddings",
-                    description: "How multi-layer perceptrons and learned vector representations transformed language modeling — from counting co-occurrences to learning distributed representations of meaning.",
+                    description: "You've built perceptrons, learned backpropagation, and seen why depth matters. Now the question changes: how do we apply that neural network machinery to actual language?",
                 },
                 sections: {
-                    s00: { number: "00", label: "Starting Point" },
-                    s01: { number: "01", label: "Foundations" },
-                    s02: { number: "02", label: "Language Modeling" },
-                    s03: { number: "03", label: "Scalability Wall" },
-                    s04: { number: "04", label: "The Breakthrough" },
+                    s00: { number: "00", label: "Building Blocks" },
+                    s01: { number: "01", label: "Language Input" },
+                    s02: { number: "02", label: "Scalability Wall" },
+                    s03: { number: "03", label: "The Breakthrough" },
+                    s04: { number: "04", label: "Empirical Exploration" },
                     s05: { number: "05", label: "Structural Limits" },
-                    s06: { number: "06", label: "Empirical Exploration" },
-                    s07: { number: "07", label: "Training Stability" },
+                    s06: { number: "06", label: "Training Stability" },
+                    s07: { number: "07", label: "Looking Forward" },
                     s08: { number: "08", label: "Looking Forward" },
                 },
                 s00: {
-                    heading: "Why N-grams Weren't Enough",
-                    lead: "We already know N-grams can count. After working through bigrams and trigrams, one question naturally follows: what can't they do?",
-                    p1: "N-gram models store a table of counts — how often each sequence of N characters appeared in training data. This works, but it has hard limits. If a 3-character sequence never appeared in training, the model assigns it",
-                    p1H1: "zero probability",
-                    p1End: ", even if it's completely reasonable. The table also grows exponentially: a vocabulary of 70 characters gives 70³ = 343,000 possible trigrams, and most are never observed. Larger N means exponentially more empty cells.",
-                    p2: "Worse, N-grams have",
-                    p2H1: "no notion of similarity",
-                    p2End: ". The model treats every character as an isolated symbol. It has no way to know that \"a\" and \"e\" are both vowels, or that patterns learned for one context might transfer to a slightly different one. Every context is learned from scratch, in isolation.",
-                    calloutTitle: "The core insight",
-                    calloutText: "A table can only memorize. What we need is a function — something that can generalize from patterns it has seen to patterns it hasn't. A function can learn that vowels behave similarly, that certain character sequences share structure, and that unseen combinations aren't random. That function is a neural network.",
+                    heading: "From Building Blocks to Language",
+                    lead: "You've already done the hard part. The Neural Networks chapter gave you perceptrons, backpropagation, and why depth unlocks complex decision boundaries. This chapter asks a new question: how do we feed actual language into that network?",
+                    p1: "An MLP flows inputs through hidden layers, each applying a non-linear transformation, then produces a probability distribution via a softmax output. The architecture you learned carries over — only the input domain changes.",
+                    figLabel1: "MLP Architecture · Schematic",
+                    figHint1: "A feedforward network: input tokens flow through hidden layers to a softmax output distribution.",
+                    p2: "In the XOR lesson, depth enabled curved decision boundaries that a flat network could never draw. For language, the same principle scales: stacked layers compose simple character patterns into higher-order structure — subwords, words, meanings.",
+                    formulaCaption: "The same MLP formula from the Neural Networks chapter. The novelty here is what goes into x — the challenge of this chapter.",
+                    calloutTitle: "The open question",
+                    calloutText: "The network is ready. The challenge is representation: how do we convert a discrete symbol — the character 'a', the word 'cat' — into a number vector the network can process? That question defines the rest of this chapter.",
+                    figLabel2: "Interactive · Non-Linearity & Decision Boundaries",
+                    figHint2: "You saw XOR in the Neural Networks chapter. Toggle between models here to see how depth handles progressively more complex patterns.",
                 },
                 s01: {
-                    heading: "What Is a Multi-Layer Perceptron?",
-                    lead: "Before talking about layers and architectures, start with the smallest unit: a single artificial neuron. One neuron, one decision. Stack enough of them and you can approximate almost any pattern in data.",
-                    p1: "A neuron takes a list of numbers as input, multiplies each by a",
-                    p1H1: "weight",
-                    p1Mid: "— a dial that says how important that input is — sums everything up, and passes the result through an",
-                    p1H2: "activation function",
-                    p1End: "that introduces a curve. Think of it as a tiny decision: \"given these inputs and these weights, how strongly should I fire?\" That's it. One neuron is unimpressive on its own. But the idea scales.",
-                    calloutTitle1: "What is a weight?",
-                    calloutText1: "A weight is a trainable number — a dial the network adjusts during learning. A large positive weight means \"pay close attention to this input.\" A weight near zero means \"mostly ignore it.\" Training is the process of finding the right dial settings by repeatedly checking how wrong a prediction was and nudging every weight slightly in the direction that reduces the mistake. This is called gradient descent.",
-                    p2: "Arrange many neurons side by side, all reading the same input, and you get a",
-                    p2H1: "layer",
-                    p2Mid: ". Each neuron in that layer learns a different pattern. Stack two or more layers and the second layer reads the first layer's detections, not the raw input — it learns patterns of patterns. This stack is a",
-                    p2H2: "Multi-Layer Perceptron (MLP)",
-                    p2Tail: ".",
-                    figLabel1: "MLP Architecture · Schematic",
-                    figHint1: "A feedforward network with input, hidden, and output layers connected by learned weight matrices.",
-                    p3: "Without the activation function between layers, stacking would be pointless — multiple linear transformations collapse into a single one. The non-linearity (Tanh, ReLU) is what makes depth meaningful. Each layer can bend and warp the representation in ways a single flat mapping never could. This is why deep networks can learn hierarchical features: strokes → letters → words → meaning.",
-                    formulaCaption: "Every symbol here is just the 'weighted sum + squish' described above. σ is the activation function, W₁ and W₂ are weight matrices the network learns, and softmax converts the final numbers into probabilities that sum to 1.",
-                    calloutTitle2: "Why depth matters",
-                    calloutText2: "A single hidden layer can theoretically approximate any function, but in practice deeper networks learn hierarchical representations more efficiently — fewer parameters, better generalization. Each layer can build on abstractions learned by the previous one.",
-                    figLabel2: "Interactive · Non-Linearity & Decision Boundaries",
-                    figHint2: "Toggle between linear, shallow, and deep models to see how non-linear layers enable complex boundaries.",
-                },
-                s02: {
-                    heading: "MLP Applied to Language (Without Embeddings)",
-                    lead: "The simplest way to use an MLP for language: take the previous N tokens, convert each to a number vector, concatenate them, and feed the result into the network to predict the next token.",
+                    heading: "Feeding Language to a Neural Network",
+                    lead: "The simplest approach: take the previous N tokens, convert each to a number vector, concatenate them, and feed the result into the MLP to predict the next token.",
                     p1: "To feed characters into a neural network, we first need to turn them into numbers. The most straightforward method is a",
                     p1H1: "one-hot vector",
-                    p1Mid: ": a list of zeros the length of the vocabulary, with a single 1 in the slot for that character. For a vocabulary of 70 characters, \"a\" becomes [1, 0, 0, …, 0], \"b\" becomes [0, 1, 0, …, 0], and so on. With a context window of size N, we concatenate N such vectors to form an input of dimension",
+                    p1Mid: ": a list of zeros the length of the vocabulary, with a single 1 in the slot for that character. With a context window of size N, we concatenate N such vectors to form an input of dimension",
                     p1H2: "N × V",
-                    p1End: ", then pass it through one or more hidden layers to produce a probability distribution over the next token.",
+                    p1End: ", then pass it through hidden layers to produce a probability distribution over the next token.",
                     formulaCaption: "The input to the MLP is a concatenation of N one-hot vectors, one per context token.",
-                    calloutTitle: "What does loss actually mean?",
-                    calloutP1: "Loss is a measure of surprise. After each prediction, the model compares what it said — a probability for every possible next character — with what actually came next.",
-                    calloutP2: "If the model gave the correct character a probability of 0.9, it was confident and right. Low surprise. Low loss.",
-                    calloutP3: "If it gave the correct character a probability of 0.02, it was nearly certain something else would appear. Big surprise. High loss.",
-                    calloutP4: "Training is the process of reducing this average surprise — over millions of characters — until the model's predictions stop being shocking.",
+                    calloutTitle: "What does loss mean here?",
+                    calloutP1: "Loss measures surprise. After each prediction, the model compares its probability for every possible next character against what actually came next. High confidence on the right answer means low loss; near-zero confidence means high loss.",
+                    calloutP2: "Training minimizes this average surprise over millions of characters. You know this mechanic from the Neural Networks chapter — here it operates on language tokens.",
                     figLabel1: "Interactive · Loss Intuition",
                     figHint1: "Drag the slider to set how confident the model is in the correct token. See how cross-entropy loss explodes as confidence approaches zero.",
-                    p2: "This already represents a major step forward from N-gram tables. Instead of memorizing exact co-occurrence counts, the model",
+                    p2: "This marks a step forward from N-gram tables. Instead of memorizing exact co-occurrence counts, the model",
                     p2H1: "learns a function",
-                    p2End: "that maps context patterns to predictions. It can interpolate between seen patterns and generalize to novel combinations — at least in principle.",
-                    p3: "The MLP can discover that certain character sequences behave similarly, even if it has never seen the exact N-gram before. This is because the hidden layers learn internal features that compress and abstract the raw input patterns.",
+                    p2End: "that maps context patterns to predictions — one that can generalize to novel combinations.",
+                    p3: "The MLP can discover that certain character sequences behave similarly, even if it never saw the exact N-gram before. Hidden layers learn internal features that compress and abstract the raw input patterns.",
                     calloutTitle2: "Key improvement over N-grams",
-                    calloutText2: "N-gram models assign zero probability to any context they never observed in training. An MLP, by contrast, can assign non-zero probability to unseen contexts because it learns a smooth function — not a lookup table.",
+                    calloutText2: "N-gram models assign zero probability to any context never observed in training. An MLP assigns non-zero probability to unseen contexts because it learns a smooth function — not a lookup table.",
                     figLabel2: "Interactive · MLP Forward Pass",
                     figHint2: "Type a short seed and step through each stage of the forward pass — from raw tokens to final probability distribution.",
                 },
-                s03: {
+                s02: {
                     heading: "The Problem With One-Hot Inputs",
                     lead: "One-hot encoding seems natural, but it creates severe scalability problems that become catastrophic as vocabularies grow.",
                     p1H1: "Input dimensionality explosion.",
@@ -958,22 +950,49 @@ export const en = {
                     formulaCaption: "All one-hot vectors are equidistant — the model gets zero information about semantic similarity from the encoding itself.",
                     calloutTitle: "The scalability wall",
                     calloutText: "These three problems — dimensional explosion, huge weight matrices, and orthogonal representations — together form a scalability wall. The naive one-hot MLP simply cannot scale to real-world vocabularies. We need a fundamentally better way to represent tokens.",
+                    figLabel1: "Interactive · N-gram Table vs MLP Parameters",
+                    figHint1: "Drag the slider to increase context size N. Watch the n-gram table explode while MLP parameters grow modestly — and notice how most n-gram cells stay empty.",
                 },
-                s04: {
+                s03: {
                     heading: "The Game Changer: Word Embeddings",
                     lead: "Instead of representing each token as a sparse one-hot vector, we learn a dense, low-dimensional vector for every token in the vocabulary. These are called embeddings.",
-                    p1: "An embedding is a lookup table — a matrix E of shape V × D, where V is the vocabulary size and D is the embedding dimension (typically 10–300). To get the representation of token t, we simply select the t-th row of E. This is equivalent to multiplying E by the one-hot vector, but much more efficient.",
+                    p1: "An embedding is a lookup table — a matrix E of shape V × D, where V is the vocabulary size and D is the embedding dimension (typically 10–300). To get the representation of token t, we select the t-th row of E. This is equivalent to multiplying E by the one-hot vector, but much more efficient.",
                     formulaCaption: "An embedding lookup: selecting row t from the embedding matrix E gives a dense D-dimensional vector.",
                     p2: "The key insight is that",
                     p2H1: "each dimension of the embedding captures a latent semantic property",
-                    p2End: ". These dimensions are not hand-designed — they emerge automatically from training. One dimension might encode something like \"animate vs. inanimate,\" another might capture \"verb tense,\" and others might encode more abstract patterns that humans cannot easily name.",
-                    p3: "Because embeddings are dense and continuous, similar tokens naturally cluster together in embedding space. The model can leverage this structure to",
+                    p2End: ". These dimensions are not hand-designed — they emerge automatically from training. One dimension might encode \"animate vs. inanimate,\" another might capture \"verb tense,\" and others encode more abstract patterns humans cannot easily name.",
+                    p3: "Because embeddings are dense and continuous, similar tokens naturally cluster in embedding space. The model can leverage this structure to",
                     p3H1: "generalize across semantically related tokens",
                     p3End: ". If the model has learned something about \"cat,\" it can partially transfer that knowledge to \"kitten\" because their embedding vectors are close.",
                     p4: "This dramatically reduces the effective input dimensionality. Instead of N × V (potentially hundreds of thousands), the MLP now receives N × D (perhaps a few hundred) — orders of magnitude smaller, with richer information.",
                     pullQuote: "Embeddings transform tokens from isolated symbols into points in a continuous semantic space, where proximity encodes meaning. This single idea unlocked a new era of language modeling.",
                     figLabel1: "Illustrative · Embedding Space (Simplified)",
                     figHint1: "This is a pedagogical illustration — not real model data. Click tokens to explore how similar characters cluster together.",
+                },
+                s04: {
+                    heading: "Exploring MLP + Embedding Configurations",
+                    lead: "With embeddings in place, the MLP language model has several key hyperparameters that control its capacity, efficiency, and behavior. Understanding their impact requires systematic experimentation.",
+                    p1: "The core architectural choices include the",
+                    p1H1: "embedding dimension",
+                    p1Mid1: "(how many latent features per token), the",
+                    p1H2: "hidden layer size",
+                    p1Mid2: "(how many neurons in each hidden layer), the",
+                    p1H3: "number of hidden layers",
+                    p1End: "(depth of the network), and the context window size (how many previous tokens the model sees).",
+                    p2: "To understand how these choices affect model behavior, we trained many MLP language models with different hyperparameter configurations on the same dataset. This systematic sweep reveals key trade-offs: larger embeddings capture richer semantics but risk overfitting on small data, wider hidden layers increase capacity but slow training, and deeper networks can learn more abstract features but are harder to optimize.",
+                    hyperparamCards: {
+                        embDim: { title: "Embedding Dimension", desc: "Controls the richness of token representations. Larger values capture more semantic nuance but require more data to train effectively." },
+                        hiddenSize: { title: "Hidden Layer Size", desc: "Determines the model's computational width. Wider layers can detect more patterns per layer but increase memory and compute." },
+                        numLayers: { title: "Number of Layers", desc: "Controls representational depth. Deeper models can compose features hierarchically but face training stability challenges." },
+                        contextWindow: { title: "Context Window", desc: "How many previous tokens the model considers. Larger windows give more information but increase input dimensionality linearly." },
+                    },
+                    figLabel1: "Interactive · Softmax Temperature",
+                    figHint1: "Adjust temperature to see how it sharpens or flattens the probability distribution over next tokens. Low temperature = deterministic; high = creative.",
+                    calloutTitle: "Why systematic exploration matters",
+                    calloutText: "There is no single \"best\" configuration — the optimal hyperparameters depend on dataset size, vocabulary, and computational budget. The only way to develop intuition is to explore the space empirically and observe how each choice affects loss, perplexity, and generation quality.",
+                    figLabel2: "Interactive · Hyperparameter Explorer",
+                    figHint2: "Adjust sliders to explore how embedding dimension, hidden size, and learning rate affect validation loss, compute cost, training dynamics, and learned embeddings.",
+                    p3: "The interactive explorer lets you compare models across these dimensions, visualizing validation loss, perplexity, training stability, compute cost, generation quality, and the learned embedding space. Anomaly badges flag concerning patterns like overfitting or unstable gradients.",
                 },
                 s05: {
                     heading: "New Limitations of MLP + Embeddings",
@@ -996,36 +1015,25 @@ export const en = {
                     figLabel4: "Interactive · Concatenation Bottleneck",
                     figHint4: "Switch between Parameter Growth and Signal Dilution views. Drag the context size slider and watch W₁ expand — and each token's share of the input shrink.",
                     calloutTitle: "The same root cause",
-                    calloutText: "All four limitations share a common origin: the MLP treats its entire context as a single flat vector. It has no mechanism to reason about the structure, ordering, or relative importance of individual tokens. Overcoming this requires architectures that process sequences as sequences — not as concatenated blobs. That architecture is the Transformer.",
+                    calloutText: "All four limitations share a common origin: the MLP treats its entire context as a single flat vector. It has no mechanism to reason about the structure, ordering, or relative importance of individual tokens. Overcoming this requires architectures that process sequences step by step, carrying forward a memory of what came before.",
                 },
                 s06: {
-                    heading: "Exploring MLP + Embedding Configurations",
-                    lead: "With embeddings in place, the MLP language model has several key hyperparameters that control its capacity, efficiency, and behavior. Understanding their impact requires systematic experimentation.",
-                    p1: "The core architectural choices include the",
-                    p1H1: "embedding dimension",
-                    p1Mid1: "(how many latent features per token), the",
-                    p1H2: "hidden layer size",
-                    p1Mid2: "(how many neurons in each hidden layer), the",
-                    p1H3: "number of hidden layers",
-                    p1End: "(depth of the network), and the context window size (how many previous tokens the model sees).",
-                    p2: "To understand how these choices affect model behavior, we trained many MLP language models with different hyperparameter configurations on the same dataset. This systematic sweep reveals key trade-offs: larger embeddings capture richer semantics but risk overfitting on small data, wider hidden layers increase capacity but slow training, and deeper networks can learn more abstract features but are harder to optimize.",
-                    hyperparamCards: {
-                        embDim: { title: "Embedding Dimension", desc: "Controls the richness of token representations. Larger values capture more semantic nuance but require more data to train effectively." },
-                        hiddenSize: { title: "Hidden Layer Size", desc: "Determines the model's computational width. Wider layers can detect more patterns per layer but increase memory and compute." },
-                        numLayers: { title: "Number of Layers", desc: "Controls representational depth. Deeper models can compose features hierarchically but face training stability challenges." },
-                        contextWindow: { title: "Context Window", desc: "How many previous tokens the model considers. Larger windows give more information but increase input dimensionality linearly." },
-                    },
-                    figLabel1: "Interactive · Softmax Temperature",
-                    figHint1: "Adjust temperature to see how it sharpens or flattens the probability distribution over next tokens. Low temperature = deterministic; high = creative.",
-                    calloutTitle: "Why systematic exploration matters",
-                    calloutText: "There is no single \"best\" configuration — the optimal hyperparameters depend on the dataset size, vocabulary, and the computational budget. The only way to develop intuition is to explore the space empirically and observe how each choice affects loss, perplexity, and generation quality.",
-                    figLabel2: "Interactive · Hyperparameter Explorer",
-                    figHint2: "Adjust sliders to explore how embedding dimension, hidden size, and learning rate affect validation loss, compute cost, training dynamics, and learned embeddings.",
-                    p3: "The interactive explorer above lets you compare models across these dimensions, visualizing validation loss, perplexity, training stability, compute cost, generated text quality, and the learned embedding space. Anomaly badges flag concerning patterns like overfitting or unstable gradients. This empirical approach is how practitioners develop real intuition about model design.",
-                },
-                s07: {
                     heading: "Deep Training Challenges for Large MLPs",
                     lead: "Making deep MLPs actually train well was one of the hardest practical problems in the history of neural networks. Without careful techniques, deep networks simply fail to learn.",
+                    panels: {
+                        initialization: {
+                            title: "Weight Initialization",
+                            preview: "Too large and activations explode; too small and gradients vanish.",
+                        },
+                        gradients: {
+                            title: "Vanishing & Exploding Gradients",
+                            preview: "Gradients multiply through layers — if each factor is < 1 or > 1, they vanish or explode.",
+                        },
+                        batchnorm: {
+                            title: "Batch Normalization",
+                            preview: "Normalize activations to keep internal distributions stable during training.",
+                        },
+                    },
                     p1H1: "Weight initialization.",
                     p1: "If weights are initialized too large, activations explode through the layers. Too small, and gradients vanish before reaching the early layers. Proper initialization schemes (like Xavier or Kaiming) set the initial scale based on layer dimensions to maintain stable signal propagation.",
                     formulaCaption1: "Kaiming initialization: weights are drawn from a Gaussian scaled by the fan-in, keeping variance stable through ReLU layers.",
@@ -1036,14 +1044,26 @@ export const en = {
                     formulaCaption2: "The chain rule through L layers: gradients are products of per-layer Jacobians. If each factor is slightly < 1 or > 1, the product vanishes or explodes.",
                     figLabel2: "Interactive · Gradient Flow Across Layers",
                     figHint2: "Toggle between vanishing, stable, and exploding gradient regimes to see how gradient magnitude changes per layer.",
-                    p3: "For many years, training networks deeper than 2–3 layers was extremely unreliable. Researchers discovered that the combination of activation function choice (ReLU replaced Sigmoid/Tanh for hidden layers), proper initialization, and normalization techniques was essential for stable training.",
+                    p3: "For many years, training networks deeper than 2–3 layers was extremely unreliable. The combination of activation function choice (ReLU replaced Sigmoid/Tanh for hidden layers), proper initialization, and normalization techniques was essential for stable training.",
                     p4H1: "Batch Normalization",
-                    p4: "was a key breakthrough. By normalizing the activations within each layer to have zero mean and unit variance (across a mini-batch), it keeps the internal distributions stable as the network trains. This dramatically reduces the sensitivity to initialization and learning rate, enabling reliable training of much deeper networks.",
+                    p4: "was a key breakthrough. By normalizing activations within each layer to have zero mean and unit variance (across a mini-batch), it keeps internal distributions stable as the network trains. This dramatically reduces sensitivity to initialization and learning rate, enabling reliable training of much deeper networks.",
                     formulaCaption3: "Batch Normalization: normalize activations h using batch statistics (μ_B, σ²_B), then rescale with learned parameters γ and β.",
                     calloutTitle: "Why BatchNorm changed everything",
                     calloutText: "Before BatchNorm, training deep networks required meticulous hyperparameter tuning. After it, practitioners could reliably train 10, 20, or even 100+ layer networks. It acts as a stabilizer that smooths the loss landscape, allowing gradient descent to converge faster and more reliably.",
                     figLabel3: "Interactive · Batch Normalization Effect",
                     figHint3: "Toggle BatchNorm on and off to see how it stabilizes activation distributions across layers.",
+                },
+                s07: {
+                    heading: "The Path Ahead",
+                    lead: "The MLP showed that neural networks can learn language. Its fixed window revealed something equally important: learning language well requires understanding sequences — not just snapshots.",
+                    p1: "The structural limits you just explored share a single root: the MLP sees its context as one flat vector. No step-by-step processing. No memory of what came before. No way to track how meaning accumulates across tokens.",
+                    p2: "That constraint leads naturally to a new set of questions:",
+                    rnnQ1: "Fixed window — what if the network processed one token at a time instead?",
+                    rnnQ2: "No memory — what if each step passed a hidden state forward to the next?",
+                    rnnQ3: "Independent predictions — what if every output informed the next input?",
+                    pullQuote: "The MLP looks at a window. What we need is a model that takes a journey — one token at a time, building a running memory of everything it has seen.",
+                    p3: "That is the Recurrent Neural Network. Instead of reading a fixed-size snapshot, an RNN reads one token, updates a hidden state, reads the next, updates again — carrying the thread of the sequence forward at each step.",
+                    p4: "Despite these limits, the MLP + Embeddings framework established concepts every modern language model still uses: learned token representations, non-linear feature hierarchies, and end-to-end gradient-based training. The embedding layers and feedforward blocks inside Transformers are direct descendants of the ideas in this chapter.",
                 },
                 s08: {
                     heading: "Final Limitations and the Path Ahead",
@@ -1064,8 +1084,8 @@ export const en = {
                     heading: "Continue Exploring",
                     freeLabTitle: "Open Free Lab",
                     freeLabDesc: "Experiment with MLP + Embedding models interactively. Train, visualize embeddings, and generate text with different hyperparameters.",
-                    transformerTitle: "Next: Transformers",
-                    transformerDesc: "Discover how self-attention overcomes the MLP's fixed-window limitation and enables truly contextual language understanding.",
+                    transformerTitle: "Next: Recurrent Neural Networks",
+                    transformerDesc: "Discover how RNNs overcome the fixed-window limitation by processing sequences one token at a time, carrying a hidden state that acts as memory.",
                 },
                 footer: {
                     text: "From counting tables to learned representations — the MLP + Embeddings model marked the moment language modeling became truly neural.",
@@ -1087,11 +1107,66 @@ export const en = {
                     output: "Output",
                     outputDesc: "Next-token probabilities",
                 },
+                thinkFirst: {
+                    xor: {
+                        question: "A linear model can only draw straight lines. How many hidden neurons do you think it takes to separate 4 XOR-like clusters?",
+                        reveal: "Just 2 neurons in one hidden layer can solve XOR — try it below!",
+                    },
+                    embedding: {
+                        question: "If you could represent each character as just 3 numbers instead of 96, what properties would you want those numbers to capture?",
+                        reveal: "Embeddings learn exactly this — dense vectors where similar characters get similar numbers, automatically.",
+                    },
+                    hyperparams: {
+                        question: "Which do you think matters more for prediction quality: a larger embedding or a wider hidden layer?",
+                        reveal: "It depends on the data! Use the explorer below to find out empirically.",
+                    },
+                    contextWindow: {
+                        question: "The model sees 3 tokens of context. 'Mary walked into the garden, and she...' — Can the model figure out who 'she' is?",
+                        reveal: "No — 'Mary' is 8 tokens back, far outside a 3-token window.",
+                    },
+                },
+                guidedExperiments: {
+                    title: "Guided Experiments — Try These",
+                    bestConfig: {
+                        title: "Find the Best Config",
+                        tryThis: "Adjust sliders to minimize validation loss. Which hyperparameter has the biggest impact?",
+                        observe: "Look at the loss curve shape — does it plateau early or keep improving?",
+                    },
+                    overfitting: {
+                        title: "Spot Overfitting",
+                        tryThis: "Find a config where train loss is much lower than val loss.",
+                        observe: "The anomaly badge lights up and the gap metric shows the divergence.",
+                    },
+                    embeddings: {
+                        title: "Watch Embeddings Learn",
+                        tryThis: "Select a config and scrub the training snapshot slider in the Embedding Space tab.",
+                        observe: "Tokens move from random noise to structured clusters as training progresses.",
+                    },
+                    generation: {
+                        title: "Generate and Compare",
+                        tryThis: "Generate text from the best and worst configs (lowest vs highest loss).",
+                        observe: "Notice how prediction quality correlates directly with validation loss.",
+                    },
+                },
             },
             explorer: {
                 loading: "Loading configurations…",
                 errorPrefix: "Failed to load MLP grid:",
                 noConfigs: "No MLP configurations available from backend.",
+                onboarding: {
+                    title: "Quick Tour",
+                    scatter: {
+                        text: "Each dot is a trained model. Click any dot to select it and see its full metrics below. Models closer to the bottom-left corner have lower validation loss (better performance).",
+                    },
+                    sliders: {
+                        text: "Use these sliders to explore different hyperparameter combinations. The explorer will automatically select the closest trained model to your chosen settings.",
+                    },
+                    metrics: {
+                        text: "Watch these metric cards update as you select different models. Look for the anomaly badges — they flag models with training issues like overfitting or gradient instability.",
+                    },
+                    next: "Next",
+                    gotIt: "Got it!",
+                },
                 sections: {
                     s01Title: "Model Zoo Overview",
                     s01Subtitle: "fully-trained configurations — click any dot to select it and sync the sliders below.",
@@ -1434,8 +1509,9 @@ export const en = {
                 nonLinearity: { number: "02", label: "Non-Linearity" },
                 howItLearns: { number: "03", label: "Learning" },
                 watchingItLearn: { number: "04", label: "Training" },
-                bridge: { number: "05", label: "Connection" },
-                powerAndLimits: { number: "06", label: "Reflection" },
+                bridge: { number: "06", label: "Connection" },
+                powerAndLimits: { number: "07", label: "Reflection" },
+                overfitting: { number: "05", label: "Overfitting" },
                 playground: {
                     inputs: {
                         title: "Inputs",
@@ -1452,11 +1528,20 @@ export const en = {
                     },
                     activation: {
                         title: "Activation Function",
+                        explorerTitle: "Interactive · Activation Functions",
+                        ariaLabel: "{name} activation function graph",
+                        inputLabel: "Weighted sum z (input to activation)",
+                        caption: "Toggle between activation functions and drag the z slider to see how each transforms the weighted sum.",
                         desc: "Non-linear transformation applied after the weighted sum. Without it, stacking layers would collapse into a single linear function.",
                         linear: "No transformation — output equals the weighted sum z. Useful as a baseline but cannot model non-linear patterns.",
                         relu: "Rectified Linear Unit. Outputs max(0, z). Sparse, efficient, and widely used in deep networks.",
                         sigmoid: "Squashes output to (0, 1). Useful for binary probability outputs, but can cause vanishing gradients.",
                         tanh: "Squashes output to (−1, 1). Zero-centered, often preferred over sigmoid for hidden layers.",
+                        labels: {
+                            relu: "ReLU",
+                            sigmoid: "Sigmoid",
+                            tanh: "Tanh",
+                        }
                     },
                     training: {
                         title: "Training",
@@ -1504,18 +1589,27 @@ export const en = {
                         training: "Track loss and parameter evolution across training steps to observe gradient descent in action.",
                     },
                     gradients: {
+                        visualizerTitle: "Interactive · Backpropagation Step-by-Step",
                         forwardPass: "Forward pass: compute z, apply activation, and calculate the loss from the current prediction and target.",
                         forwardPassLabel: "Forward Pass",
                         chainRule: "Backpropagation via the chain rule: decompose ∂L/∂w into a product of local gradients through each node.",
                         chainRuleLabel: "Gradients (Chain Rule)",
                         weightUpdate: "Proposed parameter update: new value = old value − η × gradient. Applied when you click Train 1 Step.",
-                        weightUpdateLabel: "Proposed Weight Update",
+                        weightUpdateLabel: "Weight Updates",
                         linearSum: "Linear pre-activation: z = w₁x₁ + w₂x₂ + b. The raw weighted sum before the activation function.",
-                        linearSumLabel: "Linear sum",
+                        linearSumLabel: "Linear",
                         prediction: "Prediction ŷ = activation(z). The output of the neuron after applying the non-linear activation function.",
-                        predictionLabel: "Prediction",
+                        predictionLabel: "Activation",
                         loss: "Loss L = (ŷ − target)². Squared error between the prediction and the desired target value.",
                         lossLabel: "Loss",
+                        reset: "Reset",
+                        caption: "Step through forward pass, backpropagation, and weight updates to see how a neuron learns.",
+                        buttonLabels: {
+                            idle: "Run Forward Pass →",
+                            forward: "Backpropagate →",
+                            backward: "Update Weights →",
+                            update: "New Forward Pass →",
+                        }
                     },
                     buttons: {
                         trainStep: "Train 1 Step",
@@ -1530,12 +1624,23 @@ export const en = {
                         training: "Training",
                     },
                     diagram: {
+                        title: "Interactive · Perceptron",
+                        ariaLabel: "Perceptron flow diagram",
                         caption: "Adjust inputs, weights, and bias to see how the perceptron transforms them into an output.",
                         inputX1: "Input x₁",
                         inputX2: "Input x₂",
                         weightW1: "Weight w₁",
                         weightW2: "Weight w₂",
                         biasB: "Bias b",
+                        tooltipW1: "Weight w₁ = {val} — Controls how much input x₁ influences the sum",
+                        tooltipW2: "Weight w₂ = {val} — Controls how much input x₂ influences the sum",
+                        tooltipX1: "Input x₁ = {val} — The first input feature fed into the neuron",
+                        tooltipX2: "Input x₂ = {val} — The second input feature fed into the neuron",
+                        tooltipSum: "Weighted Sum z = {val} — Calculated as (w₁×x₁) + (w₂×x₂) + b",
+                        tooltipBias: "Bias b = {val} — Shifts the decision threshold; positive = easier to activate, negative = harder",
+                        tooltipActivation: "ReLU Activation = {val} — ReLU(z) = max(0, z). Outputs z if positive, otherwise 0",
+                        tooltipOutput: "Final Output = {val} — The neuron's prediction after applying ReLU to the weighted sum",
+                        breakdownTitle: "Contribution Breakdown",
                     },
                 },
             },
@@ -1754,6 +1859,84 @@ export const en = {
             curnxt: "cur \\ nxt"
         }
     },
+    bigramWidgets: {
+        nnComparison: {
+            title: "Interactive · Bigram vs. Neural Network",
+            bigramTitle: "Bigram Probabilities (counting)",
+            neuralTitle: "Neural Network Weights (learned)",
+            stats: {
+                steps: "Training steps:",
+                distance: "Distance:",
+                match: "✓ Neural weights closely match bigram probabilities"
+            },
+            buttons: {
+                train: "Train 1 Step",
+                auto: "Auto-Train ×20",
+                reset: "Reset"
+            },
+            caption: "The neural network learns weights that converge to the same transition probabilities the bigram model computes by counting."
+        },
+        textToNumbers: {
+            placeholder: "Type something…",
+            empty: "Start typing to see character codes…",
+            tooltip: "code:"
+        },
+        pairHighlighter: {
+            hint: "Hover a character to see its bigram pair"
+        },
+        memoryLimit: {
+            context: "Context:",
+            chars: "chars",
+            locked: "locked",
+            modelSees: "Model sees:",
+            guessingNext: "guessing next…",
+            lockedNote: "Context-{size} available in the N-gram chapter",
+            ngramLink: "N-gram model →",
+            topPredictions: "Top predictions",
+            correctAnswer: "Correct answer \"{target}\" ranked #{rank}"
+        },
+        matrixOverlay: {
+            dismiss: "Click to dismiss",
+            after: "After",
+            mostCommon: "the most common next character is",
+            tryHovering: "— try hovering row",
+            inMatrix: "in the matrix below.",
+            clickToDismiss: "click to dismiss"
+        },
+        heroAutoComplete: {
+            placeholder: "a",
+            after: "After “{input}”, likely next",
+            hint: "Type one character to see predictions"
+        },
+        softmax: {
+            title: "Softmax Temperature · Conceptual",
+            description: "Temperature reshapes the probability distribution without changing the ranking of tokens. Low temperature sharpens the distribution; high temperature flattens it.",
+            label: "Temperature",
+            deterministic: "Deterministic",
+            neutral: "Neutral",
+            chaotic: "Chaotic",
+            mode: {
+                deterministic: { label: "Deterministic", sub: "Always picks the top token. No creativity." },
+                conservative: { label: "Conservative", sub: "Mostly picks top tokens with occasional variety." },
+                neutral: { label: "Neutral", sub: "Standard sampling — balanced quality and diversity." },
+                creative: { label: "Creative", sub: "Explores less likely options. More surprising output." },
+                chaotic: { label: "Chaotic", sub: "Nearly uniform — picks almost any token at random." },
+            },
+            presets: {
+                deterministic: "Deterministic",
+                balanced: "Balanced",
+                neutral: "Neutral",
+                creative: "Creative",
+            },
+            stats: {
+                topToken: "Top token",
+                entropy: "Entropy",
+                spread: "Spread",
+                max: "of max",
+            },
+            note: "Temperature does not change the model's knowledge — only how randomly it samples from what it knows. The token rankings stay the same; only the sharpness of the distribution changes.",
+        },
+    },
     ngramNarrative: {
         hero: {
             eyebrow: "Understanding Language Models",
@@ -1885,6 +2068,122 @@ export const en = {
             text: "The statistical era is complete. You've seen what counting can do — and where it breaks. Next: models that learn.",
             brand: "LM-Lab · Educational Mode",
         },
+        predictingAfter: "Predicting the next character after:",
+        readingChart: "Reading the chart",
+        figures: {
+            contextWindow: {
+                label: "Context window · Natural language example",
+            },
+            transitionExamples: {
+                label: "Transition examples · Training corpus evidence",
+                hint: "Expand any row to see real passages from the training data where this transition was observed.",
+            },
+            countingComparison: {
+                label: "Counting comparison · Bigram vs. Trigram",
+                hint: "Same training text, different granularity. Notice how longer contexts produce more specific counts.",
+            },
+            confidenceImprovement: {
+                label: "Confidence improvement · Context length effect",
+                hint: "Each extra character of context sharpens the prediction.",
+            },
+            exponentialGrowth: {
+                label: "Exponential growth · Table size by N",
+                hint: "Each step multiplies the previous count by the vocabulary size.",
+            },
+            generalizationFailure: {
+                label: "Generalization failure · Cat vs. Dog",
+                hint: "Hover the right column to see what the model returns for an unseen context.",
+            },
+            statisticalEra: {
+                label: "Statistical era · Learning path",
+                hint: "The counting era is complete. Something fundamentally different comes next.",
+            }
+        }
+    },
+    ngramPedagogy: {
+        primer: {
+            title: "What is a {name}?",
+            isEdu: {
+                p1: "Imagine you are trying to guess the next letter someone will type. A <0>{name}</0> model peeks at the last <1>{length}</1> letter{suffix} and asks: <2>\"Based on what I just saw, what usually comes next?\"</2>",
+                n1: "With only 1 character of memory, the model is essentially guessing blindly from frequency alone.",
+                n2: "Two characters of context is enough to learn simple patterns like 'th' → 'e', but not much more.",
+                nSmall: "With {n} characters, the model starts capturing short word fragments — but the number of possible contexts is already {count}.",
+                nLarge: "At N={n}, the model theoretically has rich local context — but storing every possible {n}-character combination requires billions of entries."
+            },
+            isFree: {
+                p1: "A {name} conditions on the last <0>{length}</0> token{suffix}. Context space grows as |V|<sup>{n}</sup>."
+            },
+            liveWindow: "Live context window"
+        },
+        growth: {
+            title: "Context growth",
+            body: "Watch how the window of visible history expands as N increases. More context means sharper guesses — but also exponentially more possibilities."
+        },
+        transitions: {
+            title: "Transition examples",
+            isEduBody: "Instead of a giant table, let's trace a few transitions through the word <0>LANGUAGE</0>. Each row shows: \"given this context, the next character was...\" — plus real evidence from the training corpus.",
+            isFreeBody: "Sample transitions from <0>LANGUAGE</0> with corpus evidence.",
+            matches: "{count} match{suffix}",
+            searching: "Searching training data...",
+            noMatches: "No matches found in sampled corpus.",
+            corpusEvidence: "Corpus evidence"
+        },
+        explosion: {
+            title: "Combinatorial Explosion",
+            body1: "A {n}-gram model with V={vocabSize} characters would need to store probabilities for every possible {n}-character context. That's:",
+            entries: "{count} entries",
+            body2: "Over {billionCount} combinations. Most would never be observed in training data, making the table astronomically sparse and impractical.",
+            limitReached: "Classical scaling limit reached"
+        },
+        comparison: {
+            title: "Model comparison",
+            isEduBody: "As N grows, perplexity drops (the model gets better at predicting locally) — but context utilization plummets because most possible contexts are never seen in training.",
+            isFreeBody: "Backend-driven metrics per N. Lower perplexity = better local fit.",
+            quality: "Quality (↑ = lower ppl)",
+            utilization: "Utilization"
+        },
+        limitations: {
+            title: "Key limitations",
+            items: {
+                context: {
+                    title: "Limited context",
+                    isEdu: "Even with N=5, the model forgets everything before those 5 characters. It can never learn that a paragraph is about cooking just because it saw the word 'recipe' ten sentences ago.",
+                    isFree: "Even N=5 captures only 5 tokens of history. Long-range dependencies remain invisible."
+                },
+                scalability: {
+                    title: "Exponential scalability",
+                    isEdu: "Every extra character of context multiplies the table size by the vocabulary size (~96×). Going from N=3 to N=4 means ~96× more rows to store.",
+                    isFree: "Context space grows as |V|^N. Storage and data requirements become intractable for N > 4."
+                },
+                vocabulary: {
+                    title: "Vocabulary explosion",
+                    isEdu: "If we used words instead of characters, the vocabulary jumps from ~96 to tens of thousands — making even a bigram table enormous.",
+                    isFree: "Word-level N-grams face vocabulary sizes of 50k+, making tables impractical even for small N."
+                }
+            }
+        },
+        story: {
+            title: "The story of N-grams",
+            subtitle: "Why more context seemed like the answer — and why it wasn't enough",
+            steps: {
+                s1: {
+                    title: "The bigram bottleneck",
+                    body: "We started with the simplest idea: predict the next character using only the previous one. But a bigram model has the memory of a goldfish — it immediately forgets everything except the last letter."
+                },
+                s2: {
+                    title: "A natural extension",
+                    body: "The obvious fix? Look at more history. A trigram looks at 2 previous characters, a 4-gram at 3, and so on. Each step gives the model richer local context and noticeably better predictions."
+                },
+                s3: {
+                    title: "The cost of memory",
+                    body: "But there's a catch. Each extra character of context multiplies the number of possible states by the vocabulary size. A trigram with 96 characters already has 884,736 possible contexts. Most are never observed in training — the table becomes astronomically sparse."
+                },
+                s4: {
+                    title: "The scaling wall",
+                    body: "By N=5, we would need over 8 billion table entries. No dataset is large enough to fill that table meaningfully. This is the fundamental reason N-grams were eventually replaced by neural models that can generalize across similar contexts."
+                }
+            }
+        }
     },
     neuralNetworkNarrative: {
         hero: {
@@ -1915,6 +2214,28 @@ export const en = {
             p3End: ". Training is how the neuron finds those right numbers — starting from random guesses and improving step by step.",
             calloutTitle: "What are parameters?",
             calloutText: "Weights and biases together are called parameters. At the start of training they are random noise. By the end they encode everything the network has learned — stored as nothing more than a list of decimal numbers. The process of finding good values is called training.",
+            walkthrough: {
+                title: "Breaking it down with a real example",
+                scenarioTitle: "Scenario:",
+                scenarioText: "A neuron is trying to predict if you'll enjoy a movie.",
+                intro: "It considers two inputs: how much action it has (x₁) and how good the reviews are (x₂). Let's watch it make a prediction.",
+                step1: "Start with the inputs",
+                step2: "Multiply each input by its weight",
+                step2Desc: "Weights set importance. Here, action matters a lot (w₁ is high) while reviews matter less (w₂ is small).",
+                step2Hint: "High action contributed 1.2 points, reviews contributed only 0.18 points.",
+                step3: "Add the weighted inputs together (Σ)",
+                step3Hint: "Σ (sigma) just means “add them all up.”",
+                step4: "Add the bias",
+                step4Desc: "Bias is the baseline push. Positive bias makes the neuron easier to activate; negative bias makes it pickier.",
+                step4Hint: "A negative bias reduces the score before activation.",
+                step5: "Apply the activation function",
+                step5Desc: "The activation decides how strongly the neuron “fires.” ReLU keeps positive values and clips negatives to 0.",
+                step5Hint: "Since 0.88 is positive, it passes through unchanged.",
+                resultTitle: "Final output",
+                resultTextPart: "The neuron outputs",
+                resultDesc: "This could be interpreted as “likely to enjoy the movie.”",
+                finalNote: "That's all a neuron does: multiply by weights, add bias, then apply an activation.",
+            },
         },
         nonLinearity: {
             title: "Why Non-Linearity?",
@@ -1942,12 +2263,46 @@ export const en = {
             p2End: " Each node passes its local gradient backward, and we multiply through the entire graph.",
             formulaCaption: "The update rule in shorthand: subtract the learning rate η times the gradient. This one line captures the entire worked example above.",
             p3: "The learning rate η controls step size. Too large and you overshoot the optimum. Too small and training crawls. Each cycle — forward, loss, backward, update — nudges every weight toward better predictions. Repeat thousands of times and random noise crystallizes into knowledge.",
+            workedUpdateNote: "This full loop — forward, loss, backward, update — repeats many times during training.",
+            batchingTransition: "You've seen how one example flows through the network. But real datasets have thousands or millions of examples. Training on them one-by-one would take forever. The solution: batches.",
+            batching: {
+                title: "The Mini-Batch Revolution",
+                lead: "Processing examples one-at-a-time is painfully slow. Training on the entire dataset at once is impractical. Mini-batches solve both problems — and the noise they introduce turns out to be a feature, not a bug.",
+                p1: "In practice, computing gradients one example at a time is inefficient. Modern GPUs can process hundreds of examples in parallel. Instead of updating weights after every single example, we average the gradients from a small batch of examples — typically 32 to 256 — and update once per batch. This is called mini-batch gradient descent.",
+                p2: "Batch size controls a fundamental trade-off. A batch size of 1 (stochastic gradient descent, or SGD) gives noisy gradients — each update points in a slightly different direction because it's based on one random example. A batch size equal to the full dataset gives perfectly smooth gradients, but it's slow and can overfit. Mini-batches strike a balance: reasonably stable gradients with efficient computation.",
+                p3: "The noise from small batches isn't just a necessary evil — it's helpful. Noisy gradients help the network escape shallow local minima and act as implicit regularization, often leading to better generalization on unseen data. This is why SGD and small mini-batches remain popular despite being noisier than full-batch training.",
+                calloutTitle: "Why noise helps",
+                calloutText: "Gradient noise isn't just a necessary evil — it's a feature. Small batches introduce randomness that helps the optimizer explore the loss landscape more thoroughly, escaping shallow local minima and finding solutions that generalize better to new data.",
+                conclusion: "Modern deep learning standardizes on mini-batches of 32–256 examples. Larger batches train faster per epoch but may generalize worse. Smaller batches are noisier but often find better solutions.",
+                visual1Label: "Interactive · Gradient Noise vs Batch Size",
+                visual1Hint: "Drag the batch size slider to see how gradient estimates vary. Small batches produce scattered gradient vectors; large batches converge tightly around the true gradient direction.",
+                visual2Label: "Loss Curves · Batch Size Comparison",
+                visual2Hint: "Three simulated training runs with different batch sizes. Red (batch=1) is noisy but explores well. Green (batch=32) balances stability and exploration. Blue (full batch) is smooth but slow.",
+            },
+            workedExample: {
+                title: "A Concrete Example",
+                intro: "Let's watch a single neuron learn from one example, step by step.",
+                step1Title: "Starting Values",
+                step1Text: "We start with random weights (w=0.5), a bias (b=-0.2), and one training example (x=1.0, target=0.8).",
+                step2Title: "1. Forward Pass",
+                step2Text: "The neuron computes w*x + b = 0.3. After sigmoid, the prediction is 0.57.",
+                step3Title: "2. Loss Calculation",
+                step3Text: "The prediction (0.57) is lower than the target (0.8). The loss (how wrong we are) is 0.05.",
+                step4Title: "3. Backpropagation",
+                step4Text: "We calculate how to change w to reduce that loss. The gradient tells us to increase w.",
+                step5Title: "4. Parameter Update",
+                step5Text: "We nudge the weight slightly. New w = 0.61. The prediction is now closer to the target!"
+            }
         },
         watchingItLearn: {
             title: "Watching It Learn",
             lead: "Theory is one thing. Watching it happen is another. The demo below runs real training steps on a single neuron.",
             p1: "Press the training button and observe. The loss should drop. The prediction should creep toward the target. Each click runs one cycle of forward pass, backpropagation, and weight update — the same process described in the previous section, but live.",
             p2: "Pay attention to how the weights change. Early steps produce large swings because the gradients are steep. Later steps produce tiny refinements as the neuron settles into a good solution. This is gradient descent in action.",
+            alertTitle: "Loss is increasing!",
+            alertText: "When the learning rate is too high, gradient descent can overshoot the minimum and cause the loss to diverge. Try reducing η to below 2.0 for stable convergence.",
+            landscapeTitle: "Loss Landscape",
+            landscapeDesc: "The heatmap below shows how loss varies across weight and bias combinations. Train above and watch the trajectory descend toward the low-loss valley.",
         },
         bridge: {
             title: "The Bridge: Tables to Parameters",
@@ -1959,6 +2314,32 @@ export const en = {
             insightTitle: "From Tables to Representations",
             insightText: "A bigram table stores 9,216 independent counts. A neural network with a small hidden layer stores fewer parameters — but organized so that similar characters share structure. This is the seed of the idea that becomes word embeddings, attention, and modern language models.",
             p3: "This bridge — from counting to learning — is the most important conceptual leap in language modeling. Everything that follows builds on it.",
+            explanation: {
+                title: "From Counting to Learning",
+                text: "An N-gram table needs a new row for every possible context. A neural network learns shared weights that can handle context it has NEVER seen before by noticing similarities."
+            }
+        },
+        overfitting: {
+            label: "The Overfitting Problem",
+            heading: "The Risk of Overfitting",
+            lead: "A network that trains perfectly on every example can still fail completely on new data. It memorized instead of learned. This is overfitting — one of the most important concepts in all of machine learning.",
+            p1: "When a network trains, loss decreases and predictions improve. The natural instinct is to keep going — train longer, push loss as low as possible. But this leads to a trap: the network can achieve near-zero error on the training examples while learning nothing general. It memorizes the specific patterns in the data it saw, including the noise and quirks, and becomes useless on new examples.",
+            p2: "Think of a student preparing for an exam. One student memorizes every answer to every practice problem without understanding the underlying concepts. Another student learns the principles and can apply them to new problems. On the practice test, both score perfectly. On the real exam with different questions, only the second student succeeds. The first student overfit to the practice set.",
+            p3: "The solution is a train/validation split. Hold out a portion of the data — say 20% — that the model never sees during training. Measure performance on both the training set (data the model learns from) and the validation set (held-out data). Training loss always decreases as the model gets better at fitting what it sees. Validation loss follows a U-curve: it improves as the model learns real patterns, then worsens as the model starts memorizing training-specific noise.",
+            p4: "Model complexity amplifies this trade-off. A small model struggles to fit even the training data (underfitting). A right-sized model fits the training data and generalizes to new data. A huge model with far more parameters than needed memorizes the training set perfectly but fails on validation data (overfitting). More capacity is not always better.",
+            p5: "How do we fight overfitting? More training data dilutes the memorization effect. Regularization techniques penalize model complexity. Early stopping halts training when validation loss stops improving. Dropout, data augmentation, and BatchNorm all help. The key insight: validation loss is the only honest metric. A model can lie to you with perfect training performance while being completely useless in practice.",
+            conclusion: "Overfitting is why we split data, why we watch validation metrics closely, and why bigger models aren't always better. Every ML practitioner learns this lesson — usually by watching a model train to 'perfect' performance and then fail spectacularly on real-world data. The MLP explorer you'll see next flags overfitting automatically, but now you know what it means and why it matters.",
+            callout1Title: "Why we can't just minimize training loss",
+            callout1Text: "Driving training loss to zero is easy — just memorize every training example. But the goal isn't to ace a test you've already seen. It's to predict patterns you've never encountered. Validation loss is the only honest measure of whether a model has learned something real.",
+            callout2Title: "The generalization test",
+            callout2Text: "A model that performs well on training data but poorly on validation data has failed the generalization test. It learned the noise, not the signal. In ML, the validation set is the ultimate judge — it's the only data the model hasn't seen and can't cheat on.",
+            visual1Label: "Comparison · Good Fit vs Overfit",
+            visual1Hint: "Same training data, two different models. The overfit model achieves zero training error by fitting a complex curve through every point. But on new test data (hollow circles), it fails. The good-fit model accepts some training error but generalizes correctly.",
+            visual2Label: "Interactive · Train vs Validation Loss Over Time",
+            visual2Hint: "Drag the epoch slider to see how training and validation loss evolve. Training loss always decreases. Validation loss forms a U-curve — improving, then worsening as overfitting begins. The optimal stopping point is where validation loss is lowest.",
+            statusUnderfitting: "Still learning",
+            statusOptimal: "Optimal",
+            statusOverfitting: "Overfitting",
         },
         powerAndLimits: {
             title: "Power, Limits, and What Comes Next",

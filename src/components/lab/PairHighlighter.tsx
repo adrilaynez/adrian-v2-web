@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useI18n } from "@/i18n/context";
 
 const PAIR_COLORS = [
     "bg-emerald-400/20 border-emerald-400/30",
@@ -9,6 +10,7 @@ const PAIR_COLORS = [
 ] as const;
 
 export function PairHighlighter({ text = "hello world" }: { text?: string }) {
+    const { t } = useI18n();
     const [hovered, setHovered] = useState<number | null>(null);
     const chars = Array.from(text);
 
@@ -68,7 +70,7 @@ export function PairHighlighter({ text = "hello world" }: { text?: string }) {
                 })}
             </div>
             <p className="text-[10px] font-mono text-white/20">
-                Hover a character to see its bigram pair
+                {t("bigramWidgets.pairHighlighter.hint")}
             </p>
         </div>
     );

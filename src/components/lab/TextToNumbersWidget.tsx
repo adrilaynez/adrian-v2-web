@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n } from "@/i18n/context";
 
 export function TextToNumbersWidget() {
+    const { t } = useI18n();
     const [text, setText] = useState("hello");
     const [hovered, setHovered] = useState<number | null>(null);
 
@@ -17,7 +19,7 @@ export function TextToNumbersWidget() {
                     type="text"
                     value={text}
                     onChange={(e) => setText(e.target.value.slice(0, 24))}
-                    placeholder="Type something…"
+                    placeholder={t("bigramWidgets.textToNumbers.placeholder")}
                     className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-white/20 font-mono text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition-colors"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-white/20">
@@ -81,7 +83,7 @@ export function TextToNumbersWidget() {
                                             transition={{ duration: 0.12 }}
                                             className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded-md bg-black/80 border border-white/10 text-[10px] font-mono text-white/70 pointer-events-none z-10"
                                         >
-                                            code: {code}
+                                            {t("bigramWidgets.textToNumbers.tooltip")} {code}
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -97,7 +99,7 @@ export function TextToNumbersWidget() {
                             exit={{ opacity: 0 }}
                             className="text-xs font-mono text-white/20 self-center"
                         >
-                            Start typing to see character codes…
+                            {t("bigramWidgets.textToNumbers.empty")}
                         </motion.p>
                     )}
                 </AnimatePresence>

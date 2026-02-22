@@ -15,6 +15,10 @@ import type { TrainingStep } from "@/components/lab/NNTrainingDemo";
 import { NNLossLandscape } from "@/components/lab/NNLossLandscape";
 import { NNBigramComparison } from "@/components/lab/NNBigramComparison";
 import { XORDecisionBoundary } from "@/components/lab/XORDecisionBoundary";
+import { BatchGradientNoiseVisualizer } from "@/components/lab/BatchGradientNoiseVisualizer";
+import { BatchSizeLossCurveComparison } from "@/components/lab/BatchSizeLossCurveComparison";
+import { OverfittingComparisonDiagram } from "@/components/lab/OverfittingComparisonDiagram";
+import { TrainValLossCurveVisualizer } from "@/components/lab/TrainValLossCurveVisualizer";
 
 import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -191,6 +195,53 @@ function PullQuote({ children }: { children: React.ReactNode }) {
     );
 }
 
+function FigureWrapper({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
+    return (
+        <div className="my-8 -mx-2 sm:mx-0 rounded-2xl border border-white/[0.07] bg-white/[0.015] overflow-hidden">
+            <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">{label}</span>
+            </div>
+            <div className="p-4">{children}</div>
+            {hint && (
+                <p className="px-4 pb-3 text-[11px] text-white/25 italic">{hint}</p>
+            )}
+        </div>
+    );
+}
+
+function Expandable({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+    const [open, setOpen] = useState(defaultOpen);
+    return (
+        <div className="my-8 rounded-xl border border-white/[0.07] bg-white/[0.015] overflow-hidden">
+            <button
+                onClick={() => setOpen(o => !o)}
+                className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
+            >
+                <span className="text-sm font-semibold text-white/60">{title}</span>
+                <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown className="w-4 h-4 text-white/25" />
+                </motion.div>
+            </button>
+            <AnimatePresence initial={false}>
+                {open && (
+                    <motion.div
+                        key="content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="px-5 pb-6 pt-2 border-t border-white/[0.05] space-y-0">
+                            {children}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
 function SectionBreak() {
     return (
         <div className="flex items-center justify-center gap-3 my-16 md:my-20">
@@ -340,32 +391,32 @@ export function NeuralNetworkNarrative() {
                 <div className="my-8 -mx-2 sm:mx-0 rounded-2xl border border-indigo-500/[0.15] bg-indigo-500/[0.02] overflow-hidden">
                     <div className="flex items-center gap-3 px-5 py-3 border-b border-indigo-500/[0.1] bg-indigo-500/[0.03]">
                         <Lightbulb className="w-4 h-4 text-indigo-400" />
-                        <span className="text-xs font-mono uppercase tracking-widest text-indigo-400/80">Breaking it down with a real example</span>
+                        <span className="text-xs font-mono uppercase tracking-widest text-indigo-400/80">{t("neuralNetworkNarrative.artificialNeuron.walkthrough.title")}</span>
                     </div>
                     <div className="p-5 sm:p-6">
                         <p className="text-sm text-white/50 mb-2">
-                            <strong className="text-indigo-400">Scenario:</strong> A neuron is trying to predict if you&apos;ll enjoy a movie.
+                            <strong className="text-indigo-400">{t("neuralNetworkNarrative.artificialNeuron.walkthrough.scenarioTitle")}</strong> {t("neuralNetworkNarrative.artificialNeuron.walkthrough.scenarioText")}
                         </p>
                         <p className="text-xs text-white/40 mb-6">
-                            It considers two inputs: how much action it has (x₁) and how good the reviews are (x₂). Let&apos;s watch it make a prediction.
+                            {t("neuralNetworkNarrative.artificialNeuron.walkthrough.intro")}
                         </p>
 
                         {/* Step 1: Inputs */}
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">1</div>
-                                <span className="text-sm font-semibold text-white/70">Start with the Inputs</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.artificialNeuron.walkthrough.step1")}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
-                                    <span className="text-white/40 text-xs block mb-1">x₁: Action level</span>
+                                    <span className="text-white/40 text-xs block mb-1">{t("lab.playground.inputs.x1Label")}</span>
                                     <span className="font-mono font-bold text-white/70">0.8</span>
-                                    <span className="text-[10px] text-white/30 block mt-0.5">(on scale 0–1)</span>
+                                    <span className="text-[10px] text-white/30 block mt-0.5">{t("lab.playground.inputs.scaleHint")}</span>
                                 </div>
                                 <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
-                                    <span className="text-white/40 text-xs block mb-1">x₂: Review score</span>
+                                    <span className="text-white/40 text-xs block mb-1">{t("lab.playground.inputs.x2Label")}</span>
                                     <span className="font-mono font-bold text-white/70">0.6</span>
-                                    <span className="text-[10px] text-white/30 block mt-0.5">(on scale 0–1)</span>
+                                    <span className="text-[10px] text-white/30 block mt-0.5">{t("lab.playground.inputs.scaleHint")}</span>
                                 </div>
                             </div>
                         </div>
@@ -374,10 +425,10 @@ export function NeuralNetworkNarrative() {
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">2</div>
-                                <span className="text-sm font-semibold text-white/70">Multiply Each Input by Its Weight</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.artificialNeuron.walkthrough.step2")}</span>
                             </div>
                             <p className="text-xs text-white/40 mb-3">
-                                Weights determine importance. You <em>love</em> action movies (w₁ is high) but don&apos;t care much about reviews (w₂ is low).
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.step2Desc")}
                             </p>
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2 text-sm">
@@ -408,7 +459,7 @@ export function NeuralNetworkNarrative() {
                                 </div>
                             </div>
                             <p className="text-xs text-white/30 italic mt-3">
-                                High action contributed 1.2 points, mediocre reviews contributed only 0.18 points.
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.step2Hint")}
                             </p>
                         </div>
 
@@ -416,7 +467,7 @@ export function NeuralNetworkNarrative() {
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">3</div>
-                                <span className="text-sm font-semibold text-white/70">Add the Weighted Inputs Together (Σ)</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.artificialNeuron.walkthrough.step3")}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <code className="font-mono text-xs bg-white/[0.04] px-2 py-1 rounded border border-white/[0.06]">
@@ -424,7 +475,7 @@ export function NeuralNetworkNarrative() {
                                 </code>
                             </div>
                             <p className="text-xs text-white/35 italic mt-2">
-                                This is the Σ (sigma) — just means &quot;add them all up.&quot;
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.step3Hint")}
                             </p>
                         </div>
 
@@ -432,10 +483,10 @@ export function NeuralNetworkNarrative() {
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">4</div>
-                                <span className="text-sm font-semibold text-white/70">Add the Bias</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.artificialNeuron.walkthrough.step4")}</span>
                             </div>
                             <p className="text-xs text-white/40 mb-3">
-                                The bias is your baseline mood. A positive bias means you&apos;re already inclined to like movies; negative means you&apos;re picky.
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.step4Desc")}
                             </p>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <code className="font-mono text-xs bg-white/[0.04] px-2 py-1 rounded border border-white/[0.06]">
@@ -451,7 +502,7 @@ export function NeuralNetworkNarrative() {
                                 </code>
                             </div>
                             <p className="text-xs text-white/30 italic mt-2">
-                                You&apos;re a bit picky (negative bias), so the score dropped from 1.38 to 0.88.
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.step4Hint")}
                             </p>
                         </div>
 
@@ -459,10 +510,10 @@ export function NeuralNetworkNarrative() {
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">5</div>
-                                <span className="text-sm font-semibold text-white/70">Apply the Activation Function</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.artificialNeuron.walkthrough.step5")}</span>
                             </div>
                             <p className="text-xs text-white/40 mb-3">
-                                The activation decides how strongly the neuron &quot;fires.&quot; ReLU is simple: if the sum is positive, keep it; if negative, output 0.
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.step5Desc")}
                             </p>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <code className="font-mono text-xs bg-white/[0.04] px-2 py-1 rounded border border-white/[0.06]">
@@ -470,25 +521,26 @@ export function NeuralNetworkNarrative() {
                                 </code>
                             </div>
                             <p className="text-xs text-white/35 italic mt-2">
-                                Since 0.88 is positive, it passes through unchanged.
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.step5Hint")}
                             </p>
                         </div>
 
                         {/* Final Result */}
                         <div className="rounded-xl border border-indigo-500/[0.2] bg-gradient-to-br from-indigo-500/[0.08] to-transparent p-4">
                             <div className="flex items-center gap-2 mb-2">
-                                <span className="text-sm font-semibold text-indigo-400">✓ Final Output</span>
+                                <span className="text-sm font-semibold text-indigo-400">✓ {t("neuralNetworkNarrative.artificialNeuron.walkthrough.resultTitle")}</span>
                             </div>
                             <p className="text-sm text-white/60">
-                                The neuron outputs <code className="font-mono font-bold text-emerald-400 bg-white/[0.04] px-2 py-0.5 rounded">0.88</code>
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.resultTextPart")}{" "}
+                                <code className="font-mono font-bold text-emerald-400 bg-white/[0.04] px-2 py-0.5 rounded">0.88</code>
                             </p>
                             <p className="text-xs text-indigo-300/60 mt-2">
-                                This could mean &quot;88% likely you&apos;ll enjoy this movie.&quot; The neuron combined your preference for action, the review score, and your pickiness to make a prediction!
+                                {t("neuralNetworkNarrative.artificialNeuron.walkthrough.resultDesc")}
                             </p>
                         </div>
 
                         <div className="mt-5 pt-4 border-t border-white/[0.06] text-xs text-white/35 italic text-center">
-                            That&apos;s all a neuron does: multiply inputs by weights, add bias, then apply an activation. Simple math, powerful results.
+                            {t("neuralNetworkNarrative.artificialNeuron.walkthrough.finalNote")}
                         </div>
                     </div>
                 </div>
@@ -556,60 +608,52 @@ export function NeuralNetworkNarrative() {
                 <div className="my-10 -mx-2 sm:mx-0 rounded-2xl border border-amber-500/[0.15] bg-amber-500/[0.02] overflow-hidden">
                     <div className="flex items-center gap-3 px-5 py-3 border-b border-amber-500/[0.1] bg-amber-500/[0.03]">
                         <Lightbulb className="w-4 h-4 text-amber-400" />
-                        <span className="text-xs font-mono uppercase tracking-widest text-amber-400/80">A Concrete Example</span>
+                        <span className="text-xs font-mono uppercase tracking-widest text-amber-400/80">{t("neuralNetworkNarrative.howItLearns.workedExample.title")}</span>
                     </div>
                     <div className="p-5 sm:p-6">
                         <p className="text-sm text-white/50 mb-6">
-                            Let&apos;s watch a single neuron learn from one example, step by step.
+                            {t("neuralNetworkNarrative.howItLearns.workedExample.intro")}
                         </p>
 
                         {/* Step 1: Setup */}
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">1</div>
-                                <span className="text-sm font-semibold text-white/70">Starting Values</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.howItLearns.workedExample.step1Title")}</span>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                                 <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
-                                    <span className="text-white/40 block mb-1">Input x</span>
+                                    <span className="text-white/40 block mb-1">{t("lab.playground.inputs.xLabel")}</span>
                                     <span className="font-mono font-bold text-white/70">1.0</span>
                                 </div>
                                 <div className="rounded-lg bg-rose-500/[0.08] border border-rose-500/[0.15] px-3 py-2">
-                                    <span className="text-rose-300/60 block mb-1">Weight w</span>
+                                    <span className="text-rose-300/60 block mb-1">{t("lab.playground.inputs.wLabel")}</span>
                                     <span className="font-mono font-bold text-rose-400">0.50</span>
                                 </div>
                                 <div className="rounded-lg bg-amber-500/[0.08] border border-amber-500/[0.15] px-3 py-2">
-                                    <span className="text-amber-300/60 block mb-1">Bias b</span>
+                                    <span className="text-amber-300/60 block mb-1">{t("lab.playground.inputs.bLabel")}</span>
                                     <span className="font-mono font-bold text-amber-400">−0.20</span>
                                 </div>
                                 <div className="rounded-lg bg-indigo-500/[0.08] border border-indigo-500/[0.15] px-3 py-2">
-                                    <span className="text-indigo-300/60 block mb-1">Target</span>
+                                    <span className="text-indigo-300/60 block mb-1">{t("lab.playground.inputs.targetLabel")}</span>
                                     <span className="font-mono font-bold text-indigo-400">0.80</span>
                                 </div>
                             </div>
+                            <p className="text-xs text-white/40 mt-3">{t("neuralNetworkNarrative.howItLearns.workedExample.step1Text")}</p>
                         </div>
 
                         {/* Step 2: Forward Pass */}
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">2</div>
-                                <span className="text-sm font-semibold text-white/70">Forward Pass — Make a Prediction</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.howItLearns.workedExample.step2Title")}</span>
                             </div>
                             <div className="space-y-2 text-sm text-white/50">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-white/40">Weighted sum:</span>
-                                    <code className="font-mono text-xs bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
-                                        z = w × x + b = 0.50 × 1.0 + (−0.20) = <span className="text-rose-400 font-bold">0.30</span>
-                                    </code>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-white/40">After sigmoid:</span>
-                                    <code className="font-mono text-xs bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
-                                        ŷ = σ(0.30) = <span className="text-indigo-400 font-bold">0.5744</span>
-                                    </code>
+                                    <span className="text-white/40">{t("neuralNetworkNarrative.howItLearns.workedForward")}:</span>
                                 </div>
                                 <p className="text-xs text-white/35 italic mt-2">
-                                    The neuron predicted 0.5744, but the target was 0.80. We&apos;re off by quite a bit!
+                                    {t("neuralNetworkNarrative.howItLearns.workedExample.step2Text")}
                                 </p>
                             </div>
                         </div>
@@ -618,16 +662,11 @@ export function NeuralNetworkNarrative() {
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">3</div>
-                                <span className="text-sm font-semibold text-white/70">Measure the Error</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.howItLearns.workedExample.step3Title")}</span>
                             </div>
                             <div className="space-y-2 text-sm text-white/50">
-                                <div className="flex items-center gap-2">
-                                    <code className="font-mono text-xs bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
-                                        Loss = (ŷ − target)² = (0.5744 − 0.80)² = <span className="text-emerald-400 font-bold">0.0509</span>
-                                    </code>
-                                </div>
                                 <p className="text-xs text-white/35 italic">
-                                    The loss tells us how bad our prediction was. Lower is better. Now we need to figure out how to reduce it.
+                                    {t("neuralNetworkNarrative.howItLearns.workedExample.step3Text")}
                                 </p>
                             </div>
                         </div>
@@ -636,19 +675,11 @@ export function NeuralNetworkNarrative() {
                         <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">4</div>
-                                <span className="text-sm font-semibold text-white/70">Backward Pass — Calculate the Gradient</span>
+                                <span className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.howItLearns.workedExample.step4Title")}</span>
                             </div>
                             <div className="space-y-2 text-sm text-white/50">
                                 <p className="text-xs text-white/40 mb-2">
-                                    The gradient tells us <em>which direction to adjust the weight</em>. Think of it like following the slope downhill.
-                                </p>
-                                <div className="space-y-1.5 text-xs font-mono bg-white/[0.03] p-3 rounded-lg border border-white/[0.06]">
-                                    <div>∂L/∂ŷ = 2(ŷ − target) = 2(0.5744 − 0.80) = <span className="text-white/60">−0.4512</span></div>
-                                    <div>∂ŷ/∂z = ŷ(1 − ŷ) = 0.5744 × 0.2456 = <span className="text-white/60">0.2445</span></div>
-                                    <div className="border-t border-white/[0.06] pt-1.5 mt-1.5">∂L/∂w = (−0.4512) × 0.2445 × 1.0 = <span className="text-rose-400 font-bold">−0.1103</span></div>
-                                </div>
-                                <p className="text-xs text-white/35 italic mt-2">
-                                    The negative gradient means we should <em>increase</em> the weight to reduce the loss.
+                                    {t("neuralNetworkNarrative.howItLearns.workedExample.step4Text")}
                                 </p>
                             </div>
                         </div>
@@ -657,25 +688,45 @@ export function NeuralNetworkNarrative() {
                         <div className="rounded-xl border border-amber-500/[0.2] bg-gradient-to-br from-amber-500/[0.08] to-transparent p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-full bg-amber-500/30 flex items-center justify-center text-xs font-bold text-amber-400">5</div>
-                                <span className="text-sm font-semibold text-amber-400">Update the Weight</span>
+                                <span className="text-sm font-semibold text-amber-400">{t("neuralNetworkNarrative.howItLearns.workedExample.step5Title")}</span>
                             </div>
                             <div className="space-y-2 text-sm text-white/50">
-                                <div className="flex items-center gap-2">
-                                    <code className="font-mono text-xs bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
-                                        w<sub>new</sub> = w − η × gradient = 0.50 − 1.0 × (−0.1103) = <span className="text-amber-400 font-bold">0.6103</span>
-                                    </code>
-                                </div>
                                 <p className="text-xs text-amber-300/60 font-semibold mt-3">
-                                    ✓ The weight increased from 0.50 → 0.6103. Next time, the neuron will predict closer to 0.80!
+                                    {t("neuralNetworkNarrative.howItLearns.workedExample.step5Text")}
                                 </p>
                             </div>
                         </div>
 
                         <div className="mt-5 pt-4 border-t border-white/[0.06] text-xs text-white/35 italic text-center">
-                            This entire process — forward, loss, backward, update — happens thousands of times during training.
+                            {t("neuralNetworkNarrative.howItLearns.workedUpdateNote")}
                         </div>
                     </div>
                 </div>
+
+                <P>{t("neuralNetworkNarrative.howItLearns.batchingTransition")}</P>
+
+                <Expandable title={t("neuralNetworkNarrative.howItLearns.batching.title")} defaultOpen={false}>
+                    <Lead>{t("neuralNetworkNarrative.howItLearns.batching.lead")}</Lead>
+                    <P>{t("neuralNetworkNarrative.howItLearns.batching.p1")}</P>
+                    <P>{t("neuralNetworkNarrative.howItLearns.batching.p2")}</P>
+                    <P>{t("neuralNetworkNarrative.howItLearns.batching.p3")}</P>
+                    <Callout icon={Lightbulb} accent="emerald" title={t("neuralNetworkNarrative.howItLearns.batching.calloutTitle")}>
+                        <p>{t("neuralNetworkNarrative.howItLearns.batching.calloutText")}</p>
+                    </Callout>
+                    <FigureWrapper
+                        label={t("neuralNetworkNarrative.howItLearns.batching.visual1Label")}
+                        hint={t("neuralNetworkNarrative.howItLearns.batching.visual1Hint")}
+                    >
+                        <BatchGradientNoiseVisualizer />
+                    </FigureWrapper>
+                    <FigureWrapper
+                        label={t("neuralNetworkNarrative.howItLearns.batching.visual2Label")}
+                        hint={t("neuralNetworkNarrative.howItLearns.batching.visual2Hint")}
+                    >
+                        <BatchSizeLossCurveComparison />
+                    </FigureWrapper>
+                    <P>{t("neuralNetworkNarrative.howItLearns.batching.conclusion")}</P>
+                </Expandable>
 
                 <P>
                     {t("neuralNetworkNarrative.howItLearns.p2")}{" "}
@@ -691,7 +742,7 @@ export function NeuralNetworkNarrative() {
                 />
 
                 <P>{t("neuralNetworkNarrative.howItLearns.p3")}</P>
-            </Section>
+            </Section >
 
             <SectionBreak />
 
@@ -711,20 +762,18 @@ export function NeuralNetworkNarrative() {
 
                 {landscapeHistory.length > 3 &&
                     landscapeHistory[landscapeHistory.length - 1].loss > landscapeHistory[0].loss && (
-                        <Callout icon={AlertTriangle} accent="amber" title="Loss is increasing!">
+                        <Callout icon={AlertTriangle} accent="amber" title={t("neuralNetworkNarrative.watchingItLearn.alertTitle")}>
                             <p>
-                                When the learning rate is too high, gradient descent can overshoot the minimum and cause the loss to diverge.
-                                Try reducing η to below 2.0 for stable convergence.
+                                {t("neuralNetworkNarrative.watchingItLearn.alertText")}
                             </p>
                         </Callout>
                     )}
 
                 <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 mt-8 mb-1">
-                    Loss Landscape
+                    {t("neuralNetworkNarrative.watchingItLearn.landscapeTitle")}
                 </p>
                 <p className="text-sm text-white/50 leading-relaxed mb-2">
-                    The heatmap below shows how loss varies across all possible weight and bias combinations.
-                    Train above and watch the red dot descend toward the dark low-loss valley.
+                    {t("neuralNetworkNarrative.watchingItLearn.landscapeDesc")}
                 </p>
 
                 {landscapeHistory.length > 0 && (
@@ -736,7 +785,51 @@ export function NeuralNetworkNarrative() {
 
             <SectionBreak />
 
-            {/* ─────────── 05 · THE BRIDGE: TABLES TO PARAMETERS ─────────── */}
+            {/* ─────────── 05 · THE RISK OF OVERFITTING ─────────── */}
+            <Section>
+                <SectionLabel
+                    number={t("models.neuralNetworks.sections.overfitting.number")}
+                    label={t("models.neuralNetworks.sections.overfitting.label")}
+                />
+                <Heading>{t("neuralNetworkNarrative.overfitting.heading")}</Heading>
+
+                <Lead>{t("neuralNetworkNarrative.overfitting.lead")}</Lead>
+
+                <P>{t("neuralNetworkNarrative.overfitting.p1")}</P>
+                <P>{t("neuralNetworkNarrative.overfitting.p2")}</P>
+                <P>{t("neuralNetworkNarrative.overfitting.p3")}</P>
+
+                <Callout icon={AlertTriangle} accent="amber" title={t("neuralNetworkNarrative.overfitting.callout1Title")}>
+                    <p>{t("neuralNetworkNarrative.overfitting.callout1Text")}</p>
+                </Callout>
+
+                <FigureWrapper
+                    label={t("neuralNetworkNarrative.overfitting.visual1Label")}
+                    hint={t("neuralNetworkNarrative.overfitting.visual1Hint")}
+                >
+                    <OverfittingComparisonDiagram />
+                </FigureWrapper>
+
+                <FigureWrapper
+                    label={t("neuralNetworkNarrative.overfitting.visual2Label")}
+                    hint={t("neuralNetworkNarrative.overfitting.visual2Hint")}
+                >
+                    <TrainValLossCurveVisualizer />
+                </FigureWrapper>
+
+                <P>{t("neuralNetworkNarrative.overfitting.p4")}</P>
+                <P>{t("neuralNetworkNarrative.overfitting.p5")}</P>
+
+                <Callout icon={Lightbulb} accent="emerald" title={t("neuralNetworkNarrative.overfitting.callout2Title")}>
+                    <p>{t("neuralNetworkNarrative.overfitting.callout2Text")}</p>
+                </Callout>
+
+                <P>{t("neuralNetworkNarrative.overfitting.conclusion")}</P>
+            </Section>
+
+            <SectionBreak />
+
+            {/* ─────────── 06 · THE BRIDGE: TABLES TO PARAMETERS ─────────── */}
             <Section>
                 <SectionLabel
                     number={t("models.neuralNetworks.sections.bridge.number")}
@@ -765,7 +858,7 @@ export function NeuralNetworkNarrative() {
 
             <SectionBreak />
 
-            {/* ─────────── 06 · POWER, LIMITS, AND WHAT COMES NEXT ─────────── */}
+            {/* ─────────── 07 · POWER, LIMITS, AND WHAT COMES NEXT ─────────── */}
             <Section>
                 <SectionLabel
                     number={t("models.neuralNetworks.sections.powerAndLimits.number")}
@@ -869,6 +962,6 @@ export function NeuralNetworkNarrative() {
                     {t("neuralNetworkNarrative.footer.brand")}
                 </div>
             </motion.footer>
-        </article>
+        </article >
     );
 }

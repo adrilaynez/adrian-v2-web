@@ -323,9 +323,9 @@ export const TransitionMatrix = memo(function TransitionMatrix({
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-white/10">
-                                    <th className="pb-2 text-[10px] font-mono uppercase tracking-widest text-white/40">Next char</th>
-                                    <th className="pb-2 text-[10px] font-mono uppercase tracking-widest text-white/40 w-20 text-right">P (%)</th>
-                                    <th className="pb-2 pl-4 text-[10px] font-mono uppercase tracking-widest text-white/40">Distribution</th>
+                                    <th className="pb-2 text-[10px] font-mono uppercase tracking-widest text-white/40">{t("models.bigram.matrix.nextChar")}</th>
+                                    <th className="pb-2 text-[10px] font-mono uppercase tracking-widest text-white/40 w-20 text-right">{t("models.bigram.matrix.probability")}</th>
+                                    <th className="pb-2 pl-4 text-[10px] font-mono uppercase tracking-widest text-white/40">{t("models.bigram.matrix.distribution")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -395,7 +395,7 @@ export const TransitionMatrix = memo(function TransitionMatrix({
                         type="text"
                         value={searchChar}
                         onChange={(e) => setSearchChar(e.target.value.slice(0, 1))}
-                        placeholder="Highlight character…"
+                        placeholder={t("models.bigram.matrix.searchPlaceholder")}
                         maxLength={1}
                         className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/20 font-mono focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all"
                     />
@@ -406,7 +406,7 @@ export const TransitionMatrix = memo(function TransitionMatrix({
             <div ref={containerRef} className="p-5 relative">
                 {!data ? (
                     <div className="flex items-center justify-center h-64 text-white/30 text-xs font-mono">
-                        Run inference to generate the transition matrix
+                        {t("models.bigram.matrix.runInference")}
                     </div>
                 ) : (
                     <div className="relative">

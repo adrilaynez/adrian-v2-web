@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n } from "@/i18n/context";
 
 const BIGRAMS: Record<string, { char: string; prob: number }[]> = {
     a: [{ char: "n", prob: 0.31 }, { char: "r", prob: 0.18 }, { char: "t", prob: 0.15 }],
@@ -36,6 +37,7 @@ const BIGRAMS: Record<string, { char: string; prob: number }[]> = {
 const FALLBACK = [{ char: "e", prob: 0.27 }, { char: "t", prob: 0.19 }, { char: "a", prob: 0.14 }];
 
 export function HeroAutoComplete() {
+    const { t } = useI18n();
     const [input, setInput] = useState("");
     const preds = input.length === 1 ? (BIGRAMS[input.toLowerCase()] ?? FALLBACK) : null;
 
@@ -48,7 +50,7 @@ export function HeroAutoComplete() {
                 maxLength={1}
                 value={input}
                 onChange={(e) => setInput(e.target.value.slice(-1))}
-                placeholder="a"
+                placeholder={t("bigramWidgets.heroAutoComplete.placeholder")}
                 className="w-20 text-center text-3xl font-mono font-bold bg-white/[0.04] border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/10 focus:outline-none focus:border-emerald-500/40 focus:ring-1 focus:ring-emerald-500/20 caret-emerald-400 transition-colors"
             />
 
@@ -64,7 +66,7 @@ export function HeroAutoComplete() {
                         className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm px-5 py-4 space-y-3"
                     >
                         <p className="text-[9px] font-mono uppercase tracking-[0.22em] text-white/20">
-                            After &ldquo;{input}&rdquo;, likely next
+                            {t("bigramWidgets.heroAutoComplete.after").replace("{input}", input)}
                         </p>
                         {preds.map(({ char, prob }, i) => (
                             <motion.div
@@ -99,7 +101,7 @@ export function HeroAutoComplete() {
                         exit={{ opacity: 0 }}
                         className="text-xs font-mono text-white/20"
                     >
-                        Type one character to see predictions
+                        {t("bigramWidgets.heroAutoComplete.hint")}
                     </motion.p>
                 )}
             </AnimatePresence>

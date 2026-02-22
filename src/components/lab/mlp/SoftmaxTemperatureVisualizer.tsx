@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useI18n } from "@/i18n/context";
 
 /*
   SoftmaxTemperatureVisualizer
@@ -23,10 +24,10 @@ function softmax(logits: number[], temp: number): number[] {
 }
 
 const TEMP_PRESETS = [
-    { label: "0.1 — Deterministic", t: 0.1 },
-    { label: "0.7 — Balanced", t: 0.7 },
-    { label: "1.0 — Neutral", t: 1.0 },
-    { label: "2.5 — Creative", t: 2.5 },
+    { key: "deterministic", t: 0.1 },
+    { key: "balanced", t: 0.7 },
+    { key: "neutral", t: 1.0 },
+    { key: "creative", t: 2.5 },
 ];
 
 function lerp(a: string, b: string, t: number): string {
@@ -45,6 +46,7 @@ function lerp(a: string, b: string, t: number): string {
 }
 
 export function SoftmaxTemperatureVisualizer() {
+    const { t } = useI18n();
     const [temp, setTemp] = useState(1.0);
 
     const probs = useMemo(() => softmax(LOGITS, temp), [temp]);
@@ -56,11 +58,11 @@ export function SoftmaxTemperatureVisualizer() {
     const entropyPct = Math.min(entropy / uniformEntropy, 1);
 
     const getModeLabel = () => {
-        if (temp < 0.4) return { label: "Deterministic", sub: "Always picks the top token. No creativity.", color: "text-violet-400" };
-        if (temp < 0.8) return { label: "Conservative", sub: "Mostly picks top tokens with occasional variety.", color: "text-blue-400" };
-        if (temp < 1.2) return { label: "Neutral", sub: "Standard sampling — balanced quality and diversity.", color: "text-emerald-400" };
-        if (temp < 2.0) return { label: "Creative", sub: "Explores less likely options. More surprising output.", color: "text-amber-400" };
-        return { label: "Chaotic", sub: "Nearly uniform — picks almost any token at random.", color: "text-rose-400" };
+        if (temp < 0.4) return { label: t("bigramWidgets.softmax.mode.deterministic.label"), sub: t("bigramWidgets.softmax.mode.deterministic.sub"), color: "text-violet-400" };
+        if (temp < 0.8) return { label: t("bigramWidgets.softmax.mode.conservative.label"), sub: t("bigramWidgets.softmax.mode.conservative.sub"), color: "text-blue-400" };
+        if (temp < 1.2) return { label: t("bigramWidgets.softmax.mode.neutral.label"), sub: t("bigramWidgets.softmax.mode.neutral.sub"), color: "text-emerald-400" };
+        if (temp < 2.0) return { label: t("bigramWidgets.softmax.mode.creative.label"), sub: t("bigramWidgets.softmax.mode.creative.sub"), color: "text-amber-400" };
+        return { label: t("bigramWidgets.softmax.mode.chaotic.label"), sub: t("bigramWidgets.softmax.mode.chaotic.sub"), color: "text-rose-400" };
     };
 
     const mode = getModeLabel();
@@ -68,17 +70,16 @@ export function SoftmaxTemperatureVisualizer() {
     return (
         <div className="rounded-xl border border-white/[0.06] bg-black/30 p-5 space-y-5">
             <div className="space-y-1">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-white/25">Softmax Temperature · Conceptual</p>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/25">{t("bigramWidgets.softmax.title")}</p>
                 <p className="text-sm text-white/50 leading-relaxed">
-                    Temperature reshapes the probability distribution without changing the ranking of tokens.
-                    Low temperature sharpens the distribution; high temperature flattens it.
+                    {t("bigramWidgets.softmax.description")}
                 </p>
             </div>
 
             {/* Temperature slider */}
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">Temperature</span>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">{t("bigramWidgets.softmax.label")}</span>
                     <span className="text-sm font-mono font-bold text-violet-300">{temp.toFixed(2)}</span>
                 </div>
                 <input
@@ -88,9 +89,9 @@ export function SoftmaxTemperatureVisualizer() {
                     className="w-full accent-violet-500 cursor-pointer"
                 />
                 <div className="flex justify-between text-[8px] font-mono text-white/15">
-                    <span>0.05 Deterministic</span>
-                    <span>1.0 Neutral</span>
-                    <span>3.0 Chaotic</span>
+                    <span>0.05 {t("bigramWidgets.softmax.deterministic")}</span>
+                    <span>1.0 {t("bigramWidgets.softmax.neutral")}</span>
+                    <span>3.0 {t("bigramWidgets.softmax.chaotic")}</span>
                 </div>
             </div>
 
@@ -102,7 +103,7 @@ export function SoftmaxTemperatureVisualizer() {
 
             {/* Bar chart */}
             <div className="space-y-1.5">
-                <p className="text-[9px] font-mono uppercase tracking-widest text-white/20">Probability distribution</p>
+                <p className="text-[9px] font-mono uppercase tracking-widest text-white/20">{t("bigramNarrative.sampling.softmaxFigureLabel")}</p>
                 {TOKENS.map((tok, i) => {
                     const p = probs[i];
                     const isTop = tok === topToken;
@@ -131,17 +132,17 @@ export function SoftmaxTemperatureVisualizer() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
-                    <p className="text-[8px] font-mono uppercase tracking-widest text-white/20 mb-1">Top token</p>
+                    <p className="text-[8px] font-mono uppercase tracking-widest text-white/20 mb-1">{t("bigramWidgets.softmax.stats.topToken")}</p>
                     <p className="text-lg font-mono font-bold text-violet-300">{topToken === " " ? "⎵" : topToken}</p>
                     <p className="text-[9px] font-mono text-white/30">{(maxProb * 100).toFixed(1)}%</p>
                 </div>
                 <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
-                    <p className="text-[8px] font-mono uppercase tracking-widest text-white/20 mb-1">Entropy</p>
+                    <p className="text-[8px] font-mono uppercase tracking-widest text-white/20 mb-1">{t("bigramWidgets.softmax.stats.entropy")}</p>
                     <p className="text-lg font-mono font-bold text-white/60">{entropy.toFixed(2)}</p>
-                    <p className="text-[9px] font-mono text-white/30">{(entropyPct * 100).toFixed(0)}% of max</p>
+                    <p className="text-[9px] font-mono text-white/30">{(entropyPct * 100).toFixed(0)}% {t("bigramWidgets.softmax.stats.max")}</p>
                 </div>
                 <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
-                    <p className="text-[8px] font-mono uppercase tracking-widest text-white/20 mb-1">Spread</p>
+                    <p className="text-[8px] font-mono uppercase tracking-widest text-white/20 mb-1">{t("bigramWidgets.softmax.stats.spread")}</p>
                     <div className="h-3 rounded bg-white/[0.04] overflow-hidden mt-2">
                         <div
                             className="h-full rounded bg-violet-500/50 transition-all duration-200"
@@ -153,25 +154,23 @@ export function SoftmaxTemperatureVisualizer() {
 
             {/* Presets */}
             <div className="flex flex-wrap gap-2">
-                {TEMP_PRESETS.map(({ label, t }) => (
+                {TEMP_PRESETS.map(({ key, t: val }) => (
                     <button
-                        key={label}
-                        onClick={() => setTemp(t)}
-                        className={`px-2.5 py-1 rounded text-[9px] font-mono border transition-all ${
-                            Math.abs(temp - t) < 0.05
-                                ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
-                                : "bg-white/[0.03] text-white/30 border-white/[0.06] hover:text-white/50"
-                        }`}
+                        key={key}
+                        onClick={() => setTemp(val)}
+                        className={`px-2.5 py-1 rounded text-[9px] font-mono border transition-all ${Math.abs(temp - val) < 0.05
+                            ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
+                            : "bg-white/[0.03] text-white/30 border-white/[0.06] hover:text-white/50"
+                            }`}
                     >
-                        {label}
+                        {val.toFixed(1)} — {t(`bigramWidgets.softmax.presets.${key}`)}
                     </button>
                 ))}
             </div>
 
             <div className="rounded-lg border border-violet-500/10 bg-violet-500/[0.03] px-4 py-3 text-[11px] text-white/40 leading-relaxed">
-                <span className="text-violet-400/70 font-semibold">Note: </span>
-                Temperature does not change the model&apos;s knowledge — only how randomly it samples from what it knows.
-                The token rankings stay the same; only the sharpness of the distribution changes.
+                <span className="text-violet-400/70 font-semibold">{t("common.note")}: </span>
+                {t("bigramWidgets.softmax.note")}
             </div>
         </div>
     );

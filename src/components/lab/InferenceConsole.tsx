@@ -71,7 +71,7 @@ export function InferenceConsole({
                         type="text"
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        placeholder="Type text to analyze..."
+                        placeholder={t("models.ngram.sections.inference.placeholder")}
                         className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/30 transition-all"
                     />
                 </div>

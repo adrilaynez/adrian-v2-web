@@ -261,10 +261,10 @@ export function XORDecisionBoundary() {
 
                         {POINTS.map(({ dx, dy, cls, label }) => {
                             const { cx, cy } = toSVG(dx, dy);
-                            const class0Fill = isSolved ? "rgba(168,85,247,0.35)" : "rgba(59,130,246,0.35)";
-                            const class0Stroke = isSolved ? "rgba(216,180,254,0.95)" : "rgba(147,197,253,0.95)";
-                            const class1Fill = isSolved ? "rgba(34,197,94,0.35)" : "rgba(239,68,68,0.35)";
-                            const class1Stroke = isSolved ? "rgba(134,239,172,0.95)" : "rgba(252,165,165,0.95)";
+                            const class0Fill = "rgba(251,146,60,0.25)";
+                            const class0Stroke = "rgba(251,146,60,0.95)";
+                            const class1Fill = "rgba(250,204,21,0.25)";
+                            const class1Stroke = "rgba(250,204,21,0.95)";
                             return (
                                 <g key={label} aria-label={label}>
                                     {cls === 1 ? (

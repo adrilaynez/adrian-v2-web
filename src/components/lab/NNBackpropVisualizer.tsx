@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useI18n } from "@/i18n/context";
+
+const PK = "models.neuralNetworks.sections.playground";
 
 function sigmoid(x: number) { return 1 / (1 + Math.exp(-x)); }
 
@@ -32,20 +35,17 @@ function NodeCard({ label, expression, value, gradient, highlighted, gradHighlig
     highlighted: boolean; gradHighlighted: boolean;
 }) {
     return (
-        <div className={`rounded-xl border px-3 py-3 text-center transition-all duration-300 min-w-[100px] ${
-            highlighted ? "border-rose-500/30 bg-rose-500/[0.06]" : gradHighlighted ? "border-amber-500/30 bg-amber-500/[0.06]" : "border-white/[0.06] bg-white/[0.02]"
-        }`}>
+        <div className={`rounded-xl border px-3 py-3 text-center transition-all duration-300 min-w-[100px] ${highlighted ? "border-rose-500/30 bg-rose-500/[0.06]" : gradHighlighted ? "border-amber-500/30 bg-amber-500/[0.06]" : "border-white/[0.06] bg-white/[0.02]"
+            }`}>
             <p className="text-[9px] font-mono uppercase tracking-widest text-white/25 mb-1">{label}</p>
             <p className="text-[10px] font-mono text-white/40 mb-1.5">{expression}</p>
-            <p className={`text-base font-mono font-bold transition-all duration-300 ${
-                value !== null ? (highlighted ? "text-rose-400" : "text-white/60") : "text-white/10"
-            }`}>
+            <p className={`text-base font-mono font-bold transition-all duration-300 ${value !== null ? (highlighted ? "text-rose-400" : "text-white/60") : "text-white/10"
+                }`}>
                 {value ?? "—"}
             </p>
             {gradient !== undefined && (
-                <p className={`text-[10px] font-mono mt-1.5 transition-all duration-300 ${
-                    gradient !== null ? "text-amber-400" : "text-white/10"
-                }`}>
+                <p className={`text-[10px] font-mono mt-1.5 transition-all duration-300 ${gradient !== null ? "text-amber-400" : "text-white/10"
+                    }`}>
                     ∂L = {gradient ?? "—"}
                 </p>
             )}
@@ -54,6 +54,7 @@ function NodeCard({ label, expression, value, gradient, highlighted, gradHighlig
 }
 
 export function NNBackpropVisualizer() {
+    const { t } = useI18n();
     const [w, setW] = useState(0.5);
     const [b, setB] = useState(-0.2);
     const [step, setStep] = useState<Step>("idle");
@@ -85,10 +86,10 @@ export function NNBackpropVisualizer() {
     }, []);
 
     const buttonLabels: Record<Step, string> = {
-        idle: "Run Forward Pass →",
-        forward: "Backpropagate →",
-        backward: "Update Weights →",
-        update: "New Forward Pass →",
+        idle: t(`${PK}.gradients.buttonLabels.idle`),
+        forward: t(`${PK}.gradients.buttonLabels.forward`),
+        backward: t(`${PK}.gradients.buttonLabels.backward`),
+        update: t(`${PK}.gradients.buttonLabels.update`),
     };
 
     return (
@@ -101,7 +102,7 @@ export function NNBackpropVisualizer() {
                         <span className="w-2.5 h-2.5 rounded-full bg-green-500/30" />
                     </div>
                     <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">
-                        Interactive · Backpropagation Step-by-Step
+                        {t(`${PK}.gradients.visualizerTitle`)}
                     </span>
                 </div>
 
@@ -118,7 +119,7 @@ export function NNBackpropVisualizer() {
                     {/* Computation graph */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-2">
                         <NodeCard
-                            label="Linear"
+                            label={t(`${PK}.gradients.linearSumLabel`)}
                             expression="z = w·x + b"
                             value={showForward ? fwd.z.toFixed(4) : null}
                             gradient={showGrads ? grads.dLdz.toFixed(4) : null}
@@ -127,7 +128,7 @@ export function NNBackpropVisualizer() {
                         />
                         <span className="text-white/15 text-lg shrink-0">→</span>
                         <NodeCard
-                            label="Activation"
+                            label={t(`${PK}.gradients.predictionLabel`)}
                             expression="ŷ = σ(z)"
                             value={showForward ? fwd.yhat.toFixed(4) : null}
                             gradient={showGrads ? grads.dLdyhat.toFixed(4) : null}
@@ -136,7 +137,7 @@ export function NNBackpropVisualizer() {
                         />
                         <span className="text-white/15 text-lg shrink-0">→</span>
                         <NodeCard
-                            label="Loss"
+                            label={t(`${PK}.gradients.lossLabel`)}
                             expression="L = (ŷ−y)²"
                             value={showForward ? fwd.loss.toFixed(6) : null}
                             highlighted={step === "forward"}
@@ -147,7 +148,7 @@ export function NNBackpropVisualizer() {
                     {/* Gradient details */}
                     {showGrads && (
                         <div className="mt-4 rounded-lg bg-amber-500/[0.03] border border-amber-500/[0.1] p-4">
-                            <p className="text-[9px] font-mono uppercase tracking-widest text-amber-400/60 mb-2">Gradients (Chain Rule)</p>
+                            <p className="text-[9px] font-mono uppercase tracking-widest text-amber-400/60 mb-2">{t(`${PK}.gradients.chainRuleLabel`)}</p>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 text-[11px] font-mono">
                                 <span className="text-white/30">∂L/∂ŷ = <span className="text-amber-400 font-bold">{grads.dLdyhat.toFixed(4)}</span></span>
                                 <span className="text-white/30">∂ŷ/∂z = <span className="text-amber-400 font-bold">{grads.dyhatdz.toFixed(4)}</span></span>
@@ -161,7 +162,7 @@ export function NNBackpropVisualizer() {
                     {/* Update preview */}
                     {showUpdate && (
                         <div className="mt-3 rounded-lg bg-emerald-500/[0.03] border border-emerald-500/[0.1] p-4">
-                            <p className="text-[9px] font-mono uppercase tracking-widest text-emerald-400/60 mb-2">Weight Updates</p>
+                            <p className="text-[9px] font-mono uppercase tracking-widest text-emerald-400/60 mb-2">{t(`${PK}.gradients.weightUpdateLabel`)}</p>
                             <div className="space-y-1 text-[11px] font-mono">
                                 <p className="text-white/30">
                                     w: {w.toFixed(4)} − {LEARNING_RATE.toFixed(1)} × {grads.dLdw.toFixed(4)} = <span className="text-emerald-400 font-bold">{newW.toFixed(4)}</span>
@@ -176,9 +177,8 @@ export function NNBackpropVisualizer() {
                     {/* Step indicator */}
                     <div className="flex items-center gap-1.5 mt-5 mb-4">
                         {STEP_ORDER.map((s, i) => (
-                            <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                                i <= stepIdx ? "bg-rose-500/50" : "bg-white/[0.06]"
-                            }`} />
+                            <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= stepIdx ? "bg-rose-500/50" : "bg-white/[0.06]"
+                                }`} />
                         ))}
                     </div>
 
@@ -195,14 +195,14 @@ export function NNBackpropVisualizer() {
                                 onClick={handleReset}
                                 className="px-4 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white/40 text-[11px] font-mono font-bold hover:text-white/60 transition-colors"
                             >
-                                Reset
+                                {t(`${PK}.gradients.reset`)}
                             </button>
                         )}
                     </div>
                 </div>
             </div>
             <figcaption className="mt-3 text-center text-xs text-white/25 italic">
-                Step through forward pass, backpropagation, and weight updates to see how a neuron learns.
+                {t(`${PK}.gradients.caption`)}
             </figcaption>
         </figure>
     );

@@ -74,6 +74,7 @@ export interface MLPHyperparameterExplorerProps {
     onGenerate: (seedText: string, maxTokens: number, temperature: number) => Promise<void>;
     gridLoading: boolean;
     gridError: string | null;
+    isNarrativeMode?: boolean;
 }
 
 // ── Hover-only tooltip ─────────────────────────────────
@@ -103,6 +104,55 @@ function Expandable({ title, defaultOpen = false, children }: { title: string; d
                 {open ? <ChevronUp className="w-3 h-3 text-white/20" /> : <ChevronDown className="w-3 h-3 text-white/20" />}
             </button>
             {open && <div className="px-4 pb-4">{children}</div>}
+        </div>
+    );
+}
+
+// ── Onboarding Overlay ──────────────────────────────────
+
+function OnboardingOverlay({ onDismiss }: { onDismiss: () => void }) {
+    const { t } = useI18n();
+    const [step, setStep] = useState(0);
+    const steps = [
+        { key: "scatter", highlight: "scatter" },
+        { key: "sliders", highlight: "sliders" },
+        { key: "metrics", highlight: "metrics" },
+    ] as const;
+    const current = steps[step];
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onDismiss}>
+            <div className="relative max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+                <div className="rounded-2xl border border-violet-500/30 bg-zinc-900/95 p-6 shadow-2xl">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Sparkles className="w-4 h-4 text-violet-400" />
+                        <span className="text-xs font-mono font-bold uppercase tracking-widest text-violet-300">
+                            {t("models.mlp.explorer.onboarding.title")}
+                        </span>
+                    </div>
+                    <p className="text-sm text-white/70 leading-relaxed mb-4">
+                        {t(`models.mlp.explorer.onboarding.${current.key}.text`)}
+                    </p>
+                    <div className="flex items-center justify-between">
+                        <div className="flex gap-1.5">
+                            {steps.map((_, i) => (
+                                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === step ? "bg-violet-400" : "bg-white/20"}`} />
+                            ))}
+                        </div>
+                        <div className="flex gap-2">
+                            {step < steps.length - 1 ? (
+                                <button onClick={() => setStep(step + 1)} className="px-3 py-1.5 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 text-xs font-mono text-violet-300 transition-colors">
+                                    {t("models.mlp.explorer.onboarding.next")}
+                                </button>
+                            ) : (
+                                <button onClick={onDismiss} className="px-3 py-1.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-xs font-mono text-white font-bold transition-colors">
+                                    {t("models.mlp.explorer.onboarding.gotIt")}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
@@ -450,12 +500,27 @@ export function MLPHyperparameterExplorer({
     timeline, timelineLoading, onFetchTimeline,
     generation, generationLoading, onGenerate,
     gridLoading, gridError,
+    isNarrativeMode = false,
 }: MLPHyperparameterExplorerProps) {
     const { t } = useI18n();
     const safeConfigs = configs ?? [];
     const embDimOptions = useMemo(() => uniqueSorted(safeConfigs.map(c => c.embedding_dim)), [safeConfigs]);
     const hiddenSizeOptions = useMemo(() => uniqueSorted(safeConfigs.map(c => c.hidden_size)), [safeConfigs]);
     const lrOptions = useMemo(() => uniqueSorted(safeConfigs.map(c => c.learning_rate)), [safeConfigs]);
+
+    // Onboarding overlay state (narrative mode only)
+    const [showOnboarding, setShowOnboarding] = useState(() => {
+        if (!isNarrativeMode) return false;
+        if (typeof window === "undefined") return false;
+        return !localStorage.getItem("mlp-explorer-onboarding-seen");
+    });
+
+    const handleDismissOnboarding = useCallback(() => {
+        setShowOnboarding(false);
+        if (typeof window !== "undefined") {
+            localStorage.setItem("mlp-explorer-onboarding-seen", "true");
+        }
+    }, []);
 
     const [embDim, setEmbDim] = useState(selectedConfig?.embedding_dim ?? embDimOptions[0] ?? 8);
     const [hiddenSize, setHiddenSize] = useState(selectedConfig?.hidden_size ?? hiddenSizeOptions[0] ?? 128);
@@ -560,401 +625,404 @@ export function MLPHyperparameterExplorer({
     );
 
     return (
-        <div className="space-y-10">
+        <>
+            {showOnboarding && <OnboardingOverlay onDismiss={handleDismissOnboarding} />}
+            <div className="space-y-10">
 
-            {/* ══════════════════════════════════════════════════
-                SECTION 1 — MODEL ZOO OVERVIEW
-            ══════════════════════════════════════════════════ */}
-            <LabSection
-                number="01"
-                title={t("models.mlp.explorer.sections.s01Title")}
-                subtitle={`${safeConfigs.length} ${t("models.mlp.explorer.sections.s01Subtitle")}`}
-            >
-                {safeConfigs.length > 1 && (
-                    <Expandable title={t("models.mlp.explorer.zoo.expandableTitle").replace("{count}", String(safeConfigs.length))} defaultOpen={true}>
-                        <div className="space-y-3">
-                            <p className="text-[11px] text-white/30 leading-relaxed font-mono">
-                                {t("models.mlp.explorer.zoo.description")}
-                            </p>
-                            <CrossConfigScatterPlot
-                                configs={safeConfigs}
-                                selectedConfig={selectedConfig}
-                                onSelect={(c) => onSelectClosest({ embeddingDim: c.embedding_dim, hiddenSize: c.hidden_size, learningRate: c.learning_rate })}
-                            />
-                        </div>
-                    </Expandable>
-                )}
-                {/* Sliders */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {embDimOptions.length > 1 && <SliderControl label={t("models.mlp.explorer.sliders.embeddingDim")} options={embDimOptions} value={embDim} onChange={v => handleSliderChange("embDim", v)} />}
-                    {hiddenSizeOptions.length > 1 && <SliderControl label={t("models.mlp.explorer.sliders.hiddenSize")} options={hiddenSizeOptions} value={hiddenSize} onChange={v => handleSliderChange("hiddenSize", v)} />}
-                    {lrOptions.length > 1 && <SliderControl label={t("models.mlp.explorer.sliders.learningRate")} options={lrOptions} value={lr} onChange={v => handleSliderChange("lr", v)} format={formatLR} />}
-                </div>
-            </LabSection>
+                {/* ══════════════════════════════════════════════════
+                    SECTION 1 — MODEL ZOO OVERVIEW
+                ══════════════════════════════════════════════════ */}
+                <LabSection
+                    number="01"
+                    title={t("models.mlp.explorer.sections.s01Title")}
+                    subtitle={`${safeConfigs.length} ${t("models.mlp.explorer.sections.s01Subtitle")}`}
+                >
+                    {safeConfigs.length > 1 && (
+                        <Expandable title={t("models.mlp.explorer.zoo.expandableTitle").replace("{count}", String(safeConfigs.length))} defaultOpen={true}>
+                            <div className="space-y-3">
+                                <p className="text-[11px] text-white/30 leading-relaxed font-mono">
+                                    {t("models.mlp.explorer.zoo.description")}
+                                </p>
+                                <CrossConfigScatterPlot
+                                    configs={safeConfigs}
+                                    selectedConfig={selectedConfig}
+                                    onSelect={(c) => onSelectClosest({ embeddingDim: c.embedding_dim, hiddenSize: c.hidden_size, learningRate: c.learning_rate })}
+                                />
+                            </div>
+                        </Expandable>
+                    )}
+                    {/* Sliders */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {embDimOptions.length > 1 && <SliderControl label={t("models.mlp.explorer.sliders.embeddingDim")} options={embDimOptions} value={embDim} onChange={v => handleSliderChange("embDim", v)} />}
+                        {hiddenSizeOptions.length > 1 && <SliderControl label={t("models.mlp.explorer.sliders.hiddenSize")} options={hiddenSizeOptions} value={hiddenSize} onChange={v => handleSliderChange("hiddenSize", v)} />}
+                        {lrOptions.length > 1 && <SliderControl label={t("models.mlp.explorer.sliders.learningRate")} options={lrOptions} value={lr} onChange={v => handleSliderChange("lr", v)} format={formatLR} />}
+                    </div>
+                </LabSection>
 
-            {/* ══════════════════════════════════════════════════
+                {/* ══════════════════════════════════════════════════
                 SECTION 2 — SELECTED CONFIG PANEL
             ══════════════════════════════════════════════════ */}
-            <LabSection
-                number="02"
-                title={t("models.mlp.explorer.sections.s02Title")}
-                subtitle={t("models.mlp.explorer.sections.s02Subtitle")}
-            >
-                {/* ── Config badge ── */}
-                {selectedConfig && (
-                    <div className="flex items-center gap-2 text-[10px] font-mono text-white/25">
-                        <span className="text-violet-400/60">{t("models.mlp.explorer.config.active")}</span>
-                        <span>emb={selectedConfig.embedding_dim}</span>
-                        <span className="text-white/10">·</span>
-                        <span>hidden={selectedConfig.hidden_size}</span>
-                        <span className="text-white/10">·</span>
-                        <span>ctx={selectedConfig.context_size}</span>
-                        <span className="text-white/10">·</span>
-                        <span>lr={formatLR(selectedConfig.learning_rate)}</span>
-                        {selectedConfig.score != null && (
-                            <><span className="text-white/10">·</span>
-                                <Tip text={t("models.mlp.explorer.metrics.tooltips.score")}>
-                                    <span className="text-emerald-400/50">{t("models.mlp.explorer.config.score")}={selectedConfig.score.toFixed(2)}</span>
-                                </Tip></>
-                        )}
-                    </div>
-                )}
+                <LabSection
+                    number="02"
+                    title={t("models.mlp.explorer.sections.s02Title")}
+                    subtitle={t("models.mlp.explorer.sections.s02Subtitle")}
+                >
+                    {/* ── Config badge ── */}
+                    {selectedConfig && (
+                        <div className="flex items-center gap-2 text-[10px] font-mono text-white/25">
+                            <span className="text-violet-400/60">{t("models.mlp.explorer.config.active")}</span>
+                            <span>emb={selectedConfig.embedding_dim}</span>
+                            <span className="text-white/10">·</span>
+                            <span>hidden={selectedConfig.hidden_size}</span>
+                            <span className="text-white/10">·</span>
+                            <span>ctx={selectedConfig.context_size}</span>
+                            <span className="text-white/10">·</span>
+                            <span>lr={formatLR(selectedConfig.learning_rate)}</span>
+                            {selectedConfig.score != null && (
+                                <><span className="text-white/10">·</span>
+                                    <Tip text={t("models.mlp.explorer.metrics.tooltips.score")}>
+                                        <span className="text-emerald-400/50">{t("models.mlp.explorer.config.score")}={selectedConfig.score.toFixed(2)}</span>
+                                    </Tip></>
+                            )}
+                        </div>
+                    )}
 
-                {/* ── Metric cards with micro-explanations ── */}
-                {selectedConfig && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {/* Val Loss (primary) + Smoothed Train */}
-                        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
-                            <div className="flex items-center justify-center gap-1 mb-1">
-                                <TrendingDown className="w-3 h-3 text-emerald-400/60" />
-                                <Tip text={selectedConfig.final_val_loss != null
-                                    ? t("models.mlp.explorer.metrics.tooltips.valLoss")
-                                    : t("models.mlp.explorer.metrics.tooltips.trainLossOnly")}>
-                                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{lossSourceLabel(selectedConfig, lossLabels)}</span>
-                                </Tip>
-                            </div>
-                            <span className="text-lg font-mono font-bold text-white">{selectedConfig.final_loss.toFixed(3)}</span>
-                            {smoothedTrain != null && (
-                                <div className="mt-1.5 pt-1.5 border-t border-white/[0.05]">
-                                    <Tip text={t("models.mlp.explorer.metrics.tooltips.trainSmoothed")}>
-                                        <span className="text-[8px] font-mono uppercase tracking-widest text-white/25">{t("models.mlp.explorer.metrics.trainSmoothed")}</span>
+                    {/* ── Metric cards with micro-explanations ── */}
+                    {selectedConfig && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {/* Val Loss (primary) + Smoothed Train */}
+                            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                    <TrendingDown className="w-3 h-3 text-emerald-400/60" />
+                                    <Tip text={selectedConfig.final_val_loss != null
+                                        ? t("models.mlp.explorer.metrics.tooltips.valLoss")
+                                        : t("models.mlp.explorer.metrics.tooltips.trainLossOnly")}>
+                                        <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{lossSourceLabel(selectedConfig, lossLabels)}</span>
                                     </Tip>
-                                    <div className="text-sm font-mono font-semibold text-violet-300/70 mt-0.5">{smoothedTrain.toFixed(3)}</div>
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Perplexity */}
-                        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
-                            <div className="flex items-center justify-center gap-1 mb-1">
-                                <Sparkles className="w-3 h-3 text-amber-400/60" />
-                                <Tip text={t("models.mlp.explorer.metrics.tooltips.perplexity")}>
-                                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.metrics.perplexity")}</span>
-                                </Tip>
-                            </div>
-                            <span className="text-lg font-mono font-bold text-white">{selectedConfig.perplexity.toFixed(1)}</span>
-                            {selectedConfig.expected_uniform_loss != null && (
-                                <Tip text={t("models.mlp.explorer.metrics.tooltips.randomPerplexity")}>
-                                    <div className="text-[8px] font-mono text-white/20 mt-0.5 cursor-help">
-                                        {t("models.mlp.explorer.metrics.random")} {Math.exp(selectedConfig.expected_uniform_loss).toFixed(1)}
+                                <span className="text-lg font-mono font-bold text-white">{selectedConfig.final_loss.toFixed(3)}</span>
+                                {smoothedTrain != null && (
+                                    <div className="mt-1.5 pt-1.5 border-t border-white/[0.05]">
+                                        <Tip text={t("models.mlp.explorer.metrics.tooltips.trainSmoothed")}>
+                                            <span className="text-[8px] font-mono uppercase tracking-widest text-white/25">{t("models.mlp.explorer.metrics.trainSmoothed")}</span>
+                                        </Tip>
+                                        <div className="text-sm font-mono font-semibold text-violet-300/70 mt-0.5">{smoothedTrain.toFixed(3)}</div>
                                     </div>
-                                </Tip>
-                            )}
-                        </div>
-
-                        {/* Train–Val Gap */}
-                        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
-                            <div className="flex items-center justify-center gap-1 mb-1">
-                                {computedGap != null ? (
-                                    <>
-                                        <GitCompareArrows className="w-3 h-3 text-cyan-400/60" />
-                                        <Tip text={t("models.mlp.explorer.metrics.tooltips.trainValGap")}>
-                                            <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.metrics.trainValGap")}</span>
-                                        </Tip>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Layers className="w-3 h-3 text-emerald-400/60" />
-                                        <Tip text={t("models.mlp.explorer.metrics.tooltips.paramsCount")}>
-                                            <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.metrics.params")}</span>
-                                        </Tip>
-                                    </>
                                 )}
                             </div>
-                            {computedGap != null ? (
-                                <span className={`text-lg font-mono font-bold ${computedGap > 0.3 ? "text-amber-400" : computedGap > 0.1 ? "text-white" : "text-emerald-400"}`}>
-                                    {computedGap > 0 ? "+" : ""}{computedGap.toFixed(3)}
-                                </span>
-                            ) : (
-                                <span className="text-lg font-mono font-bold text-white">{formatParams(selectedConfig.total_parameters ?? 0)}</span>
-                            )}
-                        </div>
 
-                        {/* Compute Cost (params × steps, deterministic) */}
-                        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
-                            <div className="flex items-center justify-center gap-1 mb-1">
-                                <Cpu className="w-3 h-3 text-violet-400/60" />
-                                <Tip align="right" text={t("models.mlp.explorer.metrics.tooltips.compute").replace("{steps}", (TOTAL_TRAINING_STEPS / 1000).toFixed(0))}>
-                                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.metrics.compute")}</span>
+                            {/* Perplexity */}
+                            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                    <Sparkles className="w-3 h-3 text-amber-400/60" />
+                                    <Tip text={t("models.mlp.explorer.metrics.tooltips.perplexity")}>
+                                        <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.metrics.perplexity")}</span>
+                                    </Tip>
+                                </div>
+                                <span className="text-lg font-mono font-bold text-white">{selectedConfig.perplexity.toFixed(1)}</span>
+                                {selectedConfig.expected_uniform_loss != null && (
+                                    <Tip text={t("models.mlp.explorer.metrics.tooltips.randomPerplexity")}>
+                                        <div className="text-[8px] font-mono text-white/20 mt-0.5 cursor-help">
+                                            {t("models.mlp.explorer.metrics.random")} {Math.exp(selectedConfig.expected_uniform_loss).toFixed(1)}
+                                        </div>
+                                    </Tip>
+                                )}
+                            </div>
+
+                            {/* Train–Val Gap */}
+                            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                    {computedGap != null ? (
+                                        <>
+                                            <GitCompareArrows className="w-3 h-3 text-cyan-400/60" />
+                                            <Tip text={t("models.mlp.explorer.metrics.tooltips.trainValGap")}>
+                                                <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.metrics.trainValGap")}</span>
+                                            </Tip>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Layers className="w-3 h-3 text-emerald-400/60" />
+                                            <Tip text={t("models.mlp.explorer.metrics.tooltips.paramsCount")}>
+                                                <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.metrics.params")}</span>
+                                            </Tip>
+                                        </>
+                                    )}
+                                </div>
+                                {computedGap != null ? (
+                                    <span className={`text-lg font-mono font-bold ${computedGap > 0.3 ? "text-amber-400" : computedGap > 0.1 ? "text-white" : "text-emerald-400"}`}>
+                                        {computedGap > 0 ? "+" : ""}{computedGap.toFixed(3)}
+                                    </span>
+                                ) : (
+                                    <span className="text-lg font-mono font-bold text-white">{formatParams(selectedConfig.total_parameters ?? 0)}</span>
+                                )}
+                            </div>
+
+                            {/* Compute Cost (params × steps, deterministic) */}
+                            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                    <Cpu className="w-3 h-3 text-violet-400/60" />
+                                    <Tip align="right" text={t("models.mlp.explorer.metrics.tooltips.compute").replace("{steps}", (TOTAL_TRAINING_STEPS / 1000).toFixed(0))}>
+                                        <span className="text-[9px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.metrics.compute")}</span>
+                                    </Tip>
+                                </div>
+                                <span className="text-sm font-mono font-bold text-white">{costInfo?.label ?? "—"}</span>
+                                <Tip align="right" text={t("models.mlp.explorer.metrics.tooltips.computeDetail").replace("{params}", formatParams(selectedConfig.total_parameters ?? 0)).replace("{steps}", (TOTAL_TRAINING_STEPS / 1000).toFixed(0))}>
+                                    <div className="text-[8px] font-mono text-white/20 mt-0.5 cursor-help">
+                                        {formatParams(selectedConfig.total_parameters ?? 0)} × {(TOTAL_TRAINING_STEPS / 1000).toFixed(0)}k
+                                    </div>
+                                </Tip>
+                                {/* Tiny progress bar */}
+                                {costInfo && (
+                                    <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                                        <div className="h-full rounded-full bg-violet-500/40" style={{ width: `${(costInfo.ratio * 100).toFixed(0)}%` }} />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── Anomaly flags ── */}
+                    {anomalyFlags && <AnomalyBadges flags={anomalyFlags} />}
+
+                    {/* ── Plain-English config summary ── */}
+                    {selectedConfig && anomalyFlags && (() => {
+                        const summary = buildConfigSummary(selectedConfig, anomalyFlags, computedGap, stabilityInfo, summaryTexts);
+                        const colors = {
+                            emerald: "bg-emerald-500/[0.04] border-emerald-500/15 text-emerald-300/70",
+                            amber: "bg-amber-500/[0.04] border-amber-500/15 text-amber-300/70",
+                            rose: "bg-rose-500/[0.04] border-rose-500/15 text-rose-300/70",
+                            blue: "bg-blue-500/[0.04] border-blue-500/15 text-blue-300/70",
+                            white: "bg-white/[0.02] border-white/[0.06] text-white/40",
+                        };
+                        return (
+                            <div className={`flex items-start gap-2.5 px-3 py-2.5 rounded-lg border text-[11px] leading-relaxed font-mono ${colors[summary.color]}`}>
+                                <span className="shrink-0 mt-0.5">{summary.color === "rose" ? "✗" : summary.color === "amber" ? "⚠" : summary.color === "emerald" ? "✓" : summary.color === "blue" ? "↗" : "·"}</span>
+                                <span>{summary.text}</span>
+                            </div>
+                        );
+                    })()}
+
+                    {/* ── Training Timeline ── */}
+                    <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <Activity className="w-3.5 h-3.5 text-white/20" />
+                                <Tip text={t("models.mlp.explorer.timeline.tooltips.chart")}>
+                                    <p className="text-[10px] font-mono uppercase tracking-widest text-white/25">{t("models.mlp.explorer.timeline.title")}</p>
                                 </Tip>
                             </div>
-                            <span className="text-sm font-mono font-bold text-white">{costInfo?.label ?? "—"}</span>
-                            <Tip align="right" text={t("models.mlp.explorer.metrics.tooltips.computeDetail").replace("{params}", formatParams(selectedConfig.total_parameters ?? 0)).replace("{steps}", (TOTAL_TRAINING_STEPS / 1000).toFixed(0))}>
-                                <div className="text-[8px] font-mono text-white/20 mt-0.5 cursor-help">
-                                    {formatParams(selectedConfig.total_parameters ?? 0)} × {(TOTAL_TRAINING_STEPS / 1000).toFixed(0)}k
-                                </div>
-                            </Tip>
-                            {/* Tiny progress bar */}
-                            {costInfo && (
-                                <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden">
-                                    <div className="h-full rounded-full bg-violet-500/40" style={{ width: `${(costInfo.ratio * 100).toFixed(0)}%` }} />
-                                </div>
+                            {loggingInfo && (
+                                <span className="text-[8px] font-mono text-white/15 flex items-center gap-1">
+                                    <Tip text={t("models.mlp.explorer.timeline.tooltips.pts")}>
+                                        <span className="cursor-help">{loggingInfo.count} {t("models.mlp.explorer.timeline.pts")}</span>
+                                    </Tip>
+                                    <span className="text-white/10">·</span>
+                                    <Tip text={t("models.mlp.explorer.timeline.tooltips.interval").replace("{interval}", String(loggingInfo.minInterval))}>
+                                        <span className="cursor-help">{t("models.mlp.explorer.timeline.every")} {loggingInfo.minInterval} {t("models.mlp.explorer.timeline.steps")}</span>
+                                    </Tip>
+                                    <span className="text-white/10">·</span>
+                                    <Tip text={t("models.mlp.explorer.timeline.tooltips.totalSteps").replace("{steps}", (TOTAL_TRAINING_STEPS / 1000).toFixed(0))}>
+                                        <span className="cursor-help">{loggingInfo.totalSteps >= 1000 ? `${(loggingInfo.totalSteps / 1000).toFixed(0)}k` : loggingInfo.totalSteps} {t("models.mlp.explorer.timeline.total")}</span>
+                                    </Tip>
+                                    {!loggingInfo.isUniform && <span className="text-amber-400/40"> · {t("models.mlp.explorer.timeline.nonUniform")}</span>}
+                                </span>
                             )}
                         </div>
-                    </div>
-                )}
-
-                {/* ── Anomaly flags ── */}
-                {anomalyFlags && <AnomalyBadges flags={anomalyFlags} />}
-
-                {/* ── Plain-English config summary ── */}
-                {selectedConfig && anomalyFlags && (() => {
-                    const summary = buildConfigSummary(selectedConfig, anomalyFlags, computedGap, stabilityInfo, summaryTexts);
-                    const colors = {
-                        emerald: "bg-emerald-500/[0.04] border-emerald-500/15 text-emerald-300/70",
-                        amber: "bg-amber-500/[0.04] border-amber-500/15 text-amber-300/70",
-                        rose: "bg-rose-500/[0.04] border-rose-500/15 text-rose-300/70",
-                        blue: "bg-blue-500/[0.04] border-blue-500/15 text-blue-300/70",
-                        white: "bg-white/[0.02] border-white/[0.06] text-white/40",
-                    };
-                    return (
-                        <div className={`flex items-start gap-2.5 px-3 py-2.5 rounded-lg border text-[11px] leading-relaxed font-mono ${colors[summary.color]}`}>
-                            <span className="shrink-0 mt-0.5">{summary.color === "rose" ? "✗" : summary.color === "amber" ? "⚠" : summary.color === "emerald" ? "✓" : summary.color === "blue" ? "↗" : "·"}</span>
-                            <span>{summary.text}</span>
-                        </div>
-                    );
-                })()}
-
-                {/* ── Training Timeline ── */}
-                <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                            <Activity className="w-3.5 h-3.5 text-white/20" />
-                            <Tip text={t("models.mlp.explorer.timeline.tooltips.chart")}>
-                                <p className="text-[10px] font-mono uppercase tracking-widest text-white/25">{t("models.mlp.explorer.timeline.title")}</p>
-                            </Tip>
-                        </div>
-                        {loggingInfo && (
-                            <span className="text-[8px] font-mono text-white/15 flex items-center gap-1">
-                                <Tip text={t("models.mlp.explorer.timeline.tooltips.pts")}>
-                                    <span className="cursor-help">{loggingInfo.count} {t("models.mlp.explorer.timeline.pts")}</span>
-                                </Tip>
-                                <span className="text-white/10">·</span>
-                                <Tip text={t("models.mlp.explorer.timeline.tooltips.interval").replace("{interval}", String(loggingInfo.minInterval))}>
-                                    <span className="cursor-help">{t("models.mlp.explorer.timeline.every")} {loggingInfo.minInterval} {t("models.mlp.explorer.timeline.steps")}</span>
-                                </Tip>
-                                <span className="text-white/10">·</span>
-                                <Tip text={t("models.mlp.explorer.timeline.tooltips.totalSteps").replace("{steps}", (TOTAL_TRAINING_STEPS / 1000).toFixed(0))}>
-                                    <span className="cursor-help">{loggingInfo.totalSteps >= 1000 ? `${(loggingInfo.totalSteps / 1000).toFixed(0)}k` : loggingInfo.totalSteps} {t("models.mlp.explorer.timeline.total")}</span>
-                                </Tip>
-                                {!loggingInfo.isUniform && <span className="text-amber-400/40"> · {t("models.mlp.explorer.timeline.nonUniform")}</span>}
-                            </span>
+                        {timelineLoading ? (
+                            <div className="flex items-center justify-center py-6"><Loader2 className="w-4 h-4 text-violet-400/40 animate-spin" /></div>
+                        ) : (trainLoss.length > 0 || valLoss.length > 0) ? (
+                            <>
+                                <DualLossChart trainLoss={trainLoss} valLoss={valLoss} expectedUniformLoss={selectedConfig?.expected_uniform_loss} />
+                                {/* Stability summary */}
+                                {stabilityInfo && (
+                                    <div className="flex flex-wrap gap-3 mt-2 text-[8px] font-mono text-white/20">
+                                        <Tip text={t("models.mlp.explorer.timeline.tooltips.trend")}>
+                                            <span className="cursor-help">{t("models.mlp.explorer.timeline.trend")} <span className={stabilityInfo.valTrend === "decreasing" ? "text-emerald-400/60" : stabilityInfo.valTrend === "increasing" ? "text-rose-400/60" : "text-white/30"}>{stabilityInfo.valTrend}</span></span>
+                                        </Tip>
+                                        <Tip text={t("models.mlp.explorer.timeline.tooltips.variance")}>
+                                            <span className="cursor-help">{t("models.mlp.explorer.timeline.variance")} {stabilityInfo.valVariance.toFixed(4)}</span>
+                                        </Tip>
+                                        {stabilityInfo.convergenceStep != null && (
+                                            <Tip text={t("models.mlp.explorer.timeline.tooltips.convergenceStep")}>
+                                                <span className="cursor-help">{t("models.mlp.explorer.timeline.converged")}{stabilityInfo.convergenceStep >= 1000 ? `${(stabilityInfo.convergenceStep / 1000).toFixed(0)}k` : stabilityInfo.convergenceStep} {t("models.mlp.explorer.timeline.steps")}</span>
+                                            </Tip>
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <p className="text-[10px] text-white/20 italic text-center py-4">{t("models.mlp.explorer.timeline.noData")}</p>
                         )}
                     </div>
-                    {timelineLoading ? (
-                        <div className="flex items-center justify-center py-6"><Loader2 className="w-4 h-4 text-violet-400/40 animate-spin" /></div>
-                    ) : (trainLoss.length > 0 || valLoss.length > 0) ? (
-                        <>
-                            <DualLossChart trainLoss={trainLoss} valLoss={valLoss} expectedUniformLoss={selectedConfig?.expected_uniform_loss} />
-                            {/* Stability summary */}
-                            {stabilityInfo && (
-                                <div className="flex flex-wrap gap-3 mt-2 text-[8px] font-mono text-white/20">
-                                    <Tip text={t("models.mlp.explorer.timeline.tooltips.trend")}>
-                                        <span className="cursor-help">{t("models.mlp.explorer.timeline.trend")} <span className={stabilityInfo.valTrend === "decreasing" ? "text-emerald-400/60" : stabilityInfo.valTrend === "increasing" ? "text-rose-400/60" : "text-white/30"}>{stabilityInfo.valTrend}</span></span>
+
+                </LabSection>
+
+                {/* ══════════════════════════════════════════════════
+                SECTION 3 — EMBEDDING SPACE
+            ══════════════════════════════════════════════════ */}
+                <LabSection
+                    number="03"
+                    title={t("models.mlp.explorer.sections.s03Title")}
+                    subtitle={t("models.mlp.explorer.sections.s03Subtitle")}
+                >
+                    {/* ── Embedding Space + Drift + Neighbors ── */}
+                    <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <Tip text={t("models.mlp.explorer.embeddingSpace.tooltip")}>
+                                <p className="text-[10px] font-mono uppercase tracking-widest text-white/25">{t("models.mlp.explorer.embeddingSpace.title")}</p>
+                            </Tip>
+                        </div>
+                        <EmbeddingDriftAnimator selectedConfig={selectedConfig} />
+                        <NearestNeighborExplorer selectedConfig={selectedConfig} />
+                    </div>
+                </LabSection>
+
+                {/* ══════════════════════════════════════════════════
+                SECTION 4 — TEXT GENERATION
+            ══════════════════════════════════════════════════ */}
+                <LabSection
+                    number="04"
+                    title={t("models.mlp.explorer.sections.s04Title")}
+                    subtitle={t("models.mlp.explorer.sections.s04Subtitle")}
+                >
+                    {/* ── Generated Text Sample ── */}
+                    <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4">
+                        <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 mb-2">{t("models.mlp.explorer.generation.title")}</p>
+                        <div className="flex gap-2 mb-3">
+                            <input type="text" value={seedText} onChange={e => setSeedText(e.target.value)} placeholder={t("models.mlp.explorer.generation.seedPlaceholder")}
+                                className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs font-mono text-white/70 placeholder:text-white/20 focus:outline-none focus:border-violet-500/40" />
+                            <button onClick={handleGenerate} disabled={generationLoading || !selectedConfig}
+                                className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-violet-500/15 text-violet-300 border border-violet-500/30 hover:bg-violet-500/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                                {generationLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : t("models.mlp.explorer.generation.generateButton")}
+                            </button>
+                        </div>
+                        {/* Controls row: Temperature + Max tokens */}
+                        <div className="grid grid-cols-2 gap-4 mb-3">
+                            <div className="flex items-center gap-3">
+                                <Tip text={t("models.mlp.explorer.generation.tempTooltip")}>
+                                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/25 cursor-help shrink-0">{t("models.mlp.explorer.generation.temp")}</span>
+                                </Tip>
+                                <input
+                                    type="range" min={1} max={20} value={Math.round(temperature * 10)}
+                                    onChange={e => setTemperature(Number(e.target.value) / 10)}
+                                    className="flex-1 accent-violet-500 cursor-pointer"
+                                />
+                                <span className="text-xs font-mono font-bold text-violet-400 w-8 text-right">{temperature.toFixed(1)}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Tip text={t("models.mlp.explorer.generation.tokensTooltip")}>
+                                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/25 cursor-help shrink-0">{t("models.mlp.explorer.generation.tokens")}</span>
+                                </Tip>
+                                <input
+                                    type="range" min={20} max={200} step={10} value={maxTokens}
+                                    onChange={e => setMaxTokens(Number(e.target.value))}
+                                    className="flex-1 accent-violet-500 cursor-pointer"
+                                />
+                                <span className="text-xs font-mono font-bold text-violet-400 w-8 text-right">{maxTokens}</span>
+                            </div>
+                        </div>
+                        {generation ? (
+                            <div className="space-y-2">
+                                <p className="font-mono text-sm text-white/60 leading-relaxed">&quot;{generation.generated_text}&quot;</p>
+                                <div className="flex items-center gap-3 text-[9px] font-mono text-white/20">
+                                    <Tip text={t("models.mlp.explorer.generation.pplTooltip")}>
+                                        <span className="cursor-help">
+                                            {t("models.mlp.explorer.generation.estPpl")} {selectedConfig ? Math.exp(selectedConfig.final_loss).toFixed(1) : "—"}
+                                        </span>
                                     </Tip>
-                                    <Tip text={t("models.mlp.explorer.timeline.tooltips.variance")}>
-                                        <span className="cursor-help">{t("models.mlp.explorer.timeline.variance")} {stabilityInfo.valVariance.toFixed(4)}</span>
-                                    </Tip>
-                                    {stabilityInfo.convergenceStep != null && (
-                                        <Tip text={t("models.mlp.explorer.timeline.tooltips.convergenceStep")}>
-                                            <span className="cursor-help">{t("models.mlp.explorer.timeline.converged")}{stabilityInfo.convergenceStep >= 1000 ? `${(stabilityInfo.convergenceStep / 1000).toFixed(0)}k` : stabilityInfo.convergenceStep} {t("models.mlp.explorer.timeline.steps")}</span>
-                                        </Tip>
+                                    <span>·</span>
+                                    <span>{generation.length} {t("models.mlp.explorer.generation.chars")}</span>
+                                    <span>·</span>
+                                    <span>{generation.metadata?.inference_time_ms?.toFixed(0) ?? "—"}ms</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-[10px] text-white/20 italic">{t("models.mlp.explorer.generation.pressGenerate")}</p>
+                        )}
+                    </div>
+
+                </LabSection>
+
+                {/* ══════════════════════════════════════════════════
+                SECTION 5 — ADVANCED DIAGNOSTICS
+            ══════════════════════════════════════════════════ */}
+                <LabSection
+                    number="05"
+                    title={t("models.mlp.explorer.sections.s05Title")}
+                    subtitle={t("models.mlp.explorer.sections.s05Subtitle")}
+                >
+                    <Expandable title={t("models.mlp.explorer.sections.s05Title")} defaultOpen={true}>
+                        <div className="space-y-8 pt-1">
+                            {/* Intro */}
+                            <p className="text-[11px] text-white/35 leading-relaxed">
+                                {t("models.mlp.explorer.diagnostics.intro")}
+                            </p>
+
+                            {/* Sparklines */}
+                            {(gradNormData.length > 0 || deadNeuronData.length > 0) && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    {gradNormData.length > 0 && (
+                                        <div className="space-y-2">
+                                            <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.gradNorm")}>
+                                                <span className="cursor-help inline-block">
+                                                    <MiniSparkline data={gradNormData} color="rgb(251,146,60)" label={t("models.mlp.explorer.diagnostics.gradNormLabel")} />
+                                                </span>
+                                            </Tip>
+                                        </div>
+                                    )}
+                                    {deadNeuronData.length > 0 && (
+                                        <div className="space-y-2">
+                                            <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.deadNeuron")}>
+                                                <span className="cursor-help inline-block">
+                                                    <MiniSparkline data={deadNeuronData} color="rgb(251,113,133)" label={t("models.mlp.explorer.diagnostics.deadNeuronLabel")} />
+                                                </span>
+                                            </Tip>
+                                        </div>
                                     )}
                                 </div>
                             )}
-                        </>
-                    ) : (
-                        <p className="text-[10px] text-white/20 italic text-center py-4">{t("models.mlp.explorer.timeline.noData")}</p>
-                    )}
-                </div>
 
-            </LabSection>
-
-            {/* ══════════════════════════════════════════════════
-                SECTION 3 — EMBEDDING SPACE
-            ══════════════════════════════════════════════════ */}
-            <LabSection
-                number="03"
-                title={t("models.mlp.explorer.sections.s03Title")}
-                subtitle={t("models.mlp.explorer.sections.s03Subtitle")}
-            >
-                {/* ── Embedding Space + Drift + Neighbors ── */}
-                <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-4">
-                    <div className="flex items-center gap-2">
-                        <Tip text={t("models.mlp.explorer.embeddingSpace.tooltip")}>
-                            <p className="text-[10px] font-mono uppercase tracking-widest text-white/25">{t("models.mlp.explorer.embeddingSpace.title")}</p>
-                        </Tip>
-                    </div>
-                    <EmbeddingDriftAnimator selectedConfig={selectedConfig} />
-                    <NearestNeighborExplorer selectedConfig={selectedConfig} />
-                </div>
-            </LabSection>
-
-            {/* ══════════════════════════════════════════════════
-                SECTION 4 — TEXT GENERATION
-            ══════════════════════════════════════════════════ */}
-            <LabSection
-                number="04"
-                title={t("models.mlp.explorer.sections.s04Title")}
-                subtitle={t("models.mlp.explorer.sections.s04Subtitle")}
-            >
-                {/* ── Generated Text Sample ── */}
-                <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4">
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 mb-2">{t("models.mlp.explorer.generation.title")}</p>
-                    <div className="flex gap-2 mb-3">
-                        <input type="text" value={seedText} onChange={e => setSeedText(e.target.value)} placeholder={t("models.mlp.explorer.generation.seedPlaceholder")}
-                            className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs font-mono text-white/70 placeholder:text-white/20 focus:outline-none focus:border-violet-500/40" />
-                        <button onClick={handleGenerate} disabled={generationLoading || !selectedConfig}
-                            className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-violet-500/15 text-violet-300 border border-violet-500/30 hover:bg-violet-500/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                            {generationLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : t("models.mlp.explorer.generation.generateButton")}
-                        </button>
-                    </div>
-                    {/* Controls row: Temperature + Max tokens */}
-                    <div className="grid grid-cols-2 gap-4 mb-3">
-                        <div className="flex items-center gap-3">
-                            <Tip text={t("models.mlp.explorer.generation.tempTooltip")}>
-                                <span className="text-[9px] font-mono uppercase tracking-widest text-white/25 cursor-help shrink-0">{t("models.mlp.explorer.generation.temp")}</span>
-                            </Tip>
-                            <input
-                                type="range" min={1} max={20} value={Math.round(temperature * 10)}
-                                onChange={e => setTemperature(Number(e.target.value) / 10)}
-                                className="flex-1 accent-violet-500 cursor-pointer"
-                            />
-                            <span className="text-xs font-mono font-bold text-violet-400 w-8 text-right">{temperature.toFixed(1)}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Tip text={t("models.mlp.explorer.generation.tokensTooltip")}>
-                                <span className="text-[9px] font-mono uppercase tracking-widest text-white/25 cursor-help shrink-0">{t("models.mlp.explorer.generation.tokens")}</span>
-                            </Tip>
-                            <input
-                                type="range" min={20} max={200} step={10} value={maxTokens}
-                                onChange={e => setMaxTokens(Number(e.target.value))}
-                                className="flex-1 accent-violet-500 cursor-pointer"
-                            />
-                            <span className="text-xs font-mono font-bold text-violet-400 w-8 text-right">{maxTokens}</span>
-                        </div>
-                    </div>
-                    {generation ? (
-                        <div className="space-y-2">
-                            <p className="font-mono text-sm text-white/60 leading-relaxed">&quot;{generation.generated_text}&quot;</p>
-                            <div className="flex items-center gap-3 text-[9px] font-mono text-white/20">
-                                <Tip text={t("models.mlp.explorer.generation.pplTooltip")}>
-                                    <span className="cursor-help">
-                                        {t("models.mlp.explorer.generation.estPpl")} {selectedConfig ? Math.exp(selectedConfig.final_loss).toFixed(1) : "—"}
-                                    </span>
-                                </Tip>
-                                <span>·</span>
-                                <span>{generation.length} {t("models.mlp.explorer.generation.chars")}</span>
-                                <span>·</span>
-                                <span>{generation.metadata?.inference_time_ms?.toFixed(0) ?? "—"}ms</span>
-                            </div>
-                        </div>
-                    ) : (
-                        <p className="text-[10px] text-white/20 italic">{t("models.mlp.explorer.generation.pressGenerate")}</p>
-                    )}
-                </div>
-
-            </LabSection>
-
-            {/* ══════════════════════════════════════════════════
-                SECTION 5 — ADVANCED DIAGNOSTICS
-            ══════════════════════════════════════════════════ */}
-            <LabSection
-                number="05"
-                title={t("models.mlp.explorer.sections.s05Title")}
-                subtitle={t("models.mlp.explorer.sections.s05Subtitle")}
-            >
-                <Expandable title={t("models.mlp.explorer.sections.s05Title")} defaultOpen={true}>
-                    <div className="space-y-8 pt-1">
-                        {/* Intro */}
-                        <p className="text-[11px] text-white/35 leading-relaxed">
-                            {t("models.mlp.explorer.diagnostics.intro")}
-                        </p>
-
-                        {/* Sparklines */}
-                        {(gradNormData.length > 0 || deadNeuronData.length > 0) && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                {gradNormData.length > 0 && (
-                                    <div className="space-y-2">
-                                        <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.gradNorm")}>
-                                            <span className="cursor-help inline-block">
-                                                <MiniSparkline data={gradNormData} color="rgb(251,146,60)" label={t("models.mlp.explorer.diagnostics.gradNormLabel")} />
-                                            </span>
+                            {/* Snapshot heatmaps */}
+                            {timeline && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                    <div className="space-y-1">
+                                        <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.gradNormLayer")}>
+                                            <span className="cursor-help inline-block text-[9px] font-mono uppercase tracking-widest text-white/30 mb-2">{t("models.mlp.explorer.diagnostics.gradNormSection")}</span>
                                         </Tip>
+                                        <GradientHealthHeatmap timeline={timeline} />
                                     </div>
-                                )}
-                                {deadNeuronData.length > 0 && (
-                                    <div className="space-y-2">
-                                        <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.deadNeuron")}>
-                                            <span className="cursor-help inline-block">
-                                                <MiniSparkline data={deadNeuronData} color="rgb(251,113,133)" label={t("models.mlp.explorer.diagnostics.deadNeuronLabel")} />
-                                            </span>
+                                    <div className="space-y-1">
+                                        <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.activationHealth")}>
+                                            <span className="cursor-help inline-block text-[9px] font-mono uppercase tracking-widest text-white/30 mb-2">{t("models.mlp.explorer.diagnostics.activationSection")}</span>
                                         </Tip>
+                                        <ActivationSaturationHeatmap timeline={timeline} />
                                     </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Snapshot heatmaps */}
-                        {timeline && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                                <div className="space-y-1">
-                                    <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.gradNormLayer")}>
-                                        <span className="cursor-help inline-block text-[9px] font-mono uppercase tracking-widest text-white/30 mb-2">{t("models.mlp.explorer.diagnostics.gradNormSection")}</span>
-                                    </Tip>
-                                    <GradientHealthHeatmap timeline={timeline} />
                                 </div>
-                                <div className="space-y-1">
-                                    <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.activationHealth")}>
-                                        <span className="cursor-help inline-block text-[9px] font-mono uppercase tracking-widest text-white/30 mb-2">{t("models.mlp.explorer.diagnostics.activationSection")}</span>
+                            )}
+
+                            {/* Generalization gap heatmap */}
+                            {safeConfigs.length > 1 && (
+                                <div className="pt-4 border-t border-white/[0.06] space-y-2">
+                                    <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.genGap")}>
+                                        <span className="cursor-help inline-block text-[10px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.diagnostics.genGapSection")}</span>
                                     </Tip>
-                                    <ActivationSaturationHeatmap timeline={timeline} />
+                                    <GeneralizationGapHeatmap configs={safeConfigs} />
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
+                    </Expandable>
 
-                        {/* Generalization gap heatmap */}
-                        {safeConfigs.length > 1 && (
-                            <div className="pt-4 border-t border-white/[0.06] space-y-2">
-                                <Tip align="left" text={t("models.mlp.explorer.diagnostics.tooltips.genGap")}>
-                                    <span className="cursor-help inline-block text-[10px] font-mono uppercase tracking-widest text-white/30">{t("models.mlp.explorer.diagnostics.genGapSection")}</span>
-                                </Tip>
-                                <GeneralizationGapHeatmap configs={safeConfigs} />
-                            </div>
-                        )}
-                    </div>
-                </Expandable>
+                </LabSection>
 
-            </LabSection>
-
-            {/* ── Data source indicator ── */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/[0.04] border border-emerald-500/15">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                <p className="text-[10px] text-emerald-300/60 font-mono">
-                    {t("models.mlp.explorer.dataSource").replace("{count}", String(configs.length)).replace("{steps}", String(TOTAL_TRAINING_STEPS / 1000)).replace("{interval}", String(loggingInfo?.minInterval ?? 100))}
-                    {selectedConfig?.final_val_loss != null ? " " + t("models.mlp.explorer.primaryValLoss") : " " + t("models.mlp.explorer.primaryTrainLoss")}
-                </p>
+                {/* ── Data source indicator ── */}
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/[0.04] border border-emerald-500/15">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                    <p className="text-[10px] text-emerald-300/60 font-mono">
+                        {t("models.mlp.explorer.dataSource").replace("{count}", String(configs.length)).replace("{steps}", String(TOTAL_TRAINING_STEPS / 1000)).replace("{interval}", String(loggingInfo?.minInterval ?? 100))}
+                        {selectedConfig?.final_val_loss != null ? " " + t("models.mlp.explorer.primaryValLoss") : " " + t("models.mlp.explorer.primaryTrainLoss")}
+                    </p>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

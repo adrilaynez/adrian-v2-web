@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 
 const SENTENCE = "the cat sat on the mat";
 const PIVOT = 8; // predicting SENTENCE[PIVOT] = 's' in "sat"
@@ -19,6 +20,7 @@ const PREDICTIONS: { char: string; prob: number }[] = [
 const TARGET = SENTENCE[PIVOT]; // "s"
 
 export function MemoryLimitDemo() {
+    const { t } = useI18n();
     const [ctxIdx, setCtxIdx] = useState(0);
     const ctxSize: CtxSize = CONTEXT_OPTIONS[ctxIdx];
     const isLocked = ctxIdx > 0;
@@ -60,8 +62,8 @@ export function MemoryLimitDemo() {
             {/* Context label */}
             <p className="text-center text-[11px] font-mono text-white/25">
                 {isLocked
-                    ? <>Context: <span className="text-emerald-400">{ctxSize} chars</span> — locked</>
-                    : <>Model sees: <span className="text-emerald-300 font-semibold">"{SENTENCE[PIVOT - 1]}"</span> · guessing next…</>}
+                    ? <>{t("bigramWidgets.memoryLimit.context")} <span className="text-emerald-400">{ctxSize} {t("bigramWidgets.memoryLimit.chars")}</span> — {t("bigramWidgets.memoryLimit.locked")}</>
+                    : <>{t("bigramWidgets.memoryLimit.modelSees")} <span className="text-emerald-300 font-semibold">"{SENTENCE[PIVOT - 1]}"</span> · {t("bigramWidgets.memoryLimit.guessingNext")}</>}
             </p>
 
             {/* Prediction / locked area */}
@@ -74,10 +76,10 @@ export function MemoryLimitDemo() {
                     >
                         <Lock className="w-4 h-4 text-white/20" />
                         <p className="text-xs font-mono text-white/25">
-                            Context-{ctxSize} available in the N-gram chapter
+                            {t("bigramWidgets.memoryLimit.lockedNote").replace("{size}", ctxSize.toString())}
                         </p>
                         <a href="/lab/ngram" className="text-[11px] font-semibold text-emerald-400/60 hover:text-emerald-400 transition-colors">
-                            N-gram model →
+                            {t("bigramWidgets.memoryLimit.ngramLink")}
                         </a>
                     </motion.div>
                 ) : (
@@ -87,7 +89,7 @@ export function MemoryLimitDemo() {
                         className="space-y-2.5 px-1"
                     >
                         <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/20 mb-3">
-                            Top predictions
+                            {t("bigramWidgets.memoryLimit.topPredictions")}
                         </p>
                         {PREDICTIONS.map(({ char, prob }, i) => (
                             <div key={char} className="flex items-center gap-3">
@@ -108,7 +110,9 @@ export function MemoryLimitDemo() {
                             </div>
                         ))}
                         <p className="text-[10px] font-mono text-white/20 pt-1">
-                            Correct answer <span className="text-emerald-400/60">"{TARGET}"</span> ranked #{PREDICTIONS.findIndex(p => p.char === TARGET) + 1}
+                            {t("bigramWidgets.memoryLimit.correctAnswer")
+                                .replace("{target}", TARGET)
+                                .replace("{rank}", (PREDICTIONS.findIndex(p => p.char === TARGET) + 1).toString())}
                         </p>
                     </motion.div>
                 )}
