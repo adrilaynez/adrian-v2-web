@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 
 function sigmoid(x: number) { return 1 / (1 + Math.exp(-x)); }
 
@@ -61,8 +61,8 @@ function LossChart({ history, initialLoss }: { history: TrainingStep[]; initialL
                         fontFamily="ui-monospace,monospace" fill="rgba(255,255,255,0.25)">{v.toFixed(3)}</text>
                 </g>
             ))}
-            {xTicks.map(({ label, x }) => (
-                <g key={label}>
+            {xTicks.map(({ label, x }, i) => (
+                <g key={`${label}-${i}`}>
                     <line x1={x} y1={PAD.t + IH} x2={x} y2={PAD.t + IH + 3} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
                     <text x={x} y={PAD.t + IH + 13} textAnchor="middle" fontSize="7"
                         fontFamily="ui-monospace,monospace" fill="rgba(255,255,255,0.25)">{label}</text>
@@ -135,6 +135,10 @@ export function NNTrainingDemo({ onHistoryChange }: NNTrainingDemoCallbacks = {}
     const [b, setB] = useState(INITIAL_B);
     const [lastDelta, setLastDelta] = useState<number | null>(null);
 
+    useEffect(() => {
+        onHistoryChange?.(history, target);
+    }, [history, target, onHistoryChange]);
+
     const scrollRef = useRef<HTMLDivElement>(null);
     const scrollToBottom = useCallback(() => {
         setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
@@ -148,7 +152,6 @@ export function NNTrainingDemo({ onHistoryChange }: NNTrainingDemoCallbacks = {}
                     setLastDelta(loss - h[h.length - 1].loss);
                     scrollToBottom();
                     const next = [...h, { step: h.length, w: newW, b: newB, yhat, loss }];
-                    onHistoryChange?.(next, target);
                     return next;
                 });
                 setW(newW);
@@ -156,7 +159,7 @@ export function NNTrainingDemo({ onHistoryChange }: NNTrainingDemoCallbacks = {}
             });
             return prevW;
         });
-    }, [target, lr, scrollToBottom, onHistoryChange]);
+    }, [target, lr, scrollToBottom]);
 
     const doAutoTrain = useCallback(() => {
         let cw = w, cb = b;
@@ -171,19 +174,17 @@ export function NNTrainingDemo({ onHistoryChange }: NNTrainingDemoCallbacks = {}
         setW(cw); setB(cb);
         setHistory(h => {
             const next = [...h, ...steps];
-            onHistoryChange?.(next, target);
             return next;
         });
         scrollToBottom();
-    }, [w, b, history, target, lr, scrollToBottom, onHistoryChange]);
+    }, [w, b, history, target, lr, scrollToBottom]);
 
     const handleReset = useCallback(() => {
         setW(INITIAL_W); setB(INITIAL_B);
         const initial = [makeInitial(target)];
         setHistory(initial);
         setLastDelta(null);
-        onHistoryChange?.(initial, target);
-    }, [target, makeInitial, onHistoryChange]);
+    }, [target, makeInitial]);
 
     const handleTargetChange = useCallback((v: number) => {
         setTarget(v);
@@ -191,8 +192,7 @@ export function NNTrainingDemo({ onHistoryChange }: NNTrainingDemoCallbacks = {}
         const initial = [makeInitial(v)];
         setHistory(initial);
         setLastDelta(null);
-        onHistoryChange?.(initial, v);
-    }, [makeInitial, onHistoryChange]);
+    }, [makeInitial]);
 
     const latest = history[history.length - 1];
     const initialLoss = useMemo(() => history[0].loss, [history]);

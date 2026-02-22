@@ -259,29 +259,42 @@ function SectionBreak() {
 function HistorySidebar({ t }: { t: (key: string) => string }) {
     const [open, setOpen] = useState(false);
 
+    const timelineEvents = [
+        { year: "1943", color: "from-blue-400 to-cyan-400", label: "Birth of the Idea" },
+        { year: "1958", color: "from-emerald-400 to-green-400", label: "First Learning Machine" },
+        { year: "1969", color: "from-slate-400 to-gray-500", label: "AI Winter Begins" },
+        { year: "1986", color: "from-amber-400 to-orange-400", label: "The Thaw" },
+        { year: "2012+", color: "from-rose-400 to-indigo-400", label: "Deep Learning Era" },
+    ];
+
     return (
         <motion.aside
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
-            className="my-12 rounded-xl border border-white/[0.06] bg-white/[0.015] overflow-hidden"
+            className="my-12 rounded-2xl border border-rose-500/20 overflow-hidden relative"
         >
             <button
                 onClick={() => setOpen(!open)}
-                className="w-full flex items-center gap-3 px-5 py-4 text-left group hover:bg-white/[0.02] transition-colors"
+                className="w-full flex items-center gap-4 px-6 py-5 text-left group transition-all duration-300 relative bg-gradient-to-br from-rose-500/[0.08] via-pink-500/[0.04] to-rose-500/[0.06] hover:from-rose-500/[0.12] hover:via-pink-500/[0.06] hover:to-rose-500/[0.08]"
             >
-                <div className="shrink-0 p-1.5 rounded-lg bg-amber-500/10">
-                    <History className="w-4 h-4 text-amber-400" />
+                <div className="shrink-0 p-2.5 rounded-xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 ring-1 ring-rose-500/30 group-hover:ring-rose-500/50 transition-all">
+                    <History className="w-5 h-5 text-rose-300" />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-white/70">{t("neuralNetworkNarrative.history.title")}</p>
-                    <p className="text-xs text-white/30 mt-0.5">{t("neuralNetworkNarrative.history.summary")}</p>
+                    <p className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-200 to-rose-200 mb-1">
+                        {t("neuralNetworkNarrative.history.title")}
+                    </p>
+                    <p className="text-xs text-white/40 leading-relaxed">
+                        {t("neuralNetworkNarrative.history.summary")}
+                    </p>
                 </div>
                 <motion.div
                     animate={{ rotate: open ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="shrink-0"
                 >
-                    <ChevronDown className="w-4 h-4 text-white/20" />
+                    <ChevronDown className="w-5 h-5 text-rose-400/60 group-hover:text-rose-400 transition-colors" />
                 </motion.div>
             </button>
 
@@ -291,15 +304,113 @@ function HistorySidebar({ t }: { t: (key: string) => string }) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="overflow-hidden"
+                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                        className="overflow-hidden bg-black"
                     >
-                        <div className="px-5 pb-5 space-y-3 border-t border-white/[0.04] pt-4">
-                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p1")}</p>
-                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p2")}</p>
-                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p3")}</p>
-                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p4")}</p>
-                            <p className="text-sm text-white/40 leading-relaxed">{t("neuralNetworkNarrative.history.p5")}</p>
+                        <div className="px-6 pb-6 border-t border-white/[0.04] pt-5">
+                            {/* Subtitle */}
+                            <p className="text-xs font-bold uppercase tracking-[0.15em] text-rose-400/50 mb-6 text-center">
+                                {t("neuralNetworkNarrative.history.subtitle")}
+                            </p>
+
+                            {/* Mini Timeline Visual */}
+                            <div className="mb-8 px-2">
+                                <div className="relative">
+                                    {/* Timeline line */}
+                                    <div className="absolute left-0 right-0 top-4 h-0.5 bg-gradient-to-r from-blue-500/20 via-amber-500/30 to-rose-500/20" />
+
+                                    {/* Timeline points */}
+                                    <div className="relative flex justify-between items-start">
+                                        {timelineEvents.map((event, idx) => (
+                                            <motion.div
+                                                key={event.year}
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ delay: idx * 0.1, duration: 0.3 }}
+                                                className="flex flex-col items-center"
+                                            >
+                                                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${event.color} shadow-lg flex items-center justify-center ring-4 ring-black/50`}>
+                                                    <div className="w-2 h-2 rounded-full bg-white/90" />
+                                                </div>
+                                                <span className="mt-2 text-[10px] font-bold font-mono text-white/60 whitespace-nowrap">
+                                                    {event.year}
+                                                </span>
+                                                <span className="mt-1 text-[9px] text-white/30 text-center max-w-[60px] leading-tight">
+                                                    {event.label}
+                                                </span>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Story paragraphs with colorful styling */}
+                            <div className="space-y-5">
+                                <motion.div
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="border-l-2 border-blue-500/30 pl-4"
+                                >
+                                    <div className="flex items-baseline gap-3 mb-2">
+                                        <span className="text-2xl font-bold text-blue-400 font-mono shrink-0">1943</span>
+                                        <span className="text-xs uppercase tracking-wider text-blue-400/60 font-semibold">The Seed</span>
+                                    </div>
+                                    <p className="text-sm text-white/50 leading-relaxed">{t("neuralNetworkNarrative.history.p1")}</p>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="border-l-2 border-emerald-500/30 pl-4"
+                                >
+                                    <div className="flex items-baseline gap-3 mb-2">
+                                        <span className="text-2xl font-bold text-emerald-400 font-mono shrink-0">1958</span>
+                                        <span className="text-xs uppercase tracking-wider text-emerald-400/60 font-semibold">First Steps</span>
+                                    </div>
+                                    <p className="text-sm text-white/50 leading-relaxed">{t("neuralNetworkNarrative.history.p2")}</p>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="border-l-2 border-slate-500/30 pl-4"
+                                >
+                                    <div className="flex items-baseline gap-3 mb-2">
+                                        <span className="text-2xl font-bold text-slate-400 font-mono shrink-0">1969</span>
+                                        <span className="text-xs uppercase tracking-wider text-slate-400/60 font-semibold">The Winter</span>
+                                    </div>
+                                    <p className="text-sm text-white/50 leading-relaxed">{t("neuralNetworkNarrative.history.p3")}</p>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="border-l-2 border-amber-500/30 pl-4"
+                                >
+                                    <div className="flex items-baseline gap-3 mb-2">
+                                        <span className="text-2xl font-bold text-amber-400 font-mono shrink-0">1986</span>
+                                        <span className="text-xs uppercase tracking-wider text-amber-400/60 font-semibold">The Thaw</span>
+                                    </div>
+                                    <p className="text-sm text-white/50 leading-relaxed">{t("neuralNetworkNarrative.history.p4")}</p>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.5 }}
+                                    className="border-l-2 border-rose-500/30 pl-4"
+                                >
+                                    <div className="flex items-baseline gap-3 mb-2">
+                                        <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400 font-mono shrink-0">2012+</span>
+                                        <span className="text-xs uppercase tracking-wider text-rose-400/60 font-semibold">The Bloom</span>
+                                    </div>
+                                    <p className="text-sm text-white/50 leading-relaxed">{t("neuralNetworkNarrative.history.p5")}</p>
+                                </motion.div>
+                            </div>
                         </div>
                     </motion.div>
                 )}
@@ -703,31 +814,6 @@ export function NeuralNetworkNarrative() {
                     </div>
                 </div>
 
-                <P>{t("neuralNetworkNarrative.howItLearns.batchingTransition")}</P>
-
-                <Expandable title={t("neuralNetworkNarrative.howItLearns.batching.title")} defaultOpen={false}>
-                    <Lead>{t("neuralNetworkNarrative.howItLearns.batching.lead")}</Lead>
-                    <P>{t("neuralNetworkNarrative.howItLearns.batching.p1")}</P>
-                    <P>{t("neuralNetworkNarrative.howItLearns.batching.p2")}</P>
-                    <P>{t("neuralNetworkNarrative.howItLearns.batching.p3")}</P>
-                    <Callout icon={Lightbulb} accent="emerald" title={t("neuralNetworkNarrative.howItLearns.batching.calloutTitle")}>
-                        <p>{t("neuralNetworkNarrative.howItLearns.batching.calloutText")}</p>
-                    </Callout>
-                    <FigureWrapper
-                        label={t("neuralNetworkNarrative.howItLearns.batching.visual1Label")}
-                        hint={t("neuralNetworkNarrative.howItLearns.batching.visual1Hint")}
-                    >
-                        <BatchGradientNoiseVisualizer />
-                    </FigureWrapper>
-                    <FigureWrapper
-                        label={t("neuralNetworkNarrative.howItLearns.batching.visual2Label")}
-                        hint={t("neuralNetworkNarrative.howItLearns.batching.visual2Hint")}
-                    >
-                        <BatchSizeLossCurveComparison />
-                    </FigureWrapper>
-                    <P>{t("neuralNetworkNarrative.howItLearns.batching.conclusion")}</P>
-                </Expandable>
-
                 <P>
                     {t("neuralNetworkNarrative.howItLearns.p2")}{" "}
                     <Highlight color="amber">{t("neuralNetworkNarrative.howItLearns.p2Highlight")}</Highlight>
@@ -781,6 +867,151 @@ export function NeuralNetworkNarrative() {
                 )}
 
                 <P>{t("neuralNetworkNarrative.watchingItLearn.p2")}</P>
+
+                {/* ─────────── THE MINI-BATCH REVOLUTION ─────────── */}
+                <motion.aside
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    className="my-12 rounded-2xl border border-rose-500/20 overflow-hidden relative"
+                >
+                    <button
+                        onClick={() => {
+                            const elem = document.getElementById('minibatch-content');
+                            if (elem) elem.classList.toggle('hidden');
+                        }}
+                        className="w-full flex items-center gap-4 px-6 py-5 text-left group transition-all duration-300 relative bg-gradient-to-br from-rose-500/[0.08] via-pink-500/[0.04] to-rose-500/[0.06] hover:from-rose-500/[0.12] hover:via-pink-500/[0.06] hover:to-rose-500/[0.08]"
+                    >
+                        <div className="shrink-0 p-2.5 rounded-xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 ring-1 ring-rose-500/30 group-hover:ring-rose-500/50 transition-all">
+                            <Beaker className="w-5 h-5 text-rose-300" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-200 to-rose-200 mb-1">
+                                {t("neuralNetworkNarrative.howItLearns.batching.title")}
+                            </p>
+                            <p className="text-xs text-white/40 leading-relaxed">
+                                {t("neuralNetworkNarrative.howItLearns.batching.lead")}
+                            </p>
+                        </div>
+                        <motion.div
+                            animate={{ rotate: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="shrink-0"
+                        >
+                            <ChevronDown className="w-5 h-5 text-rose-400/60 group-hover:text-rose-400 transition-colors" />
+                        </motion.div>
+                    </button>
+
+                    <div id="minibatch-content" className="hidden bg-black">
+                        <div className="px-6 py-6 border-t border-white/[0.04]">
+                            <div className="space-y-5 mb-8">
+                                <p className="text-sm text-white/50 leading-relaxed">
+                                    Computing gradients one example at a time is inefficient. Modern GPUs process hundreds in <span className="text-indigo-400 font-medium">parallel</span>. Instead of updating after every example, we average gradients from a small batch — typically <span className="text-violet-400 font-semibold">32 to 256</span> — and update once per batch. This is <span className="text-rose-400 font-medium">mini-batch gradient descent</span>.
+                                </p>
+
+                                <p className="text-sm text-white/50 leading-relaxed">
+                                    Batch size controls a fundamental trade-off. Size <span className="text-red-400 font-semibold">1</span> (SGD) gives noisy gradients. <span className="text-blue-400 font-semibold">Full dataset</span> gives smooth gradients but is slow and can overfit. Mini-batches balance <span className="text-violet-400 font-medium">stable gradients</span> with efficient computation.
+                                </p>
+
+                                <p className="text-sm text-white/50 leading-relaxed">
+                                    The noise isn't just necessary — <span className="text-indigo-400 font-medium">it's helpful</span>. Noisy gradients help escape local minima and improve generalization on unseen data.
+                                </p>
+                            </div>
+
+                            {/* Visual Comparison Cards */}
+                            <div className="grid md:grid-cols-3 gap-4 my-8">
+                                {/* Batch Size = 1 */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    viewport={{ once: true }}
+                                    className="rounded-xl border border-red-500/20 p-4"
+                                >
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+                                            <span className="text-sm font-bold text-red-400">1</span>
+                                        </div>
+                                        <span className="text-xs font-semibold text-red-300">Single Example</span>
+                                    </div>
+                                    <p className="text-xs text-white/45 leading-relaxed mb-3">
+                                        Updates after every single example. Fast iterations but noisy, erratic gradients.
+                                    </p>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="flex-1 h-1.5 rounded-full bg-red-500/20">
+                                            <div className="h-full w-3/4 rounded-full bg-red-500/60" />
+                                        </div>
+                                        <span className="text-[10px] text-red-400/60 font-mono">Noisy</span>
+                                    </div>
+                                </motion.div>
+
+                                {/* Batch Size = 32 */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    viewport={{ once: true }}
+                                    className="rounded-xl border border-violet-500/20 p-4 ring-2 ring-violet-500/30"
+                                >
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                                            <span className="text-sm font-bold text-violet-300">32</span>
+                                        </div>
+                                        <span className="text-xs font-semibold text-violet-200">Mini-Batch ✓</span>
+                                    </div>
+                                    <p className="text-xs text-white/45 leading-relaxed mb-3">
+                                        Sweet spot: smooth gradients, good GPU utilization, faster convergence.
+                                    </p>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="flex-1 h-1.5 rounded-full bg-violet-500/20">
+                                            <div className="h-full w-full rounded-full bg-violet-500/70" />
+                                        </div>
+                                        <span className="text-[10px] text-violet-300 font-mono">Optimal</span>
+                                    </div>
+                                </motion.div>
+
+                                {/* Full Batch */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    viewport={{ once: true }}
+                                    className="rounded-xl border border-blue-500/20 p-4"
+                                >
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                            <span className="text-[10px] font-bold text-blue-400">ALL</span>
+                                        </div>
+                                        <span className="text-xs font-semibold text-blue-300">Full Batch</span>
+                                    </div>
+                                    <p className="text-xs text-white/45 leading-relaxed mb-3">
+                                        Uses entire dataset. Smooth but slow, memory-hungry, poor generalization.
+                                    </p>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="flex-1 h-1.5 rounded-full bg-blue-500/20">
+                                            <div className="h-full w-2/5 rounded-full bg-blue-500/60" />
+                                        </div>
+                                        <span className="text-[10px] text-blue-400/60 font-mono">Slow</span>
+                                    </div>
+                                </motion.div>
+                            </div>
+
+                            <Callout icon={Lightbulb} accent="indigo" title={t("neuralNetworkNarrative.howItLearns.batching.calloutTitle")}>
+                                <p>{t("neuralNetworkNarrative.howItLearns.batching.calloutText")}</p>
+                            </Callout>
+
+                            {/* New: Interactive Batch Size Comparison */}
+                            <FigureWrapper
+                                label="Interactive · Batch Size Impact on Training"
+                                hint="Compare how different batch sizes affect training speed and gradient quality"
+                            >
+                                <BatchSizeLossCurveComparison />
+                            </FigureWrapper>
+
+                            <P>{t("neuralNetworkNarrative.howItLearns.batching.conclusion")}</P>
+                        </div>
+                    </div>
+                </motion.aside>
             </Section>
 
             <SectionBreak />

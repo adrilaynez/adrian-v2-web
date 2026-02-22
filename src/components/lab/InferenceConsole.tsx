@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Zap, Cpu, Info } from "lucide-react";
+import { Zap, Cpu, Info, Dices } from "lucide-react";
 import type { Prediction } from "@/types/lmLab";
 import { useI18n } from "@/i18n/context";
 
@@ -30,10 +30,35 @@ export function InferenceConsole({
     const { t } = useI18n();
     const [text, setText] = useState("hello");
     const [topK, setTopK] = useState(5);
+    const [sampledToken, setSampledToken] = useState<string | null>(null);
+    const [sampling, setSampling] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (text.trim()) onAnalyze(text.trim(), topK);
+    };
+
+    const handleSample = () => {
+        if (!predictions || predictions.length === 0) return;
+
+        setSampling(true);
+        setSampledToken(null);
+
+        // Weighted random sampling
+        setTimeout(() => {
+            const random = Math.random();
+            let cumulative = 0;
+
+            for (const pred of predictions) {
+                cumulative += pred.probability;
+                if (random <= cumulative) {
+                    setSampledToken(pred.token);
+                    break;
+                }
+            }
+
+            setSampling(false);
+        }, 600);
     };
 
     return (
@@ -154,30 +179,54 @@ export function InferenceConsole({
                         exit={{ opacity: 0 }}
                         className="space-y-1.5"
                     >
-                        {predictions.map((p, i) => (
-                            <motion.div
-                                key={p.token}
-                                initial={{ opacity: 0, x: -12 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.04 }}
-                                className="flex items-center gap-3 group"
-                            >
-                                <span className="w-8 h-8 flex items-center justify-center rounded-md bg-white/[0.06] border border-white/[0.08] text-sm font-mono text-white group-hover:border-emerald-500/40 transition-colors">
-                                    {p.token === " " ? "␣" : p.token}
-                                </span>
-                                <div className="flex-1 h-6 bg-white/[0.03] rounded-full overflow-hidden relative">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${(p.probability * 100).toFixed(1)}%` }}
-                                        transition={{ duration: 0.6, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
-                                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-600/60 to-emerald-400/40 rounded-full"
-                                    />
-                                    <span className="absolute inset-0 flex items-center pl-3 text-[10px] font-mono text-white/60">
-                                        {(p.probability * 100).toFixed(1)}%
+                        {predictions.map((p, i) => {
+                            const isHighlighted = sampledToken === p.token;
+                            return (
+                                <motion.div
+                                    key={p.token}
+                                    initial={{ opacity: 0, x: -12 }}
+                                    animate={{
+                                        opacity: 1,
+                                        x: 0,
+                                        scale: isHighlighted ? 1.03 : 1,
+                                    }}
+                                    transition={{ delay: i * 0.04 }}
+                                    className={`flex items-center gap-3 group relative rounded-lg p-2 -mx-2 transition-all ${isHighlighted
+                                            ? "bg-emerald-500/10 border border-emerald-500/30"
+                                            : "border border-transparent"
+                                        }`}
+                                >
+                                    {isHighlighted && (
+                                        <motion.div
+                                            layoutId="highlight"
+                                            className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-lg"
+                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                        />
+                                    )}
+                                    <span className={`relative w-8 h-8 flex items-center justify-center rounded-md text-sm font-mono transition-all ${isHighlighted
+                                            ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 border-2"
+                                            : "bg-white/[0.06] border border-white/[0.08] text-white group-hover:border-emerald-500/40"
+                                        }`}>
+                                        {p.token === " " ? "␣" : p.token}
                                     </span>
-                                </div>
-                            </motion.div>
-                        ))}
+                                    <div className="flex-1 h-6 bg-white/[0.03] rounded-full overflow-hidden relative">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(p.probability * 100).toFixed(1)}%` }}
+                                            transition={{ duration: 0.6, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
+                                            className={`absolute inset-y-0 left-0 rounded-full ${isHighlighted
+                                                    ? "bg-gradient-to-r from-emerald-500/80 to-emerald-400/60"
+                                                    : "bg-gradient-to-r from-emerald-600/60 to-emerald-400/40"
+                                                }`}
+                                        />
+                                        <span className={`absolute inset-0 flex items-center pl-3 text-[10px] font-mono ${isHighlighted ? "text-white/80 font-bold" : "text-white/60"
+                                            }`}>
+                                            {(p.probability * 100).toFixed(1)}%
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
                         {inferenceMs !== undefined && (
                             <div className="text-right pt-1">
                                 <span className="text-[10px] font-mono text-white/30">
@@ -185,6 +234,63 @@ export function InferenceConsole({
                                 </span>
                             </div>
                         )}
+
+                        {/* Sample Next Character Button */}
+                        <div className="pt-6 border-t border-white/5 space-y-4">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={handleSample}
+                                disabled={sampling}
+                                className="group relative w-full rounded-xl border border-teal-500/20 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-teal-500/40 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/[0.06] to-emerald-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                <div className="relative flex items-center justify-center gap-2">
+                                    {sampling ? (
+                                        <motion.div
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 0.6, repeat: Infinity, ease: "linear" }}
+                                        >
+                                            <Dices className="w-4 h-4" />
+                                        </motion.div>
+                                    ) : (
+                                        <Dices className="w-4 h-4" />
+                                    )}
+                                    <span>Sample Next Character</span>
+                                </div>
+                            </motion.button>
+
+                            {/* Sampled Result */}
+                            <AnimatePresence mode="wait">
+                                {sampledToken && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.9 }}
+                                        className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-white/40 font-mono uppercase tracking-widest">
+                                                Sampled:
+                                            </span>
+                                            <motion.div
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                                className="w-10 h-10 flex items-center justify-center rounded-lg bg-emerald-500/20 border border-emerald-500/30"
+                                            >
+                                                <span className="text-lg font-mono font-bold text-emerald-300">
+                                                    {sampledToken === " " ? "␣" : sampledToken}
+                                                </span>
+                                            </motion.div>
+                                        </div>
+                                        <p className="text-[10px] text-white/30 mt-2 italic">
+                                            Randomly selected based on probability distribution
+                                        </p>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

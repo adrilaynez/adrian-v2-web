@@ -24,6 +24,7 @@ import { ConcreteImprovementExample } from "@/components/lab/ConcreteImprovement
 import { ExponentialGrowthAnimator } from "@/components/lab/ExponentialGrowthAnimator";
 import { GeneralizationFailureDemo } from "@/components/lab/GeneralizationFailureDemo";
 import { StatisticalEraTimeline } from "@/components/lab/StatisticalEraTimeline";
+import { CombinatoricExplosionTable } from "@/components/lab/CombinatoricExplosionTable";
 
 /* ─────────────────────────────────────────────
    Primitive building blocks (matches Bigram / NN narrative style)
@@ -451,6 +452,66 @@ export function NgramNarrative({
                 <Callout icon={AlertTriangle} title={t("ngramNarrative.complexity.vocabCalloutTitle")}>
                     <p>{t("ngramNarrative.complexity.vocabCalloutText")}</p>
                 </Callout>
+
+                <P>{t("ngramNarrative.tokenization.intro")}</P>
+
+                <div className="my-10">
+                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        {t("ngramNarrative.tokenization.subsectionTitle")}
+                    </h3>
+
+                    <div className="grid md:grid-cols-2 gap-6 mb-8">
+                        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                                <h4 className="text-base font-bold text-emerald-400">
+                                    {t("ngramNarrative.tokenization.charTitle")}
+                                </h4>
+                            </div>
+                            <p className="text-sm text-white/50 leading-relaxed mb-3">
+                                {t("ngramNarrative.tokenization.charDesc")}
+                            </p>
+                            <p className="text-xs text-emerald-400/60 font-mono">
+                                {t("ngramNarrative.tokenization.charExample")}
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-rose-500/20 bg-rose-500/[0.04] p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                                <h4 className="text-base font-bold text-rose-400">
+                                    {t("ngramNarrative.tokenization.wordTitle")}
+                                </h4>
+                            </div>
+                            <p className="text-sm text-white/50 leading-relaxed mb-3">
+                                {t("ngramNarrative.tokenization.wordDesc")}
+                            </p>
+                            <p className="text-xs text-rose-400/60 font-mono">
+                                {t("ngramNarrative.tokenization.wordExample")}
+                            </p>
+                        </div>
+                    </div>
+
+                    <P>{t("ngramNarrative.tokenization.explosionIntro")}</P>
+
+                    <FigureWrapper
+                        label={t("ngramNarrative.tokenization.tableLabel")}
+                        hint={t("ngramNarrative.tokenization.tableHint")}
+                    >
+                        <CombinatoricExplosionTable vocabSize={50000} />
+                    </FigureWrapper>
+
+                    <P>
+                        {t("ngramNarrative.tokenization.languageP1")}{" "}
+                        <Highlight>{t("ngramNarrative.tokenization.languageH1")}</Highlight>
+                        {t("ngramNarrative.tokenization.languageP2")}
+                    </P>
+
+                    <Callout title={t("ngramNarrative.tokenization.multilingualCalloutTitle")}>
+                        <p>{t("ngramNarrative.tokenization.multilingualCalloutText")}</p>
+                    </Callout>
+                </div>
             </Section>
 
             <SectionBreak />

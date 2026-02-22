@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/i18n/context";
+import { cn } from "@/lib/utils";
 
 const BIGRAMS: Record<string, { char: string; prob: number }[]> = {
     a: [{ char: "n", prob: 0.31 }, { char: "r", prob: 0.18 }, { char: "t", prob: 0.15 }],
@@ -39,20 +40,45 @@ const FALLBACK = [{ char: "e", prob: 0.27 }, { char: "t", prob: 0.19 }, { char: 
 export function HeroAutoComplete() {
     const { t } = useI18n();
     const [input, setInput] = useState("");
+    const [focused, setFocused] = useState(false);
     const preds = input.length === 1 ? (BIGRAMS[input.toLowerCase()] ?? FALLBACK) : null;
 
     return (
         <div className="flex flex-col items-center gap-4 w-full max-w-xs mx-auto">
 
-            {/* Single-char input */}
-            <input
-                type="text"
-                maxLength={1}
-                value={input}
-                onChange={(e) => setInput(e.target.value.slice(-1))}
-                placeholder={t("bigramWidgets.heroAutoComplete.placeholder")}
-                className="w-20 text-center text-3xl font-mono font-bold bg-white/[0.04] border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/10 focus:outline-none focus:border-emerald-500/40 focus:ring-1 focus:ring-emerald-500/20 caret-emerald-400 transition-colors"
-            />
+            {/* Single-char input with pulse + gradient border */}
+            <motion.div
+                initial={{ scale: 0.92, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="relative"
+            >
+                {/* Pulse ring on idle */}
+                {!input && !focused && (
+                    <motion.div
+                        animate={{ scale: [1, 1.18, 1], opacity: [0.4, 0, 0.4] }}
+                        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-0 rounded-xl bg-emerald-500/20 pointer-events-none"
+                    />
+                )}
+                {/* Gradient border on focus */}
+                <div className={cn(
+                    "absolute -inset-[1.5px] rounded-xl transition-opacity duration-300",
+                    focused
+                        ? "opacity-100 bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400"
+                        : "opacity-0"
+                )} />
+                <input
+                    type="text"
+                    maxLength={1}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value.slice(-1))}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    placeholder={t("bigramWidgets.heroAutoComplete.placeholder")}
+                    className="relative w-20 text-center text-3xl font-mono font-bold bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/10 focus:outline-none caret-emerald-400 transition-colors z-10"
+                />
+            </motion.div>
 
             {/* Predictions card */}
             <AnimatePresence mode="wait">
