@@ -99,32 +99,36 @@ export interface HistoricalContext {
 }
 
 export interface NGramTrainingInfo {
-    total_tokens: number;
-    unique_chars: number;
-    unique_contexts: number;
-    context_space_size: number;
-    context_utilization: number;
-    sparsity: number;
-    transition_density: number;
+    total_tokens?: number | null;
+    unique_chars?: number | null;
+    unique_contexts?: number | null;
+    context_space_size?: number | null;
+    context_utilization?: number | null;
+    sparsity?: number | null;
+    transition_density?: number | null;
     loss_history?: number[];
-    final_loss?: number;
-    perplexity?: number;
+    final_loss?: number | null;
+    perplexity?: number | null;
+    smoothing_alpha?: number | null;
+    corpus_name?: string | null;
 }
 
 export interface NGramDiagnostics {
     vocab_size: number;
     context_size: number;
     estimated_context_space: number;
-    sparsity?: number;
-    observed_contexts?: number;
-    context_utilization?: number;
-    perplexity?: number;
+    sparsity?: number | null;
+    observed_contexts?: number | null;
+    context_utilization?: number | null;
+    perplexity?: number | null;
+    corpus_name?: string;
+    smoothing_alpha?: number;
 }
 
 export interface ActiveSlice {
-    context_tokens: string[];
-    matrix: TransitionMatrixViz;
-    next_token_probs: Record<string, number>;
+    context_tokens: string[] | null;
+    matrix: TransitionMatrixViz | null;
+    next_token_probs?: Record<string, number>; // legacy, may be absent
 }
 
 export interface NGramInferenceResponse {

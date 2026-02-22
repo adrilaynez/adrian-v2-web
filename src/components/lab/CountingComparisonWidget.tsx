@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const BIGRAM = [
     { context: "h", next: "e", count: 320, pct: 100 },
@@ -30,7 +31,7 @@ function CountRow({ context, next, count, pct, tooltip }: {
     const key = `${context}→${next}`;
     return (
         <div
-            className="relative group flex flex-col gap-1 cursor-default"
+            className="relative group flex flex-col gap-1 cursor-default rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-white/[0.03]"
             onMouseEnter={() => setShow(true)}
             onMouseLeave={() => setShow(false)}
         >
@@ -43,17 +44,28 @@ function CountRow({ context, next, count, pct, tooltip }: {
                 <span className="font-mono text-[11px] text-white/30 tabular-nums">{count}</span>
             </div>
             <div className="h-1 rounded-full bg-white/[0.05] overflow-hidden">
-                <div
-                    className="h-full rounded-full bg-amber-400/60 transition-all duration-500"
-                    style={{ width: `${pct}%` }}
+                <motion.div
+                    className="h-full rounded-full bg-amber-400/60"
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${pct}%` }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, ease: [0.25, 0, 0, 1], delay: 0.1 }}
                 />
             </div>
-            {show && (
-                <div className="absolute bottom-full left-0 mb-2 z-20 w-52 rounded-lg border border-white/10 bg-zinc-900/95 px-3 py-2 text-[11px] text-white/50 leading-relaxed shadow-xl">
-                    <span className="font-mono text-amber-300/70 font-bold">{key}</span>
-                    <br />{tooltip}
-                </div>
-            )}
+            <AnimatePresence>
+                {show && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 4, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute bottom-full left-0 mb-2 z-20 w-56 rounded-lg border border-amber-500/15 bg-zinc-900/98 px-3 py-2.5 text-[11px] text-white/50 leading-relaxed shadow-xl"
+                    >
+                        <span className="font-mono text-amber-300/80 font-bold text-xs">{key}</span>
+                        <p className="mt-1">{tooltip}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

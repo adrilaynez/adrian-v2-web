@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     BookOpen,
     FlaskConical,
@@ -10,6 +11,7 @@ import {
     ArrowRight,
     Beaker,
     BrainCircuit,
+    ChevronDown,
 } from "lucide-react";
 import { ModeToggle } from "@/components/lab/ModeToggle";
 import { useI18n } from "@/i18n/context";
@@ -17,14 +19,17 @@ import { useRouter } from "next/navigation";
 import { useLabMode } from "@/context/LabModeContext";
 
 import { NgramMiniTransitionTable } from "@/components/lab/NgramPedagogyPanels";
-import { NgramComparison } from "@/components/lab/NgramPedagogyPanels";
 import { NgramFiveGramScale } from "@/components/lab/NgramPedagogyPanels";
 import { CountingComparisonWidget } from "@/components/lab/CountingComparisonWidget";
 import { ConcreteImprovementExample } from "@/components/lab/ConcreteImprovementExample";
 import { ExponentialGrowthAnimator } from "@/components/lab/ExponentialGrowthAnimator";
+import { NgramGenerationBattle } from "@/components/lab/NgramGenerationBattle";
 import { GeneralizationFailureDemo } from "@/components/lab/GeneralizationFailureDemo";
 import { StatisticalEraTimeline } from "@/components/lab/StatisticalEraTimeline";
 import { CombinatoricExplosionTable } from "@/components/lab/CombinatoricExplosionTable";
+import { SparsityHeatmap } from "@/components/lab/SparsityHeatmap";
+import { InfiniteTableThoughtExperiment } from "@/components/lab/InfiniteTableThoughtExperiment";
+import { TypoWordBreaker } from "@/components/lab/TypoWordBreaker";
 
 /* ─────────────────────────────────────────────
    Primitive building blocks (matches Bigram / NN narrative style)
@@ -148,6 +153,54 @@ function SectionBreak() {
     );
 }
 
+function ExpandableSection({
+    title,
+    children,
+    defaultOpen = false,
+}: {
+    title: string;
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+}) {
+    const [open, setOpen] = useState(defaultOpen);
+    return (
+        <div className="my-10">
+            <button
+                onClick={() => setOpen(o => !o)}
+                className="w-full flex items-center gap-3 text-left group mb-4"
+                aria-expanded={open}
+            >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                <h3 className="text-lg font-bold text-white flex-1 leading-snug">{title}</h3>
+                <span className="shrink-0 text-[10px] font-mono uppercase tracking-widest text-white/25 group-hover:text-white/40 transition-colors mr-1">
+                    {open ? "collapse" : "expand"}
+                </span>
+                <motion.div
+                    animate={{ rotate: open ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="shrink-0"
+                >
+                    <ChevronDown className="w-4 h-4 text-white/25 group-hover:text-white/50 transition-colors" />
+                </motion.div>
+            </button>
+            <AnimatePresence initial={false}>
+                {open && (
+                    <motion.div
+                        key="content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.38, ease: [0.25, 0, 0, 1] }}
+                        className="overflow-hidden"
+                    >
+                        {children}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
 function FigureWrapper({
     label,
     hint,
@@ -192,86 +245,145 @@ function FigureWrapper({
    ───────────────────────────────────────────── */
 
 function ContextWindowVisualizer() {
-    const tokens = ["I", " ", "w", "a", "n", "t", " ", "t", "o", " ", "e", "a", "t", " ", "p", "i", "z", "z", "a"];
-    const display = "I want to eat pizza";
-
-    const examples: { n: number; label: string; ctx: string }[] = [
-        { n: 1, label: "Bigram", ctx: "a" },
-        { n: 2, label: "Trigram", ctx: "za" },
-        { n: 3, label: "3-gram", ctx: "zza" },
-        { n: 4, label: "4-gram", ctx: "izza" },
-        { n: 5, label: "5-gram", ctx: "pizza" },
-    ];
+    const [selectedN, setSelectedN] = useState(1);
+    const tokens = "I want to eat pizza".split("");
+    const PREDICTIONS: Record<number, { candidates: string[]; best: string; confidence: number }> = {
+        1: { candidates: ["b", "n", "s", "t", " "], best: " ", confidence: 18 },
+        2: { candidates: ["l", "n", "s", " "], best: " ", confidence: 35 },
+        3: { candidates: ["s", " ", "!"], best: " ", confidence: 62 },
+        4: { candidates: [" ", "s"], best: " ", confidence: 81 },
+        5: { candidates: [" "], best: " ", confidence: 94 },
+    };
+    const LABELS: Record<number, string> = { 1: "Bigram", 2: "Trigram", 3: "3-gram", 4: "4-gram", 5: "5-gram" };
+    const pred = PREDICTIONS[selectedN];
+    const ctxStart = tokens.length - selectedN;
 
     return (
-        <div className="space-y-3">
-            <div className="mb-4">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-3">
+        <div className="space-y-5">
+            {/* N selector buttons */}
+            <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase tracking-[0.15em] text-white/30 font-bold mr-1">
+                    Context size:
+                </span>
+                {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                        key={n}
+                        onClick={() => setSelectedN(n)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border ${n === selectedN
+                                ? "bg-amber-500/15 border-amber-500/30 text-amber-300 shadow-[0_0_12px_-3px_rgba(251,191,36,0.3)]"
+                                : "bg-white/[0.02] border-white/[0.06] text-white/30 hover:text-white/50 hover:border-white/10"
+                            }`}
+                    >
+                        N={n}
+                    </button>
+                ))}
+            </div>
+
+            {/* Sentence with animated context highlight */}
+            <div className="rounded-xl border border-white/[0.08] bg-black/30 p-5">
+                <p className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-bold mb-3">
                     Predicting the next character after:
                 </p>
-                <div className="font-mono text-lg text-white/70 bg-black/30 rounded-lg px-4 py-3 border border-white/[0.06]">
-                    {display}
-                    <span className="text-amber-400 animate-pulse">|</span>
-                </div>
-            </div>
-            {examples.map(({ n, label, ctx }) => {
-                const ctxStart = tokens.length - n;
-                return (
-                    <motion.div
-                        key={n}
-                        initial={{ opacity: 0, x: -12 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: n * 0.08, duration: 0.4 }}
-                        className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3"
+                <div className="font-mono text-lg leading-relaxed flex flex-wrap items-center">
+                    {tokens.map((ch, i) => {
+                        const isContext = i >= ctxStart;
+                        const isBeforeContext = i < ctxStart;
+                        return (
+                            <motion.span
+                                key={i}
+                                animate={{
+                                    color: isContext ? "rgba(252, 211, 77, 1)" : "rgba(255,255,255,0.18)",
+                                    backgroundColor: isContext ? "rgba(245, 158, 11, 0.12)" : "transparent",
+                                }}
+                                transition={{ duration: 0.3 }}
+                                className={`${isContext ? "rounded px-0.5 font-bold" : ""}`}
+                            >
+                                {ch === " " ? "\u00A0" : ch}
+                            </motion.span>
+                        );
+                    })}
+                    <motion.span
+                        key="cursor"
+                        className="text-amber-400 ml-0.5"
+                        animate={{ opacity: [1, 0.3, 1] }}
+                        transition={{ duration: 1.2, repeat: Infinity }}
                     >
-                        <span className="shrink-0 w-16 text-[11px] font-mono font-bold text-amber-400/80">
-                            N={n}
-                        </span>
-                        <span className="shrink-0 text-xs text-white/30 w-16">{label}</span>
-                        <div className="flex-1 font-mono text-sm">
-                            <span className="text-white/15">
-                                {tokens.slice(0, ctxStart).join("")}
-                            </span>
-                            <span className="text-amber-300 font-bold bg-amber-500/10 px-1 rounded">
-                                {ctx}
-                            </span>
-                        </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-white/20 shrink-0" />
-                        <span className="text-emerald-400 font-mono font-bold shrink-0">?</span>
-                    </motion.div>
-                );
-            })}
-        </div>
-    );
-}
-
-/* ─────────────────────────────────────────────
-   Metrics legend for comparison chart
-   ───────────────────────────────────────────── */
-
-function MetricsLegend() {
-    const { t } = useI18n();
-    const items = [
-        { color: "bg-amber-400", label: t("ngramNarrative.complexity.metricsLegend.perplexity") },
-        { color: "bg-emerald-400", label: t("ngramNarrative.complexity.metricsLegend.utilization") },
-        { color: "bg-white/40", label: t("ngramNarrative.complexity.metricsLegend.contextSpace") },
-    ];
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="my-6 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-2"
-        >
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/30 font-bold mb-2">Reading the chart</p>
-            {items.map((item) => (
-                <div key={item.color} className="flex items-start gap-3">
-                    <div className={`w-2.5 h-2.5 rounded-full ${item.color} shrink-0 mt-1`} />
-                    <p className="text-xs text-white/45 leading-relaxed">{item.label}</p>
+                        |
+                    </motion.span>
                 </div>
-            ))}
-        </motion.div>
+
+                {/* Context label */}
+                <motion.div
+                    key={selectedN}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 flex items-center gap-3"
+                >
+                    <span className="text-[10px] font-mono text-amber-400/60 uppercase tracking-wider">
+                        {LABELS[selectedN]} sees:
+                    </span>
+                    <span className="font-mono text-sm text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded">
+                        &ldquo;{tokens.slice(ctxStart).join("")}&rdquo;
+                    </span>
+                    <ArrowRight className="w-3 h-3 text-white/20" />
+                    <span className="text-[10px] text-white/30">next?</span>
+                </motion.div>
+            </div>
+
+            {/* Prediction panel */}
+            <motion.div
+                key={selectedN}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5"
+            >
+                <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-white/30 font-bold">
+                        Model&apos;s best guess
+                    </span>
+                    <span className="font-mono text-xs text-amber-300 font-bold">
+                        {pred.confidence}% confident
+                    </span>
+                </div>
+
+                {/* Confidence bar */}
+                <div className="h-3 rounded-full bg-white/[0.05] overflow-hidden mb-4">
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pred.confidence}%` }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className="h-full rounded-full bg-gradient-to-r from-amber-600/60 to-amber-400/70"
+                    />
+                </div>
+
+                {/* Candidate chips */}
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] text-white/25 font-mono uppercase tracking-wider">
+                        Candidates:
+                    </span>
+                    {pred.candidates.map((c, i) => (
+                        <span
+                            key={c}
+                            className={`font-mono text-sm px-2 py-0.5 rounded border ${c === pred.best
+                                    ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10 font-bold"
+                                    : "text-white/40 border-white/[0.06] bg-white/[0.02]"
+                                }`}
+                        >
+                            {c === " " ? "␣" : c}
+                        </span>
+                    ))}
+                </div>
+
+                <p className="text-[10px] text-white/25 mt-3 leading-relaxed">
+                    {selectedN === 1 && "With just 1 character, the model sees only \"a\" — too little to narrow down the options."}
+                    {selectedN === 2 && "Two characters give \"za\" — still ambiguous, but starting to form patterns."}
+                    {selectedN === 3 && "Three characters reveal \"zza\" — the model starts recognizing word-like fragments."}
+                    {selectedN === 4 && "Four characters show \"izza\" — strong signal that this is probably \"pizza\"."}
+                    {selectedN === 5 && "Five characters capture \"pizza\" — the model knows exactly what comes next."}
+                </p>
+            </motion.div>
+        </div>
     );
 }
 
@@ -282,17 +394,11 @@ function MetricsLegend() {
 interface NgramNarrativeProps {
     contextSize: number;
     vocabSize: number;
-    comparisonMetrics: Record<number, {
-        perplexity: number | null;
-        contextUtilization: number | null;
-        contextSpace: number | null;
-    }>;
 }
 
 export function NgramNarrative({
     contextSize,
     vocabSize,
-    comparisonMetrics,
 }: NgramNarrativeProps) {
     const { t } = useI18n();
     const router = useRouter();
@@ -384,15 +490,17 @@ export function NgramNarrative({
                 <P>{t("ngramNarrative.howItWorks.p2")}</P>
 
                 <FigureWrapper
-                    label="Transition examples · Training corpus evidence"
-                    hint="Expand any row to see real passages from the training data where this transition was observed."
+                    label={t("ngramNarrative.figures.transitionExamples.label")}
+                    hint={t("ngramNarrative.figures.transitionExamples.hint")}
                 >
                     <NgramMiniTransitionTable n={contextSize} />
                 </FigureWrapper>
 
+                <P>{t("ngramNarrative.howItWorks.bridge")}</P>
+
                 <FigureWrapper
-                    label="Counting comparison · Bigram vs. Trigram"
-                    hint="Same training text, different granularity. Notice how longer contexts produce more specific counts."
+                    label={t("ngramNarrative.figures.countingComparison.label")}
+                    hint={t("ngramNarrative.figures.countingComparison.hint")}
                 >
                     <CountingComparisonWidget />
                 </FigureWrapper>
@@ -410,19 +518,31 @@ export function NgramNarrative({
                 <P>{t("ngramNarrative.improvement.example")}</P>
 
                 <FigureWrapper
-                    label="Confidence improvement · Context length effect"
-                    hint="Each extra character of context sharpens the prediction."
+                    label={t("ngramNarrative.figures.confidenceImprovement.label")}
+                    hint={t("ngramNarrative.figures.confidenceImprovement.hint")}
                 >
                     <ConcreteImprovementExample />
                 </FigureWrapper>
 
                 <FigureWrapper
-                    label={t("ngramNarrative.complexity.comparisonLabel")}
-                    hint={t("ngramNarrative.complexity.comparisonHint")}
+                    label={t("ngramNarrative.figures.generationBattle.label")}
+                    hint={t("ngramNarrative.figures.generationBattle.hint")}
                 >
-                    <NgramComparison vocabSize={vocabSize} metricsByN={comparisonMetrics} />
-                    <MetricsLegend />
+                    <NgramGenerationBattle
+                        seeds={["the "]}
+                        nValues={[1, 2, 3, 4]}
+                        maxTokens={80}
+                        temperature={0.8}
+                        autoGenerate
+                    />
                 </FigureWrapper>
+            </Section>
+
+            {/* ─────────── §3.5 · WHY NOT N=100? ─────────── */}
+            <Section>
+                <Heading>{t("ngramNarrative.whyNotMore.title")}</Heading>
+                <Lead>{t("ngramNarrative.whyNotMore.lead")}</Lead>
+                <P>{t("ngramNarrative.whyNotMore.p1")}</P>
             </Section>
 
             <SectionBreak />
@@ -445,6 +565,13 @@ export function NgramNarrative({
 
                 <P>{t("ngramNarrative.complexity.p2")}</P>
 
+                <FigureWrapper
+                    label={t("ngramNarrative.figures.sparsityHeatmap.label")}
+                    hint={t("ngramNarrative.figures.sparsityHeatmap.hint")}
+                >
+                    <SparsityHeatmap />
+                </FigureWrapper>
+
                 <div className="my-10">
                     <NgramFiveGramScale vocabSize={vocabSize} />
                 </div>
@@ -455,11 +582,7 @@ export function NgramNarrative({
 
                 <P>{t("ngramNarrative.tokenization.intro")}</P>
 
-                <div className="my-10">
-                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        {t("ngramNarrative.tokenization.subsectionTitle")}
-                    </h3>
+                <ExpandableSection title={t("ngramNarrative.tokenization.subsectionTitle")}>
 
                     <div className="grid md:grid-cols-2 gap-6 mb-8">
                         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-6">
@@ -511,7 +634,7 @@ export function NgramNarrative({
                     <Callout title={t("ngramNarrative.tokenization.multilingualCalloutTitle")}>
                         <p>{t("ngramNarrative.tokenization.multilingualCalloutText")}</p>
                     </Callout>
-                </div>
+                </ExpandableSection>
             </Section>
 
             <SectionBreak />
@@ -528,10 +651,26 @@ export function NgramNarrative({
                 <P>{t("ngramNarrative.deeperProblem.p3")}</P>
 
                 <FigureWrapper
-                    label="Generalization failure · Cat vs. Dog"
-                    hint="Hover the right column to see what the model returns for an unseen context."
+                    label={t("ngramNarrative.figures.generalizationFailure.label")}
+                    hint={t("ngramNarrative.figures.generalizationFailure.hint")}
                 >
                     <GeneralizationFailureDemo />
+                </FigureWrapper>
+
+                {/* V2: Infinite Table Thought Experiment — interactive slider */}
+                <FigureWrapper
+                    label={t("ngramNarrative.figures.infiniteTable.label")}
+                    hint={t("ngramNarrative.figures.infiniteTable.hint")}
+                >
+                    <InfiniteTableThoughtExperiment />
+                </FigureWrapper>
+
+                {/* V3: Typo / Novel Word Breaker — interactive input */}
+                <FigureWrapper
+                    label={t("ngramNarrative.figures.typoBreaker.label")}
+                    hint={t("ngramNarrative.figures.typoBreaker.hint")}
+                >
+                    <TypoWordBreaker />
                 </FigureWrapper>
 
                 <Callout icon={AlertTriangle} title={t("ngramNarrative.deeperProblem.calloutTitle")}>

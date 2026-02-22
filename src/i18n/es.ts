@@ -872,6 +872,26 @@ export const es: TranslationDictionary = {
                 generationPredictionDescription: "En modo educativo nos centramos en entender cómo se elige un único token siguiente. Cambia a Lab Libre para desbloquear el trazador paso a paso completo y el playground de generación.",
                 simplifiedSimulation: "La predicción paso a paso y la generación completa están disponibles en modo Lab Libre.",
             },
+            technicalExplanation: {
+                title: "Explicación Técnica",
+                description: "Bajo el capó del modelo N-gram actual",
+                modelType: "Tipo de Modelo",
+                modelTypeValue: "{n}-grama a nivel de carácter (orden {nPlusOne})",
+                parameterCount: "Cantidad de Parámetros",
+                parameterCountDesc: "|V|^{n} × |V| = {count} entradas de probabilidad",
+                trainingMethod: "Método de Entrenamiento",
+                trainingMethodValue: "Estimación de máxima verosimilitud mediante conteo",
+                smoothing: "Suavizado",
+                smoothingValue: "Suavizado Add-α (Laplace) con α = {alpha}",
+                corpusInfo: "Corpus de Entrenamiento",
+                corpusInfoValue: "{name} — {tokens} tokens, {vocabSize} caracteres únicos",
+                mathematicalFormulation: "Formulación Matemática",
+                formula: "P(c_{t} | c_{t-N}, …, c_{t-1}) = count(c_{t-N}…c_{t}) / count(c_{t-N}…c_{t-1})",
+                formulaDesc: "La probabilidad del siguiente carácter dado el contexto de N caracteres es la proporción de cuántas veces apareció ese (N+1)-grama en el entrenamiento respecto a cuántas veces apareció el prefijo N-grama.",
+                inferenceComplexity: "Complejidad de Inferencia",
+                inferenceComplexityValue: "O(1) — una sola búsqueda en tabla hash por predicción",
+                collapsibleLabel: "Mostrar Detalles Técnicos",
+            },
         },
         mlp: {
             title: "MLP + Embeddings",
@@ -2017,12 +2037,18 @@ export const es: TranslationDictionary = {
             p1Highlight: "contexto de N caracteres",
             p1End: " y cuenta qué carácter le sigue. Después, usa esos conteos como una tabla de búsqueda: encuentra el contexto y lee el carácter siguiente habitual.",
             p2: "A medida que N crece, la tabla de conteo gana dimensiones. Con N=1 (bigrama), es una cuadrícula simple. Con N=2, imagina una pila de cuadrículas — una para cada contexto posible de dos caracteres. La tabla crece en todas direcciones.",
+            bridge: "La tabla de transición anterior muestra filas individuales de esta tabla de búsqueda gigante. Pero, ¿cómo cambian realmente los conteos con contextos más largos? El widget de abajo compara el conteo de bigramas y trigramas lado a lado sobre el mismo texto de entrenamiento para que veas la diferencia directamente.",
         },
         improvement: {
             label: "Mejora",
             title: "La predicción se vuelve mejor",
             lead: "Aquí está la recompensa. Cuando el modelo ve más contexto, sus conjeturas se vuelven mucho más seguras y correctas.",
             example: "Después de \"h\", la siguiente letra no está clara. Después de \"th\", la \"e\" se vuelve muy probable. Después de \"the\", un espacio se vuelve muy probable.",
+        },
+        whyNotMore: {
+            title: "¿Por qué no N=100?",
+            lead: "Si más contexto mejora las predicciones, ¿por qué parar en 3 o 4? ¿Por qué no mirar los últimos 100 caracteres?",
+            p1: "Porque cada carácter extra de contexto multiplica la tabla por el tamaño del vocabulario. Una tabla de bigrama tiene 9,216 entradas (96²). Un trigrama salta a 884,736 (96³). Un 4-grama alcanza más de 84 millones (96⁴). Ir a N=100 requeriría una tabla con más entradas que átomos en el universo observable. La siguiente sección hace esta explosión visceral.",
         },
         statistical: {
             label: "Naturaleza Estadística",
@@ -2101,12 +2127,23 @@ export const es: TranslationDictionary = {
         deeperProblem: {
             label: "Limitaciones",
             title: "El problema más profundo",
-            lead: "La explosión es un problema práctico. Pero hay uno filosófico que es aún peor.",
+            lead: "La explosión es un problema práctico — no puedes construir una tabla lo suficientemente grande. Pero hay un problema conceptual aún peor: incluso con datos infinitos, el conteo sigue fallando.",
             p1: "Imagina que el texto empieza con \"el gato se sentó en\". Si el modelo ha visto ese contexto exacto, puede predecir lo que sigue desde la memoria.",
             p2: "Ahora cambia una palabra: \"el perro se sentó en\". Un humano ve que es casi lo mismo. El modelo N-gram lo trata como una situación totalmente nueva.",
             p3: "Los N-gramas no tienen concepto de 'similar'. Los contextos 'el gato' y 'el perro' son tan distintos para el modelo como 'el gato' y 'xyzq'. Cada uno es una fila separada en la tabla, sin conexión.",
+            infiniteData: {
+                title: "Ni siquiera datos infinitos pueden ayudar",
+                p1: "Supón que tuvieras texto de entrenamiento ilimitado — cada libro jamás escrito. ¿Podrías llenar la tabla? No. El lenguaje es creativo: la gente inventa oraciones nuevas constantemente. El número de secuencias posibles de 10 palabras supera con creces el número de oraciones jamás pronunciadas. Ningún corpus, por grande que sea, puede cubrir cada contexto válido.",
+            },
+            failureExamples: {
+                title: "Cuando el conteo falla",
+                typoLabel: "Errores tipográficos",
+                typoText: "Un usuario escribe 'teh cat' en lugar de 'the cat'. El modelo nunca ha visto el contexto 'teh' y devuelve una distribución uniforme (aleatoria). Una tecla equivocada borra todo el conocimiento aprendido.",
+                novelLabel: "Palabras nuevas",
+                novelText: "Una palabra nueva entra al idioma — 'selfie', 'blockchain', 'vibe-check'. El modelo tiene cero entradas para cualquier contexto que contenga estas palabras. Ni siquiera puede adivinar que 'selfie' se comporta como otros sustantivos.",
+            },
             calloutTitle: "Sin generalización",
-            calloutText: "Si el modelo nunca ha visto una secuencia particular en el entrenamiento, no tiene nada que decir. No puede adivinar. No puede razonar por analogía. Simplemente se encoge de hombros.",
+            calloutText: "Si el modelo nunca ha visto una secuencia particular en el entrenamiento, no tiene nada que decir. No puede adivinar. No puede razonar por analogía. Simplemente se encoge de hombros. Esta es la limitación fundamental que motiva los enfoques neuronales.",
         },
         endOfCounting: {
             label: "Reflexión",
@@ -2134,6 +2171,24 @@ export const es: TranslationDictionary = {
             labDesc: "Cambia al modo Lab Libre para acceso completo a la consola de inferencia N-gram, predictor paso a paso y generador de texto con tamaño de contexto ajustable.",
             neuralButton: "Siguiente: Del Conteo al Aprendizaje",
             neuralDesc: "Hemos llevado el conteo a su límite. Ahora construimos algo que aprende.",
+        },
+        generationBattle: {
+            title: "Batalla de Generación",
+            subtitle: "Misma semilla, diferente memoria",
+            description: "Observa cómo el mismo texto inicial produce resultados dramáticamente diferentes a medida que crece la ventana de contexto del modelo.",
+            columnHeader: "N = {n}",
+            qualityLabels: {
+                1: "Ruido aleatorio",
+                2: "Emergen patrones de letras",
+                3: "Aparecen fragmentos de palabras",
+                4: "Frases reconocibles",
+            },
+            streaming: "Generando…",
+            seedLabel: "Texto semilla",
+            generateButton: "Generar Todo",
+            regenerateButton: "Regenerar",
+            tokensLabel: "{count} caracteres",
+            emptyState: "Presiona Generar para iniciar la batalla",
         },
         footer: {
             text: "La era estadística ha terminado. Has visto lo que el conteo puede hacer — y dónde se rompe. Siguiente: modelos que aprenden.",
@@ -2168,7 +2223,23 @@ export const es: TranslationDictionary = {
             statisticalEra: {
                 label: "Era estadística · Ruta de aprendizaje",
                 hint: "La era del conteo ha terminado. Lo siguiente es algo fundamentalmente diferente.",
-            }
+            },
+            generationBattle: {
+                label: "Batalla de generación · Comparación lado a lado",
+                hint: "Cada columna usa el mismo texto semilla pero un tamaño de contexto diferente. Un contexto más largo produce resultados más coherentes — hasta que la dispersión toma el control.",
+            },
+            sparsityHeatmap: {
+                label: "Mapa de dispersión · Densidad de tabla por N",
+                hint: "Cambia entre valores de N para ver qué tan rápido se vacía la tabla de probabilidades.",
+            },
+            infiniteTable: {
+                label: "Cobertura de datos · El problema de datos infinitos",
+                hint: "Arrastra el deslizador para ver cuánto de cada tabla N-grama se puede llenar con datos de entrenamiento reales.",
+            },
+            typoBreaker: {
+                label: "Rompe el modelo · Fallo con errores tipográficos y palabras nuevas",
+                hint: "Escribe una palabra mal escrita o nueva para ver cómo el modelo N-grama pierde toda confianza.",
+            },
         }
     },
     ngramPedagogy: {
@@ -2192,12 +2263,17 @@ export const es: TranslationDictionary = {
         },
         transitions: {
             title: "Ejemplos de transición",
-            isEduBody: "En lugar de una tabla gigante, tracemos algunas transiciones a través de la palabra <0>LENGUAJE</0>. Cada fila muestra: \"dado este contexto, el siguiente carácter fue...\" — además de evidencia real del corpus de entrenamiento.",
-            isFreeBody: "Ejemplos de transición de <0>LENGUAJE</0> con evidencia del corpus.",
+            isEduBody: "En lugar de una tabla gigante, tracemos algunas transiciones a través de la frase <0>the qui</0>. Cada fila muestra: \"dado este contexto, el siguiente carácter fue...\" — además de evidencia real del corpus de entrenamiento.",
+            isFreeBody: "Ejemplos de transición de <0>the qui</0> con evidencia del corpus.",
             matches: "{count} coincidencia{suffix}",
             searching: "Buscando datos de entrenamiento...",
             noMatches: "No se encontraron coincidencias en el corpus de muestra.",
-            corpusEvidence: "Evidencia del corpus"
+            corpusEvidence: "Evidencia del corpus",
+            noMatchesExpanded: {
+                title: "Sin coincidencias en la muestra",
+                explanation: "La muestra del corpus de entrenamiento no contiene esta transición exacta. Esto es esperado — no todos los N-gramas posibles aparecen en un corpus finito. Este es el problema de la dispersión.",
+                hint: "Intenta expandir una fila diferente, o reduce N para ver más coincidencias.",
+            },
         },
         explosion: {
             title: "Explosión Combinatoria",
@@ -2342,9 +2418,9 @@ export const es: TranslationDictionary = {
             batching: {
                 title: "La Revolución de los Mini-Lotes",
                 lead: "Procesar ejemplos uno a la vez es dolorosamente lento. Entrenar en todo el conjunto de datos a la vez es impráctico. Los mini-lotes resuelven ambos problemas — y el ruido que introducen resulta ser una característica, no un error.",
-                p1: "En la práctica, calcular gradientes un ejemplo a la vez es ineficiente. Las GPUs modernas pueden procesar cientos de ejemplos en paralelo. En lugar de actualizar los pesos tras cada ejemplo individual, promediamos los gradientes de un pequeño lote de ejemplos — típicamente 32 a 256 — y actualizamos una vez por lote. Esto se llama descenso de gradiente por mini-lotes.",
-                p2: "El tamaño del lote controla un compromiso fundamental. Un tamaño de lote de 1 (descenso de gradiente estocástico, o SGD) produce gradientes ruidosos — cada actualización apunta en una dirección ligeramente diferente porque se basa en un ejemplo aleatorio. Un tamaño de lote igual al conjunto de datos completo produce gradientes perfectamente suaves, pero es lento y puede sobreajustar. Los mini-lotes logran un equilibrio: gradientes razonablemente estables con cómputo eficiente.",
-                p3: "El ruido de los lotes pequeños no es solo un mal necesario — es útil. Los gradientes ruidosos ayudan a la red a escapar de mínimos locales poco profundos y actúan como regularización implícita, lo que a menudo conduce a una mejor generalización en datos no vistos. Por eso el SGD y los mini-lotes pequeños siguen siendo populares a pesar de ser más ruidosos que el entrenamiento con lote completo.",
+                p1: "Calcular gradientes un ejemplo a la vez es ineficiente. Las GPUs modernas procesan cientos en paralelo. En lugar de actualizar tras cada ejemplo, promediamos gradientes de un pequeño lote — típicamente 32 a 256 — y actualizamos una vez por lote. Esto es descenso de gradiente por mini-lotes.",
+                p2: "El tamaño del lote controla un compromiso fundamental. Tamaño 1 (SGD) produce gradientes ruidosos. Conjunto de datos completo produce gradientes suaves pero es lento y puede sobreajustar. Los mini-lotes equilibran gradientes estables con cómputo eficiente.",
+                p3: "El ruido no es solo necesario — es útil. Los gradientes ruidosos ayudan a escapar de mínimos locales y mejoran la generalización en datos no vistos.",
                 calloutTitle: "Por qué el ruido ayuda",
                 calloutText: "El ruido en los gradientes no es solo un mal necesario — es una característica. Los lotes pequeños introducen aleatoriedad que ayuda al optimizador a explorar el paisaje de pérdida más a fondo, escapando de mínimos locales poco profundos y encontrando soluciones que generalizan mejor a datos nuevos.",
                 conclusion: "El aprendizaje profundo moderno estandariza en mini-lotes de 32–256 ejemplos. Los lotes más grandes entrenan más rápido por época pero pueden generalizar peor. Los lotes más pequeños son más ruidosos pero a menudo encuentran mejores soluciones.",

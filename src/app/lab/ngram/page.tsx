@@ -9,6 +9,7 @@ import { useNgramVisualization } from "@/hooks/useNgramVisualization";
 import { useNgramStepwise } from "@/hooks/useNgramStepwise";
 import { useNgramGeneration } from "@/hooks/useNgramGeneration";
 import { visualizeNgram } from "@/lib/lmLabClient";
+import type { NGramTrainingInfo } from "@/types/lmLab";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     FlaskConical,
@@ -22,7 +23,6 @@ import {
     Layers,
     Type,
     Sparkles,
-    AlertTriangle,
     Gauge,
     ChevronDown,
     Microscope,
@@ -56,6 +56,15 @@ const NgramFiveGramScale = dynamic(() =>
 );
 const NgramNarrative = dynamic(() =>
     import("@/components/lab/NgramNarrative").then((m) => m.NgramNarrative)
+);
+const NgramGenerationBattle = dynamic(() =>
+    import("@/components/lab/NgramGenerationBattle").then((m) => m.NgramGenerationBattle)
+);
+const NgramTechnicalExplanation = dynamic(() =>
+    import("@/components/lab/NgramTechnicalExplanation").then((m) => m.NgramTechnicalExplanation)
+);
+const NgramContextDrilldown = dynamic(() =>
+    import("@/components/lab/NgramContextDrilldown").then((m) => m.NgramContextDrilldown)
 );
 
 /* ─────────────────────────────────────────────
@@ -118,7 +127,7 @@ function FlowHint({ text }: { text: string }) {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
-            className="max-w-6xl mx-auto px-6 mb-4 text-[11px] text-white/30 leading-relaxed border-l-2 border-cyan-500/20 pl-3"
+            className="max-w-6xl mx-auto px-6 mb-4 text-[11px] text-white/30 leading-relaxed border-l-2 border-amber-500/20 pl-3"
         >
             {text}
         </motion.p>
@@ -136,6 +145,7 @@ const EXPERIMENTS = [
         instruction: "Set N=1, generate 50 characters, and save the output. Then set N=3 and generate again from the same seed phrase.",
         observation: "N=3 output reads more naturally — you'll see common prefixes like 'th', 'the', 'in' appear more reliably than with N=1.",
         accent: "amber",
+        scrollTarget: "generation-playground",
     },
     {
         id: 2,
@@ -143,6 +153,7 @@ const EXPERIMENTS = [
         instruction: "Step through N=1 → N=2 → N=3 → N=4 and watch the Sparsity panel after each change. Record the perplexity and context utilization at each N.",
         observation: "Perplexity drops with each step, but context utilization also plummets. At N=4, most rows in the table are empty — the model runs out of evidence.",
         accent: "cyan",
+        scrollTarget: "sparsity-comparison",
     },
     {
         id: 3,
@@ -150,6 +161,7 @@ const EXPERIMENTS = [
         instruction: "Set N=4. In the Inference Console, type a phrase the model has never seen — try 'zqxj' or any unusual 4-character combination.",
         observation: "The model returns no confident prediction. It has no entry for this exact 4-character context and cannot reason by analogy.",
         accent: "red",
+        scrollTarget: "inference-console",
     },
     {
         id: 4,
@@ -157,6 +169,7 @@ const EXPERIMENTS = [
         instruction: "Generate 80 characters at N=1 and save it. Then switch to N=4 and generate 80 characters from the same seed. Read both outputs aloud.",
         observation: "N=1 sounds random. N=4 produces recognizable fragments but breaks down mid-sequence when it hits unseen contexts and has to guess randomly.",
         accent: "violet",
+        scrollTarget: "generation-playground",
     },
     {
         id: 5,
@@ -164,6 +177,7 @@ const EXPERIMENTS = [
         instruction: "Record the perplexity from the Performance Summary at N=1, 2, 3, and 4. Calculate the drop from each step to the next.",
         observation: "The improvement from N=1→2 is large. N=2→3 is smaller. N=3→4 is smaller still. More memory helps less and less as sparsity grows.",
         accent: "emerald",
+        scrollTarget: "sparsity-comparison",
     },
 ] as const;
 
@@ -192,8 +206,8 @@ const EXP_TEXT: Record<ExperimentAccent, string> = {
 };
 
 function GuidedExperiments() {
-    const [open, setOpen] = useState(false);
-    const [expanded, setExpanded] = useState<number | null>(null);
+    const [open, setOpen] = useState(true);
+    const [expanded, setExpanded] = useState<number | null>(1);
 
     return (
         <motion.div
@@ -279,6 +293,16 @@ function GuidedExperiments() {
                                                                 {exp.observation}
                                                             </p>
                                                         </div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                document.getElementById(exp.scrollTarget)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                                            }}
+                                                            className={`self-start flex items-center gap-1.5 text-[10px] font-mono ${EXP_TEXT[exp.accent]} opacity-40 hover:opacity-80 transition-opacity`}
+                                                        >
+                                                            <ArrowRight className="w-3 h-3" />
+                                                            Go to panel
+                                                        </button>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -291,6 +315,107 @@ function GuidedExperiments() {
                 )}
             </AnimatePresence>
         </motion.div>
+    );
+}
+
+
+/* ─────────────────────────────────────────────
+   Advanced Metrics collapsible (L1)
+   Hides loss/perplexity/performance behind a
+   toggle so beginners aren't overwhelmed.
+   ───────────────────────────────────────────── */
+
+function AdvancedMetricsCollapsible({
+    hasPerformanceData,
+    hasLossHistory,
+    nGramData,
+    training,
+    contextSize,
+}: {
+    hasPerformanceData: boolean;
+    hasLossHistory: boolean;
+    nGramData: ReturnType<typeof useNgramVisualization>["data"];
+    training: NGramTrainingInfo | null;
+    contextSize: number;
+}) {
+    const [open, setOpen] = useState(false);
+    const { t } = useI18n();
+
+    return (
+        <>
+            <button
+                onClick={() => setOpen((o) => !o)}
+                className="w-full flex items-center gap-3 px-5 py-3.5 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.035] transition-colors group"
+            >
+                <Gauge className="w-4 h-4 text-amber-400/50 shrink-0" />
+                <div className="flex-1 text-left">
+                    <span className="text-sm font-bold text-white/50 group-hover:text-white/70 transition-colors">
+                        Advanced Metrics
+                    </span>
+                    <span className="ml-2.5 text-[10px] font-mono text-amber-400/30 uppercase tracking-widest">
+                        for experts
+                    </span>
+                </div>
+                <span className="text-[10px] text-white/20 mr-2">
+                    Loss, perplexity &amp; performance
+                </span>
+                <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown className="w-4 h-4 text-white/20" />
+                </motion.div>
+            </button>
+
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.28, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="pt-4 space-y-4">
+                            <p className="text-xs text-amber-300/40 italic border-l-2 border-amber-500/15 pl-3">
+                                These metrics (loss, perplexity, NLL) will make more sense after the Neural Networks chapter.
+                                For now, lower perplexity = better predictions.
+                            </p>
+
+                            {hasPerformanceData && (
+                                <LabSection
+                                    icon={Gauge}
+                                    title={t("models.ngram.lab.performanceSummary.title")}
+                                    description={t("models.ngram.lab.performanceSummary.description")}
+                                    accent="emerald"
+                                >
+                                    <NgramPerformanceSummary
+                                        inferenceMs={nGramData?.metadata.inference_time_ms}
+                                        device={nGramData?.metadata.device}
+                                        totalTokens={training?.total_tokens ?? undefined}
+                                        trainingDuration={(training as unknown as { training_duration_ms?: number } | null)?.training_duration_ms}
+                                        perplexity={training?.perplexity ?? undefined}
+                                        finalLoss={training?.final_loss ?? undefined}
+                                    />
+                                </LabSection>
+                            )}
+
+                            {hasLossHistory && training?.loss_history && (
+                                <LabSection
+                                    icon={TrendingDown}
+                                    title={t("models.ngram.lab.sections.trainingQuality")}
+                                    description={t("models.ngram.lab.sections.trainingQualityDesc").replace("{n}", String(contextSize))}
+                                    accent="emerald"
+                                >
+                                    <NgramLossChart
+                                        lossHistory={training.loss_history}
+                                        perplexity={training.perplexity ?? undefined}
+                                        finalLoss={training.final_loss ?? undefined}
+                                    />
+                                </LabSection>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
     );
 }
 
@@ -388,7 +513,6 @@ function NgramPageContent() {
                 <NgramNarrative
                     contextSize={viz.contextSize}
                     vocabSize={vocabForScalability}
-                    comparisonMetrics={comparisonMetrics}
                 />
             </LabShell>
         );
@@ -422,7 +546,7 @@ function NgramPageContent() {
         },
         {
             label: t("models.ngram.lab.hero.trainingTokens"),
-            value: training ? `${(training.total_tokens / 1000).toFixed(1)}k` : "?",
+            value: training?.total_tokens != null ? `${(training.total_tokens / 1000).toFixed(1)}k` : "?",
             icon: FlaskConical,
             desc: t("models.ngram.lab.hero.totalTokensSeen"),
             color: "emerald",
@@ -454,8 +578,8 @@ function NgramPageContent() {
                     animate={{ opacity: 1 }}
                     className="max-w-6xl mx-auto px-6 mb-8 flex items-center gap-3"
                 >
-                    <Zap className="w-4 h-4 text-cyan-400" />
-                    <p className="text-xs uppercase tracking-[0.15em] text-cyan-300/60 font-bold">
+                    <Zap className="w-4 h-4 text-amber-400" />
+                    <p className="text-xs uppercase tracking-[0.15em] text-amber-300/60 font-bold">
                         {t("models.ngram.lab.badge")}
                     </p>
                 </motion.div>
@@ -469,22 +593,37 @@ function NgramPageContent() {
                         value={viz.contextSize}
                         onChange={viz.setContextSize}
                         disabled={viz.loading}
+                        min={2}
                     />
                 </div>
+
+                {/* Generation Battle — shown when contextSize < 5 */}
+                {viz.contextSize < 5 && (
+                    <div className="max-w-6xl mx-auto px-6 mb-4">
+                        <NgramGenerationBattle
+                            seeds={["the ", "I wa", "hello"]}
+                            nValues={[1, 2, 3, 4]}
+                            maxTokens={80}
+                            temperature={0.8}
+                            highlightedN={viz.contextSize}
+                        />
+                    </div>
+                )}
 
                 <FlowHint text={t("models.ngram.lab.flow.afterContext")} />
 
                 {/* ROW 2: Transition Matrix + Sparsity / Comparison */}
-                <div className="max-w-6xl mx-auto px-6 mb-4 grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div id="transition-matrix" className="max-w-6xl mx-auto px-6 mb-4 grid grid-cols-1 lg:grid-cols-5 gap-6">
                     <div className="lg:col-span-3">
                         <LabSection
                             icon={Eye}
                             title={t("models.ngram.lab.sections.transitions")}
                             description={matrixDesc}
+                            accent="amber"
                         >
                             {viz.contextSize >= 5 ? (
                                 <NgramFiveGramScale vocabSize={vocabForScalability} />
-                            ) : (
+                            ) : viz.contextSize === 1 ? (
                                 <AnimatePresence mode="wait">
                                     <motion.div
                                         key={`matrix-${viz.contextSize}`}
@@ -494,31 +633,21 @@ function NgramPageContent() {
                                         transition={{ duration: 0.3 }}
                                     >
                                         <TransitionMatrix
-                                            data={
-                                                viz.contextSize === 1
-                                                    ? nGramData?.visualization.transition_matrix ?? null
-                                                    : activeSlice?.matrix ?? fallbackSliceMatrix
-                                            }
-                                            activeContext={viz.contextSize > 1 ? activeSlice?.context_tokens : undefined}
-                                            accent="cyan"
+                                            data={nGramData?.visualization.transition_matrix ?? null}
+                                            accent="amber"
                                         />
-                                        {viz.contextSize > 1 && (
-                                            <div className="mt-3 flex items-center gap-2 px-1 text-cyan-300/60">
-                                                <span className="text-[10px] uppercase tracking-[0.15em] font-bold">
-                                                    {t("models.ngram.lab.sections.conditionedOn")}
-                                                </span>
-                                                <span className="font-mono text-sm text-white/70">
-                                                    &quot;{activeSlice?.context_tokens?.join("") ?? fallbackCurrent?.context ?? "..."}&quot;
-                                                </span>
-                                            </div>
-                                        )}
                                     </motion.div>
                                 </AnimatePresence>
+                            ) : (
+                                <NgramContextDrilldown
+                                    contextSize={viz.contextSize}
+                                    vocabSize={vocabForScalability}
+                                />
                             )}
                         </LabSection>
                     </div>
 
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-6" id="sparsity-comparison">
                         <LabSection
                             icon={BarChart3}
                             title={t("models.ngram.lab.sparsity.title")}
@@ -539,123 +668,95 @@ function NgramPageContent() {
                     </div>
                 </div>
 
-                <FlowHint text={t("models.ngram.lab.flow.afterMatrix")} />
-
-                {/* ROW 3: Performance Summary */}
-                {hasPerformanceData && (
+                {/* ROW 3+4: Advanced Metrics (collapsed by default) */}
+                {(hasPerformanceData || hasLossHistory) && (
                     <div className="max-w-6xl mx-auto px-6 mb-4">
-                        <LabSection
-                            icon={Gauge}
-                            title={t("models.ngram.lab.performanceSummary.title")}
-                            description={t("models.ngram.lab.performanceSummary.description")}
-                            accent="emerald"
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-40px" }}
+                            transition={{ duration: 0.4 }}
                         >
-                            <NgramPerformanceSummary
-                                inferenceMs={nGramData?.metadata.inference_time_ms}
-                                device={nGramData?.metadata.device}
-                                totalTokens={training?.total_tokens}
-                                trainingDuration={(training as { training_duration_ms?: number } | null)?.training_duration_ms}
-                                perplexity={training?.perplexity}
-                                finalLoss={training?.final_loss}
+                            <AdvancedMetricsCollapsible
+                                hasPerformanceData={hasPerformanceData}
+                                hasLossHistory={!!hasLossHistory}
+                                nGramData={nGramData}
+                                training={training}
+                                contextSize={viz.contextSize}
                             />
-                        </LabSection>
+                        </motion.div>
                     </div>
                 )}
 
-                {/* ROW 4: Loss Chart */}
-                {hasLossHistory && (
+                {/* ROW 5: Inference + Stepwise + Generation (contextSize < 5 only) */}
+                {viz.contextSize < 5 && (
                     <>
-                        <FlowHint text={t("models.ngram.lab.flow.afterComparison")} />
-                        <div className="max-w-6xl mx-auto px-6 mb-4">
+                        <FlowHint text={t("models.ngram.lab.flow.afterMatrix")} />
+                        <div id="inference-console" className="max-w-6xl mx-auto px-6 mb-4">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <LabSection
+                                    icon={Type}
+                                    title={t("models.ngram.lab.sections.nextToken")}
+                                    description={t("models.ngram.lab.sections.nextTokenDesc")}
+                                    accent="amber"
+                                >
+                                    <InferenceConsole
+                                        onAnalyze={handleAnalyze}
+                                        predictions={nGramData?.predictions ?? null}
+                                        inferenceMs={nGramData?.metadata.inference_time_ms}
+                                        device={nGramData?.metadata.device}
+                                        loading={viz.loading}
+                                        error={viz.error}
+                                    />
+                                </LabSection>
+
+                                <LabSection
+                                    icon={Activity}
+                                    title={t("models.ngram.lab.sections.stepwise")}
+                                    description={t("models.ngram.lab.sections.stepwiseDesc")}
+                                    accent="violet"
+                                >
+                                    <StepwisePrediction
+                                        onPredict={stepwise.predict}
+                                        steps={stepwise.data?.steps ?? null}
+                                        finalPrediction={stepwise.data?.final_prediction ?? null}
+                                        loading={stepwise.loading}
+                                        error={stepwise.error}
+                                    />
+                                </LabSection>
+                            </div>
+                        </div>
+
+                        <div id="generation-playground" className="max-w-6xl mx-auto px-6 mb-8">
                             <LabSection
-                                icon={TrendingDown}
-                                title={t("models.ngram.lab.sections.trainingQuality")}
-                                description={t("models.ngram.lab.sections.trainingQualityDesc").replace("{n}", String(viz.contextSize))}
-                                accent="emerald"
+                                icon={Sparkles}
+                                title={t("models.ngram.lab.sections.generation")}
+                                description={t("models.ngram.lab.sections.generationDesc")}
+                                accent="amber"
                             >
-                                <NgramLossChart
-                                    lossHistory={training!.loss_history!}
-                                    perplexity={training!.perplexity}
-                                    finalLoss={training!.final_loss}
+                                <GenerationPlayground
+                                    onGenerate={generation.generate}
+                                    generatedText={generation.data?.generated_text ?? null}
+                                    loading={generation.loading}
+                                    error={generation.error}
                                 />
                             </LabSection>
                         </div>
                     </>
                 )}
 
-                {/* ROW 5: Inference + Stepwise + Generation */}
-                <div className="max-w-6xl mx-auto px-6 mb-4">
-                    {viz.contextSize >= 5 ? (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="p-6 rounded-2xl border border-red-500/25 bg-gradient-to-br from-red-950/20 to-black/60 flex items-start gap-4"
-                        >
-                            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                            <div>
-                                <p className="text-sm text-red-100/80 font-medium">
-                                    {t("models.ngram.lab.warning5.title")}
-                                </p>
-                                <p className="text-xs text-red-200/40 mt-1">
-                                    N=5 {t("models.ngram.explosion.description").split(".")[0].toLowerCase()}.
-                                </p>
-                                <p className="text-xs text-red-300/60 mt-1.5 font-medium">
-                                    {t("models.ngram.lab.warning5.hint")}
-                                </p>
-                            </div>
-                        </motion.div>
-                    ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <LabSection
-                                icon={Type}
-                                title={t("models.ngram.lab.sections.nextToken")}
-                                description={t("models.ngram.lab.sections.nextTokenDesc")}
-                            >
-                                <InferenceConsole
-                                    onAnalyze={handleAnalyze}
-                                    predictions={nGramData?.predictions ?? null}
-                                    inferenceMs={nGramData?.metadata.inference_time_ms}
-                                    device={nGramData?.metadata.device}
-                                    loading={viz.loading}
-                                    error={viz.error}
-                                />
-                            </LabSection>
 
-                            <LabSection
-                                icon={Activity}
-                                title={t("models.ngram.lab.sections.stepwise")}
-                                description={t("models.ngram.lab.sections.stepwiseDesc")}
-                                accent="violet"
-                            >
-                                <StepwisePrediction
-                                    onPredict={stepwise.predict}
-                                    steps={stepwise.data?.steps ?? null}
-                                    finalPrediction={stepwise.data?.final_prediction ?? null}
-                                    loading={stepwise.loading}
-                                    error={stepwise.error}
-                                />
-                            </LabSection>
-                        </div>
-                    )}
-                </div>
-
-                {viz.contextSize < 5 && (
-                    <div className="max-w-6xl mx-auto px-6 mb-8">
-                        <LabSection
-                            icon={Sparkles}
-                            title={t("models.ngram.lab.sections.generation")}
-                            description={t("models.ngram.lab.sections.generationDesc")}
-                            accent="amber"
-                        >
-                            <GenerationPlayground
-                                onGenerate={generation.generate}
-                                generatedText={generation.data?.generated_text ?? null}
-                                loading={generation.loading}
-                                error={generation.error}
-                            />
-                        </LabSection>
-                    </div>
-                )}
+                {/* Technical Explanation */}
+                <NgramTechnicalExplanation
+                    contextSize={viz.contextSize}
+                    vocabSize={vocabForScalability}
+                    totalTokens={training?.total_tokens ?? undefined}
+                    uniqueContexts={training?.unique_contexts ?? undefined}
+                    perplexity={training?.perplexity ?? undefined}
+                    finalLoss={training?.final_loss ?? undefined}
+                    corpusName={training?.corpus_name ?? diagnostics?.corpus_name ?? "Paul Graham Essays"}
+                    smoothingAlpha={training?.smoothing_alpha ?? diagnostics?.smoothing_alpha ?? 1.0}
+                />
 
                 {/* Footer */}
                 <motion.div
@@ -674,7 +775,7 @@ function NgramPageContent() {
                         {t("ngramNarrative.cta.neuralButton")}
                         <ArrowRight className="w-4 h-4" />
                     </Link>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-cyan-300/15">
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-amber-300/15">
                         <FlaskConical className="h-3 w-3" />
                         {t("models.ngram.lab.footer")}
                     </div>

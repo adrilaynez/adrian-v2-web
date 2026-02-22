@@ -27,9 +27,10 @@ interface ContextControlProps {
     value: number;
     onChange: (value: number) => void;
     disabled?: boolean;
+    min?: number;
 }
 
-export function ContextControl({ value, onChange, disabled }: ContextControlProps) {
+export function ContextControl({ value, onChange, disabled, min = 1 }: ContextControlProps) {
     const { t } = useI18n();
     const { mode } = useLabMode();
     const isEdu = mode === "educational";
@@ -40,8 +41,8 @@ export function ContextControl({ value, onChange, disabled }: ContextControlProp
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             className={`rounded-2xl p-6 md:p-7 border transition-colors ${isEdu
-                    ? "bg-gradient-to-br from-amber-950/15 via-black/40 to-black/60 border-amber-500/15 shadow-[0_0_25px_-8px_rgba(245,158,11,0.15)]"
-                    : "bg-gradient-to-br from-cyan-950/10 via-black/40 to-black/60 border-cyan-500/15 shadow-[0_0_25px_-8px_rgba(6,182,212,0.15)]"
+                ? "bg-gradient-to-br from-amber-950/15 via-black/40 to-black/60 border-amber-500/15 shadow-[0_0_25px_-8px_rgba(245,158,11,0.15)]"
+                : "bg-gradient-to-br from-cyan-950/10 via-black/40 to-black/60 border-cyan-500/15 shadow-[0_0_25px_-8px_rgba(6,182,212,0.15)]"
                 }`}
         >
             <div className="flex items-center justify-between mb-6">
@@ -60,8 +61,8 @@ export function ContextControl({ value, onChange, disabled }: ContextControlProp
                     <Badge
                         variant="outline"
                         className={`font-mono text-lg px-3 py-1 ${isEdu
-                                ? "text-amber-300 border-amber-500/30 bg-amber-500/10"
-                                : "text-cyan-300 border-cyan-500/30 bg-cyan-500/10"
+                            ? "text-amber-300 border-amber-500/30 bg-amber-500/10"
+                            : "text-cyan-300 border-cyan-500/30 bg-cyan-500/10"
                             }`}
                     >
                         N = {value}
@@ -72,7 +73,7 @@ export function ContextControl({ value, onChange, disabled }: ContextControlProp
             <div className="px-2 mb-4">
                 <Slider
                     value={[value]}
-                    min={1}
+                    min={min}
                     max={5}
                     step={1}
                     onValueChange={(vals: number[]) => onChange(vals[0])}
@@ -82,18 +83,18 @@ export function ContextControl({ value, onChange, disabled }: ContextControlProp
             </div>
 
             <div className="flex justify-between px-1 mb-4">
-                {[1, 2, 3, 4, 5].map((n) => (
+                {[1, 2, 3, 4, 5].filter((n) => n >= min).map((n) => (
                     <button
                         key={n}
                         onClick={() => onChange(n)}
                         disabled={disabled}
                         className={`text-[10px] font-mono uppercase tracking-widest transition-all px-1 py-0.5 rounded ${n === value
-                                ? isEdu
-                                    ? "text-amber-300 font-bold"
-                                    : "text-cyan-300 font-bold"
-                                : n === 5
-                                    ? "text-red-400/50 hover:text-red-400/70"
-                                    : "text-white/30 hover:text-white/50"
+                            ? isEdu
+                                ? "text-amber-300 font-bold"
+                                : "text-cyan-300 font-bold"
+                            : n === 5
+                                ? "text-red-400/50 hover:text-red-400/70"
+                                : "text-white/30 hover:text-white/50"
                             }`}
                     >
                         {t(NGRAM_NAME_KEYS[n])}
@@ -109,8 +110,8 @@ export function ContextControl({ value, onChange, disabled }: ContextControlProp
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.25 }}
                     className={`text-xs leading-relaxed px-1 border-t pt-3 ${isEdu
-                            ? "text-amber-200/50 border-amber-500/10"
-                            : "text-cyan-200/40 border-cyan-500/10"
+                        ? "text-amber-200/50 border-amber-500/10"
+                        : "text-cyan-200/40 border-cyan-500/10"
                         }`}
                 >
                     {t(CONTEXT_LEVEL_KEYS[value])}

@@ -21,8 +21,8 @@ interface TransitionMatrixProps {
         trainDataSize?: number;
         vocabSize?: number;
     };
-    /** Use "cyan" on N-gram page to match lab style; "emerald" on Bigram page */
-    accent?: "cyan" | "emerald";
+    /** Use "cyan" or "amber" on N-gram page to match lab style; "emerald" on Bigram page */
+    accent?: "cyan" | "emerald" | "amber";
 }
 
 const accentStyles = {
@@ -47,6 +47,17 @@ const accentStyles = {
         tooltipCell: "text-emerald-400 bg-emerald-500/10",
         bar: "bg-emerald-500",
         barBg: "bg-emerald-500/20",
+    },
+    amber: {
+        badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        input: "focus:border-amber-500/50 focus:ring-amber-500/20",
+        searchIcon: "group-focus-within:text-amber-400",
+        infoActive: "bg-amber-500/20",
+        card: "bg-amber-500/[0.04] border-amber-500/20",
+        cardText: "text-amber-300",
+        tooltipCell: "text-amber-400 bg-amber-500/10",
+        bar: "bg-amber-500",
+        barBg: "bg-amber-500/20",
     },
 } as const;
 

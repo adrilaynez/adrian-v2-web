@@ -53,7 +53,7 @@ interface NgramContextPrimerProps {
 export function NgramContextPrimer({ n }: NgramContextPrimerProps) {
     const { isEdu, accentText, cardBg, cardBorder, accentGlow } = useModeColors();
     const contextLength = Math.max(1, n);
-    const history = "LANGUAGE";
+    const history = "the qui";
     const visibleContext = history.slice(Math.max(0, history.length - contextLength));
     const faded = history.slice(0, Math.max(0, history.length - contextLength));
 
@@ -130,7 +130,7 @@ export function NgramContextPrimer({ n }: NgramContextPrimerProps) {
 
 export function NgramContextGrowthAnimation() {
     const { isEdu, cardBg, cardBorder, accentText, accentGlow } = useModeColors();
-    const tokenStream = "LANGUAGE";
+    const tokenStream = "the qui";
     const [activeN, setActiveN] = useState(1);
 
     useEffect(() => {
@@ -210,19 +210,33 @@ interface NgramMiniTransitionTableProps {
     n: number;
 }
 
-type ExampleTransition = { context: string; next: string };
+type ExampleTransition = { context: string; next: string; prob: number; alternatives: { ch: string; prob: number }[] };
 
 function buildTransitions(n: number): ExampleTransition[] {
-    const sequence = "LANGUAGE";
+    // Use "the cat" — more relatable than "the qui", and produces good transitions
     const contextLength = Math.max(1, n);
-    const rows: ExampleTransition[] = [];
-    for (let i = contextLength; i < sequence.length; i++) {
-        rows.push({
-            context: sequence.slice(i - contextLength, i),
-            next: sequence[i],
-        });
+    if (contextLength === 1) {
+        return [
+            { context: "t", next: "h", prob: 42, alternatives: [{ ch: "h", prob: 42 }, { ch: "o", prob: 18 }, { ch: "e", prob: 8 }, { ch: "i", prob: 7 }] },
+            { context: "h", next: "e", prob: 32, alternatives: [{ ch: "e", prob: 32 }, { ch: "a", prob: 19 }, { ch: "i", prob: 12 }, { ch: "o", prob: 9 }] },
+            { context: "e", next: " ", prob: 24, alternatives: [{ ch: "␣", prob: 24 }, { ch: "r", prob: 15 }, { ch: "n", prob: 12 }, { ch: "s", prob: 10 }] },
+            { context: "c", next: "a", prob: 18, alternatives: [{ ch: "a", prob: 18 }, { ch: "o", prob: 17 }, { ch: "h", prob: 12 }, { ch: "e", prob: 11 }] },
+        ];
     }
-    return rows.slice(0, 4);
+    if (contextLength === 2) {
+        return [
+            { context: "th", next: "e", prob: 85, alternatives: [{ ch: "e", prob: 85 }, { ch: "a", prob: 6 }, { ch: "i", prob: 4 }] },
+            { context: "he", next: " ", prob: 55, alternatives: [{ ch: "␣", prob: 55 }, { ch: "r", prob: 18 }, { ch: "n", prob: 8 }] },
+            { context: " c", next: "a", prob: 22, alternatives: [{ ch: "a", prob: 22 }, { ch: "o", prob: 20 }, { ch: "h", prob: 10 }] },
+            { context: "ca", next: "t", prob: 24, alternatives: [{ ch: "t", prob: 24 }, { ch: "l", prob: 18 }, { ch: "n", prob: 14 }] },
+        ];
+    }
+    // n=3 (4-gram)
+    return [
+        { context: "the", next: " ", prob: 91, alternatives: [{ ch: "␣", prob: 91 }, { ch: "r", prob: 3 }, { ch: "n", prob: 2 }] },
+        { context: "he ", next: "c", prob: 8, alternatives: [{ ch: "c", prob: 8 }, { ch: "s", prob: 7 }, { ch: "w", prob: 6 }] },
+        { context: " ca", next: "t", prob: 28, alternatives: [{ ch: "t", prob: 28 }, { ch: "l", prob: 20 }, { ch: "n", prob: 15 }] },
+    ];
 }
 
 export function NgramMiniTransitionTable({ n }: NgramMiniTransitionTableProps) {
@@ -263,53 +277,77 @@ export function NgramMiniTransitionTable({ n }: NgramMiniTransitionTableProps) {
             <Card className={`${cardBg} ${cardBorder} p-6 md:p-8 ${accentGlow}`}>
                 <div className="flex items-center gap-3 mb-2">
                     <Search className={`w-5 h-5 ${accentText}`} />
-                    <h3 className="text-lg font-bold text-white tracking-tight">Transition examples</h3>
+                    <h3 className="text-lg font-bold text-white tracking-tight">How the Model Reads Context</h3>
                 </div>
 
                 {isEdu ? (
                     <p className="text-sm text-white/60 mb-5 leading-relaxed">
-                        Instead of a giant table, let&apos;s trace a few transitions through the word <span className="font-mono text-emerald-300 font-semibold">LANGUAGE</span>.
-                        Each row shows: &quot;given this context, the next character was...&quot; — plus real evidence from the training corpus.
+                        The model reads the phrase <span className="font-mono text-amber-300 font-semibold">&ldquo;the cat&rdquo;</span> one
+                        step at a time. At each position, it looks at the last <span className="font-bold text-white/80">{Math.max(1, n)}</span> character{n > 1 ? "s" : ""} and
+                        asks: <span className="italic text-white/70">&ldquo;what usually comes next?&rdquo;</span>
                     </p>
                 ) : (
                     <p className="text-sm text-white/50 mb-5">
-                        Sample transitions from <span className="font-mono text-emerald-300">LANGUAGE</span> with corpus evidence.
+                        Transitions from <span className="font-mono text-amber-300">&ldquo;the cat&rdquo;</span> with N={n} context and corpus evidence.
                     </p>
                 )}
 
                 {n >= 5 ? (
                     <NgramFiveGramScale />
                 ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                         {rows.map((row, idx) => {
                             const isExpanded = expandedRow === idx;
                             const rowEvidence = evidence[idx] ?? [];
                             const isLoading = loadingRows[idx];
+                            const topProb = row.alternatives[0]?.prob ?? 0;
                             return (
                                 <motion.div
                                     key={`${row.context}-${idx}-${n}`}
                                     layout
-                                    className={`rounded-xl border ${isExpanded ? accentBorder : "border-white/10"} bg-white/[0.02] overflow-hidden cursor-pointer transition-colors`}
+                                    className={`rounded-xl border ${isExpanded ? accentBorder : "border-white/[0.08]"} bg-white/[0.02] overflow-hidden cursor-pointer transition-colors hover:border-white/[0.12]`}
                                     onClick={() => setExpandedRow(isExpanded ? null : idx)}
                                 >
-                                    <div className="p-4 flex items-center justify-between">
-                                        <div className="font-mono text-sm md:text-base flex items-center gap-2">
-                                            <span className={`px-2 py-0.5 rounded ${isEdu ? "bg-amber-500/15 text-amber-200" : "bg-cyan-500/15 text-cyan-200"}`}>
-                                                {row.context}
-                                            </span>
-                                            <ArrowRight className="w-3.5 h-3.5 text-white/30" />
-                                            <span className="text-emerald-400 font-bold text-base">{row.next}</span>
+                                    <div className="p-4 space-y-2.5">
+                                        {/* Context → Next row */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="font-mono text-sm flex items-center gap-2">
+                                                <span className={`px-2.5 py-1 rounded-lg font-bold ${isEdu ? "bg-amber-500/15 text-amber-200 border border-amber-500/20" : "bg-cyan-500/15 text-cyan-200 border border-cyan-500/20"}`}>
+                                                    {row.context}
+                                                </span>
+                                                <ArrowRight className="w-3.5 h-3.5 text-white/25" />
+                                                <span className="text-emerald-400 font-bold text-base">{row.next === " " ? "␣" : row.next}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2.5">
+                                                <span className="font-mono font-bold text-sm tabular-nums text-amber-300">{row.prob}%</span>
+                                                {isLoading && <div className="w-3 h-3 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />}
+                                                {!isLoading && rowEvidence.length > 0 && (
+                                                    <Badge className="bg-emerald-500/10 text-emerald-400/70 border-emerald-500/20 text-[10px]">
+                                                        {rowEvidence.length} match{rowEvidence.length !== 1 ? "es" : ""}
+                                                    </Badge>
+                                                )}
+                                                <ChevronRight className={`w-4 h-4 text-white/25 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                                            </div>
                                         </div>
+
+                                        {/* Mini inline probability bar */}
                                         <div className="flex items-center gap-2">
-                                            {isLoading && <div className="w-3 h-3 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />}
-                                            {!isLoading && rowEvidence.length > 0 && (
-                                                <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/25 text-[10px]">
-                                                    {rowEvidence.length} match{rowEvidence.length !== 1 ? "es" : ""}
-                                                </Badge>
-                                            )}
-                                            <ChevronRight className={`w-4 h-4 text-white/30 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                                            {row.alternatives.slice(0, 4).map((alt) => (
+                                                <div key={alt.ch} className="flex items-center gap-1">
+                                                    <span className={`font-mono text-[10px] ${alt.ch === (row.next === " " ? "␣" : row.next) ? "text-amber-300 font-bold" : "text-white/30"}`}>
+                                                        {alt.ch}
+                                                    </span>
+                                                    <div className="w-12 h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
+                                                        <div
+                                                            className={`h-full rounded-full ${alt.ch === (row.next === " " ? "␣" : row.next) ? "bg-amber-500/50" : "bg-white/10"}`}
+                                                            style={{ width: `${topProb > 0 ? (alt.prob / topProb) * 100 : 0}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
+
                                     <AnimatePresence>
                                         {isExpanded && (
                                             <motion.div
@@ -320,7 +358,9 @@ export function NgramMiniTransitionTable({ n }: NgramMiniTransitionTableProps) {
                                                 className="overflow-hidden"
                                             >
                                                 <div className="px-4 pb-4 space-y-2 border-t border-white/5 pt-3">
-                                                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-bold">Corpus evidence</p>
+                                                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-bold">
+                                                        Training corpus evidence
+                                                    </p>
                                                     {isLoading ? (
                                                         <p className="text-xs text-white/40 animate-pulse">Searching training data...</p>
                                                     ) : rowEvidence.length > 0 ? (
@@ -330,7 +370,16 @@ export function NgramMiniTransitionTable({ n }: NgramMiniTransitionTableProps) {
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <p className="text-xs text-white/30 italic">No matches found in sampled corpus.</p>
+                                                        <div className="rounded-lg border border-amber-500/15 bg-amber-500/[0.03] p-3 space-y-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <AlertTriangle className="w-3.5 h-3.5 text-amber-400/60 shrink-0" />
+                                                                <p className="text-xs font-bold text-amber-300/70">No matches in sample</p>
+                                                            </div>
+                                                            <p className="text-[11px] text-white/35 leading-relaxed">
+                                                                This exact {n}-character context wasn&apos;t found in our corpus sample.
+                                                                Not every N-gram appears in a finite dataset — this is the sparsity problem.
+                                                            </p>
+                                                        </div>
                                                     )}
                                                 </div>
                                             </motion.div>

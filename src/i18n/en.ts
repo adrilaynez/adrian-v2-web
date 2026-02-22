@@ -870,6 +870,26 @@ export const en = {
                 generationPredictionDescription: "In educational mode we focus on understanding how a single next token is chosen. Switch to Free Lab to unlock the full stepwise tracer and text generation playground.",
                 simplifiedSimulation: "Full stepwise prediction and generation available in Free Lab mode.",
             },
+            technicalExplanation: {
+                title: "Technical Explanation",
+                description: "Under the hood of the current N-gram model",
+                modelType: "Model Type",
+                modelTypeValue: "Character-level {n}-gram (order {nPlusOne})",
+                parameterCount: "Parameter Count",
+                parameterCountDesc: "|V|^{n} × |V| = {count} probability entries",
+                trainingMethod: "Training Method",
+                trainingMethodValue: "Maximum likelihood estimation via counting",
+                smoothing: "Smoothing",
+                smoothingValue: "Add-α (Laplace) smoothing with α = {alpha}",
+                corpusInfo: "Training Corpus",
+                corpusInfoValue: "{name} — {tokens} tokens, {vocabSize} unique characters",
+                mathematicalFormulation: "Mathematical Formulation",
+                formula: "P(c_{t} | c_{t-N}, …, c_{t-1}) = count(c_{t-N}…c_{t}) / count(c_{t-N}…c_{t-1})",
+                formulaDesc: "The probability of the next character given the N-character context is the ratio of how often that (N+1)-gram appeared in training to how often the N-gram prefix appeared.",
+                inferenceComplexity: "Inference Complexity",
+                inferenceComplexityValue: "O(1) — single hash-table lookup per prediction",
+                collapsibleLabel: "Show Technical Details",
+            },
         },
         mlp: {
             title: "MLP + Embeddings",
@@ -2021,17 +2041,23 @@ export const en = {
         howItWorks: {
             label: "Mechanics",
             title: "Counting with Context",
-            lead: "The counting process is the same as in bigrams — but now instead of counting pairs, we count longer groups: the N-character context plus what comes next.",
-            p1: "For each spot in the training text, the model takes the",
+            lead: "The core idea is unchanged from bigrams — we still count. But now, instead of asking 'what follows this one character?', we ask 'what follows this sequence of N characters?' The table gets deeper, but the logic stays simple.",
+            p1: "For every position in the training text, the model extracts the",
             p1Highlight: " N-character context",
-            p1End: " and counts what character follows. Later, it uses those counts like a lookup table: find the context, then read the usual next character.",
-            p2: "As N grows, the counting table gets more dimensions. With N=1 (bigram), it's a simple grid. With N=2, imagine a stack of grids — one for each possible two-character context. The table grows in every direction.",
+            p1End: " and records which character comes next. At prediction time it looks up the matching context row and reads off the stored probability distribution — pure table lookup, no math.",
+            p2: "With N=1 (bigram) the table is a flat V×V grid. With N=2 it becomes a stack of grids — one per two-character prefix. Each additional character of context adds another dimension. The table doesn't just grow; it multiplies.",
+            bridge: "The transition table above shows individual rows from this giant lookup table. But how do longer contexts actually change the counts? The widget below puts bigram and trigram counting side by side on the same training text so you can see the difference directly.",
         },
         improvement: {
             label: "Improvement",
             title: "The Prediction Gets Better",
-            lead: "Now for the payoff. When the model sees more context, its guesses become much more confident and correct.",
-            example: "After \"h\", the next letter is unclear. After \"th\", \"e\" becomes very likely. After \"the\", a space becomes very likely.",
+            lead: "More context means less ambiguity. When the model can see two characters instead of one, it rules out far more candidates — and the remaining predictions become dramatically more confident.",
+            example: "After 'h', dozens of characters are plausible. After 'th', the model strongly expects 'e'. After 'the', a space becomes almost certain. Each extra character of context narrows the field.",
+        },
+        whyNotMore: {
+            title: "Why Not N=100?",
+            lead: "If more context makes predictions better, why stop at 3 or 4? Why not look at the last 100 characters?",
+            p1: "Because every extra character of context multiplies the table by the vocabulary size. A bigram table has 9,216 entries (96²). A trigram jumps to 884,736 (96³). A 4-gram reaches over 84 million (96⁴). Going to N=100 would require a table with more entries than atoms in the observable universe. The next section makes this explosion visceral.",
         },
         statistical: {
             label: "Statistical Nature",
@@ -2110,12 +2136,23 @@ export const en = {
         deeperProblem: {
             label: "Limitations",
             title: "The Deeper Problem",
-            lead: "The explosion is a practical problem. But there's a philosophical one that's even worse.",
-            p1: "Imagine the text starts with \"the cat sat on the\". If the model has seen that exact context, it can predict what comes next from memory.",
-            p2: "Now change one word: \"the dog sat on the\". A human sees it is almost the same. The N-gram model treats it like a totally new situation.",
-            p3: "N-grams have no concept of 'similar.' The contexts 'the cat' and 'the dog' are as different to the model as 'the cat' and 'xyzq'. Each is a separate row in the table, with no connection.",
+            lead: "The explosion is a practical problem — you can't build a big-enough table. But there's a conceptual problem that's even worse: even with infinite data, counting still fails.",
+            p1: "Imagine the text starts with 'the cat sat on the'. If the model has seen that exact context, it can predict what comes next from memory.",
+            p2: "Now change one word: 'the dog sat on the'. A human sees it's almost the same situation. The N-gram model treats it like a completely new, unrelated context.",
+            p3: "N-grams have no concept of 'similar.' The contexts 'the cat' and 'the dog' are as different to the model as 'the cat' and 'xyzq'. Each is a separate row in the table, with zero connection between them.",
+            infiniteData: {
+                title: "Even Infinite Data Can't Help",
+                p1: "Suppose you had unlimited training text — every book ever written. Could you fill the table? No. Language is creative: people invent new sentences constantly. The number of possible 10-word sequences vastly exceeds the number of sentences ever uttered. No corpus, however large, can cover every valid context.",
+            },
+            failureExamples: {
+                title: "When Counting Breaks Down",
+                typoLabel: "Typos",
+                typoText: "A user types 'teh cat' instead of 'the cat'. The model has never seen the context 'teh' and returns a uniform (random) distribution. One wrong keystroke erases all learned knowledge.",
+                novelLabel: "Novel words",
+                novelText: "A new word enters the language — 'selfie', 'blockchain', 'vibe-check'. The model has zero entries for any context containing these words. It cannot even guess that 'selfie' behaves like other nouns.",
+            },
             calloutTitle: "No Generalization",
-            calloutText: "If the model has never seen a particular sequence in training, it has nothing to say. It can't guess. It can't reason by analogy. It just shrugs.",
+            calloutText: "If the model has never seen a particular sequence in training, it has nothing to say. It can't guess. It can't reason by analogy. It just shrugs. This is the fundamental limitation that motivates neural approaches.",
         },
         endOfCounting: {
             label: "Reflection",
@@ -2143,6 +2180,24 @@ export const en = {
             labDesc: "Switch to Free Lab mode to change N, test your own phrases, and see where the model becomes silent.",
             neuralButton: "Next: From Counting to Learning",
             neuralDesc: "We've pushed counting to its limit. Now we build something that learns.",
+        },
+        generationBattle: {
+            title: "Generation Battle",
+            subtitle: "Same seed, different memory",
+            description: "Watch how the same starting text produces dramatically different output as the model's context window grows.",
+            columnHeader: "N = {n}",
+            qualityLabels: {
+                1: "Random noise",
+                2: "Letter patterns emerge",
+                3: "Word fragments appear",
+                4: "Recognizable phrases",
+            },
+            streaming: "Generating…",
+            seedLabel: "Seed text",
+            generateButton: "Generate All",
+            regenerateButton: "Regenerate",
+            tokensLabel: "{count} characters",
+            emptyState: "Press Generate to start the battle",
         },
         footer: {
             text: "The statistical era is complete. You've seen what counting can do — and where it breaks. Next: models that learn.",
@@ -2177,7 +2232,23 @@ export const en = {
             statisticalEra: {
                 label: "Statistical era · Learning path",
                 hint: "The counting era is complete. Something fundamentally different comes next.",
-            }
+            },
+            generationBattle: {
+                label: "Generation battle · Side-by-side comparison",
+                hint: "Each column uses the same seed text but a different context size. Longer context produces more coherent output — until sparsity takes over.",
+            },
+            sparsityHeatmap: {
+                label: "Sparsity heatmap · Table density by N",
+                hint: "Switch between N values to see how quickly the probability table empties out.",
+            },
+            infiniteTable: {
+                label: "Data coverage · The infinite data problem",
+                hint: "Drag the slider to see how much of each N-gram table can be filled with real training data.",
+            },
+            typoBreaker: {
+                label: "Break the model · Typo & novel word failure",
+                hint: "Type a misspelled or novel word to see the N-gram model's confidence collapse.",
+            },
         }
     },
     ngramPedagogy: {
@@ -2201,12 +2272,17 @@ export const en = {
         },
         transitions: {
             title: "Transition examples",
-            isEduBody: "Instead of a giant table, let's trace a few transitions through the word <0>LANGUAGE</0>. Each row shows: \"given this context, the next character was...\" — plus real evidence from the training corpus.",
-            isFreeBody: "Sample transitions from <0>LANGUAGE</0> with corpus evidence.",
+            isEduBody: "Instead of a giant table, let's trace a few transitions through the phrase <0>the qui</0>. Each row shows: \"given this context, the next character was...\" — plus real evidence from the training corpus.",
+            isFreeBody: "Sample transitions from <0>the qui</0> with corpus evidence.",
             matches: "{count} match{suffix}",
             searching: "Searching training data...",
             noMatches: "No matches found in sampled corpus.",
-            corpusEvidence: "Corpus evidence"
+            corpusEvidence: "Corpus evidence",
+            noMatchesExpanded: {
+                title: "No matches in sample",
+                explanation: "The training corpus sample doesn't contain this exact transition. This is expected — not every possible N-gram appears in a finite corpus. This is the sparsity problem.",
+                hint: "Try expanding a different row, or reduce N to see more matches.",
+            },
         },
         explosion: {
             title: "Combinatorial Explosion",

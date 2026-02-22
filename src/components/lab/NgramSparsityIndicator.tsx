@@ -5,10 +5,10 @@ import { useI18n } from "@/i18n/context";
 
 interface NgramSparsityIndicatorProps {
     training: {
-        unique_contexts: number;
-        context_utilization: number;
-        sparsity: number;
-        transition_density: number;
+        unique_contexts?: number | null;
+        context_utilization?: number | null;
+        sparsity?: number | null;
+        transition_density?: number | null;
     } | null;
     diagnostics: {
         estimated_context_space: number;
@@ -20,8 +20,8 @@ export function NgramSparsityIndicator({ training, diagnostics }: NgramSparsityI
     const { t } = useI18n();
 
     if (!training || !diagnostics) return null;
-    const utilPct = training.context_utilization * 100;
-    const sparsityPct = training.sparsity * 100;
+    const utilPct = (training.context_utilization ?? 0) * 100;
+    const sparsityPct = (training.sparsity ?? 0) * 100;
 
     return (
         <div className="space-y-4">
@@ -31,7 +31,7 @@ export function NgramSparsityIndicator({ training, diagnostics }: NgramSparsityI
                         {t("models.ngram.lab.sparsity.observedContexts")}
                     </p>
                     <p className="text-xl font-bold text-cyan-300 font-mono">
-                        {training.unique_contexts.toLocaleString()}
+                        {(training.unique_contexts ?? 0).toLocaleString()}
                     </p>
                     <p className="text-[10px] text-white/25 mt-1">
                         of {diagnostics.estimated_context_space.toLocaleString()} {t("models.ngram.lab.sparsity.possibleSuffix")}
@@ -42,7 +42,7 @@ export function NgramSparsityIndicator({ training, diagnostics }: NgramSparsityI
                         {t("models.ngram.lab.sparsity.avgTransitions")}
                     </p>
                     <p className="text-xl font-bold text-emerald-300 font-mono">
-                        {training.transition_density.toFixed(1)}
+                        {(training.transition_density ?? 0).toFixed(1)}
                     </p>
                     <p className="text-[10px] text-white/25 mt-1">
                         {t("models.ngram.lab.sparsity.nextTokens")}

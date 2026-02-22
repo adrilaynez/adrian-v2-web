@@ -906,15 +906,15 @@ export function NeuralNetworkNarrative() {
                         <div className="px-6 py-6 border-t border-white/[0.04]">
                             <div className="space-y-5 mb-8">
                                 <p className="text-sm text-white/50 leading-relaxed">
-                                    Computing gradients one example at a time is inefficient. Modern GPUs process hundreds in <span className="text-indigo-400 font-medium">parallel</span>. Instead of updating after every example, we average gradients from a small batch — typically <span className="text-violet-400 font-semibold">32 to 256</span> — and update once per batch. This is <span className="text-rose-400 font-medium">mini-batch gradient descent</span>.
+                                    Computing gradients one example at a time is inefficient. Modern GPUs process hundreds in parallel. Instead of updating after every example, we average gradients from a small batch — typically <span className="text-violet-400 font-semibold">32 to 256</span> — and update once per batch. This is mini-batch gradient descent.
                                 </p>
 
                                 <p className="text-sm text-white/50 leading-relaxed">
-                                    Batch size controls a fundamental trade-off. Size <span className="text-red-400 font-semibold">1</span> (SGD) gives noisy gradients. <span className="text-blue-400 font-semibold">Full dataset</span> gives smooth gradients but is slow and can overfit. Mini-batches balance <span className="text-violet-400 font-medium">stable gradients</span> with efficient computation.
+                                    Batch size controls a fundamental trade-off. Size <span className="text-red-400 font-semibold">1</span> (SGD) gives noisy gradients. <span className="text-blue-400 font-semibold">Full dataset</span> gives smooth gradients but is slow and can overfit. Mini-batches balance stable gradients with efficient computation.
                                 </p>
 
                                 <p className="text-sm text-white/50 leading-relaxed">
-                                    The noise isn't just necessary — <span className="text-indigo-400 font-medium">it's helpful</span>. Noisy gradients help escape local minima and improve generalization on unseen data.
+                                    The noise isn't just necessary — it's helpful. Noisy gradients help escape local minima and improve generalization on unseen data.
                                 </p>
                             </div>
 
