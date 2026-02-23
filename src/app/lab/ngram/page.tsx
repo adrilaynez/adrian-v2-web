@@ -380,8 +380,8 @@ function AdvancedMetricsCollapsible({
                                 >
                                     <NgramLossChart
                                         trainLossHistory={displayedLossHistory}
-                                        valLossHistory={training.val_loss_history ?? undefined}
-                                        perplexity={training.perplexity ?? undefined}
+                                        valLossHistory={training?.val_loss_history ?? undefined}
+                                        perplexity={training?.perplexity ?? undefined}
                                         finalLoss={displayedFinalLoss}
                                     />
                                 </LabSection>
