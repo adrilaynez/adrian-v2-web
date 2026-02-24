@@ -1,113 +1,168 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useI18n } from "@/i18n/context";
 import { Slider } from "@/components/ui/slider";
+import { NN_COLORS } from "./visualizer-theme";
+
+/* Fixed commute inputs: distance = 5 km, traffic = 7 (scale 1-10) */
+const X1 = 5;   // distance_km
+const X2 = 7;   // traffic_level
+const MAX_MINUTES = 80;
 
 export function WeightSliderDemo() {
     const { t } = useI18n();
-    const x1 = 0.8;
-    const x2 = 0.6;
-    const [w1, setW1] = useState(1.0);
-    const [w2, setW2] = useState(1.0);
+    const shouldReduceMotion = useReducedMotion();
+    const [w1, setW1] = useState(1.5);
+    const [w2, setW2] = useState(2.0);
 
-    const wx1 = +(w1 * x1).toFixed(2);
-    const wx2 = +(w2 * x2).toFixed(2);
-    const total = +(wx1 + wx2).toFixed(2);
+    const contrib1 = +(w1 * X1).toFixed(1);
+    const contrib2 = +(w2 * X2).toFixed(1);
+    const total = +(contrib1 + contrib2).toFixed(1);
+    const clampedTotal = Math.max(0, total);
 
-    const maxBar = 3;
+    // Segmented bar: proportion of each positive contribution
+    const posSum = Math.max(0.01, Math.abs(contrib1) + Math.abs(contrib2));
+    const pct1 = (Math.abs(contrib1) / posSum) * 100;
+    const pct2 = (Math.abs(contrib2) / posSum) * 100;
 
-    function GradientBar({ value, color1, color2 }: { value: number; color1: string; color2: string }) {
-        const pct = Math.min(Math.abs(value) / maxBar, 1) * 100;
-        const isNeg = value < 0;
-        return (
-            <div className="relative h-4 w-full rounded-full bg-white/[0.04] overflow-hidden">
-                <motion.div
-                    className="absolute inset-y-0 left-0 rounded-full"
-                    style={{ background: isNeg ? color2 : `linear-gradient(90deg, ${color1}, ${color2})` }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-            </div>
-        );
-    }
+    // Thermometer fill 0–MAX_MINUTES
+    const thermoPct = Math.min(Math.max(clampedTotal / MAX_MINUTES, 0), 1) * 100;
+    const thermoColor = thermoPct > 75 ? "#f43f5e" : thermoPct > 45 ? "#fbbf24" : "#34d399";
+
+    const spring = shouldReduceMotion ? { duration: 0 } : { type: "spring" as const, stiffness: 280, damping: 28 };
 
     return (
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] p-6">
-            <p className="text-xs font-mono uppercase tracking-widest text-white/40 mb-5">
-                {t("neuralNetworkNarrative.discovery.weights.title")}
-            </p>
-
-            {/* Row 1: x₁ */}
-            <div className="mb-6 rounded-xl border border-white/[0.08] bg-black/20 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white/60">{t("neuralNetworkNarrative.discovery.weights.inputLabel1")}</span>
-                    <span className="text-xs font-mono text-sky-200/80 bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 rounded-md">{x1}</span>
+        <div className="p-5 sm:p-6 space-y-5">
+            {/* Inputs row */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.04] px-3 py-2.5">
+                    <p className="text-[9px] font-mono uppercase tracking-widest text-sky-400/50 mb-0.5">
+                        {t("neuralNetworkNarrative.discovery.weights.inputLabel1")}
+                    </p>
+                    <p className="text-xl font-mono font-bold" style={{ color: NN_COLORS.input.hex }}>
+                        {X1} <span className="text-xs font-normal text-white/30">km</span>
+                    </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-white/40 w-10 shrink-0 font-mono font-bold">{t("neuralNetworkNarrative.discovery.weights.weightLabel")}</span>
-                    <Slider
-                        min={-3}
-                        max={3}
-                        step={0.1}
-                        value={[w1]}
-                        onValueChange={([v]) => setW1(v)}
-                        className="flex-1"
-                    />
-                    <span className="text-sm font-mono font-bold text-white/70 w-12 text-right">{w1.toFixed(1)}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-mono text-white/40 w-28 shrink-0">
-                        w₁ × x₁ = <motion.span layout className="text-white/70 font-bold">{wx1}</motion.span>
-                    </span>
-                    <GradientBar value={wx1} color1="rgba(56,189,248,0.25)" color2="rgba(56,189,248,0.65)" />
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] px-3 py-2.5">
+                    <p className="text-[9px] font-mono uppercase tracking-widest text-amber-400/50 mb-0.5">
+                        {t("neuralNetworkNarrative.discovery.weights.inputLabel2")}
+                    </p>
+                    <p className="text-xl font-mono font-bold" style={{ color: NN_COLORS.target.hex }}>
+                        {X2} <span className="text-xs font-normal text-white/30">/ 10</span>
+                    </p>
                 </div>
             </div>
 
-            {/* Row 2: x₂ */}
-            <div className="mb-6 rounded-xl border border-white/[0.08] bg-black/20 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white/60">{t("neuralNetworkNarrative.discovery.weights.inputLabel2")}</span>
-                    <span className="text-xs font-mono text-amber-200/80 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">{x2}</span>
+            {/* Sliders */}
+            <div className="space-y-4">
+                {/* w₁ */}
+                <div className="rounded-xl border border-rose-500/15 bg-rose-500/[0.03] px-4 py-3">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-mono font-bold" style={{ color: NN_COLORS.weight.hex }}>
+                            w₁ <span className="text-white/30 font-normal text-[10px]">({t("neuralNetworkNarrative.discovery.weights.weightLabel")} distance)</span>
+                        </span>
+                        <span className="text-sm font-mono font-bold" style={{ color: NN_COLORS.weight.hex }}>{w1.toFixed(1)}</span>
+                    </div>
+                    <Slider min={-1} max={4} step={0.1} value={[w1]} onValueChange={([v]) => setW1(v)} trackColor={NN_COLORS.weight.hex} thumbColor={NN_COLORS.weight.hex} />
+                    <p className="text-[10px] font-mono text-white/30 mt-1.5">
+                        {w1.toFixed(1)} × {X1} = <span className="text-sky-300/70 font-bold">{contrib1} min</span>
+                    </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-white/40 w-10 shrink-0 font-mono font-bold">{t("neuralNetworkNarrative.discovery.weights.weightLabel")}</span>
-                    <Slider
-                        min={-3}
-                        max={3}
-                        step={0.1}
-                        value={[w2]}
-                        onValueChange={([v]) => setW2(v)}
-                        className="flex-1"
-                    />
-                    <span className="text-sm font-mono font-bold text-white/70 w-12 text-right">{w2.toFixed(1)}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-mono text-white/40 w-28 shrink-0">
-                        w₂ × x₂ = <motion.span layout className="text-white/70 font-bold">{wx2}</motion.span>
-                    </span>
-                    <GradientBar value={wx2} color1="rgba(251,191,36,0.25)" color2="rgba(251,191,36,0.65)" />
+
+                {/* w₂ */}
+                <div className="rounded-xl border border-rose-500/15 bg-rose-500/[0.03] px-4 py-3">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-mono font-bold" style={{ color: NN_COLORS.weight.hex }}>
+                            w₂ <span className="text-white/30 font-normal text-[10px]">({t("neuralNetworkNarrative.discovery.weights.weightLabel")} traffic)</span>
+                        </span>
+                        <span className="text-sm font-mono font-bold" style={{ color: NN_COLORS.weight.hex }}>{w2.toFixed(1)}</span>
+                    </div>
+                    <Slider min={-1} max={4} step={0.1} value={[w2]} onValueChange={([v]) => setW2(v)} trackColor={NN_COLORS.weight.hex} thumbColor={NN_COLORS.weight.hex} />
+                    <p className="text-[10px] font-mono text-white/30 mt-1.5">
+                        {w2.toFixed(1)} × {X2} = <span className="text-amber-300/70 font-bold">{contrib2} min</span>
+                    </p>
                 </div>
             </div>
 
-            {/* Sum */}
-            <div className="rounded-xl p-4 flex items-center justify-between border border-white/[0.08] bg-black/20">
-                <span className="text-xs font-mono text-white/40">{t("neuralNetworkNarrative.discovery.weights.sumLabel")}</span>
-                <div className="text-right">
-                    <span className="text-[10px] font-mono text-white/30 block">w₁·x₁ + w₂·x₂</span>
+            {/* Arithmetic display */}
+            <div className="rounded-xl bg-black/30 border border-white/[0.06] px-4 py-3">
+                <p className="text-[10px] font-mono text-white/30 mb-1">{t("neuralNetworkNarrative.discovery.weights.formula")}</p>
+                <p className="text-sm font-mono text-white/60 leading-relaxed">
+                    <span style={{ color: NN_COLORS.input.hex }}>{X1}</span>
+                    <span className="text-white/30"> × </span>
+                    <span style={{ color: NN_COLORS.weight.hex }}>{w1.toFixed(1)}</span>
+                    <span className="text-white/30"> + </span>
+                    <span style={{ color: NN_COLORS.target.hex }}>{X2}</span>
+                    <span className="text-white/30"> × </span>
+                    <span style={{ color: NN_COLORS.weight.hex }}>{w2.toFixed(1)}</span>
+                    <span className="text-white/30"> = </span>
                     <motion.span
-                        layout
-                        className="text-xl font-mono font-bold text-emerald-300/80"
+                        key={total}
+                        animate={{ scale: [1.15, 1] }}
+                        transition={spring}
+                        className="text-base font-bold"
+                        style={{ color: NN_COLORS.output.hex }}
                     >
                         {total}
                     </motion.span>
+                    <span className="text-white/30 text-xs"> min</span>
+                </p>
+            </div>
+
+            {/* Segmented contribution bar */}
+            <div>
+                <p className="text-[9px] font-mono uppercase tracking-widest text-white/25 mb-1.5">
+                    {t("neuralNetworkNarrative.discovery.weights.contributionLabel")}
+                </p>
+                <div className="flex h-3 rounded-full overflow-hidden gap-px">
+                    <motion.div
+                        className="rounded-l-full"
+                        style={{ background: NN_COLORS.input.hex + "99" }}
+                        animate={{ width: `${pct1}%` }}
+                        transition={spring}
+                    />
+                    <motion.div
+                        className="rounded-r-full"
+                        style={{ background: NN_COLORS.target.hex + "99" }}
+                        animate={{ width: `${pct2}%` }}
+                        transition={spring}
+                    />
+                </div>
+                <div className="flex justify-between mt-1">
+                    <span className="text-[9px] font-mono" style={{ color: NN_COLORS.input.hex + "99" }}>distance</span>
+                    <span className="text-[9px] font-mono" style={{ color: NN_COLORS.target.hex + "99" }}>traffic</span>
                 </div>
             </div>
 
-            <p className="mt-3 text-[11px] text-white/25 italic">
-                {t("neuralNetworkNarrative.discovery.weights.hint")}
-            </p>
+            {/* Thermometer output */}
+            <div className="flex items-center gap-4">
+                <div className="flex-1">
+                    <div className="flex justify-between mb-1">
+                        <span className="text-[9px] font-mono uppercase tracking-widest text-white/25">
+                            {t("neuralNetworkNarrative.discovery.weights.outputLabel")}
+                        </span>
+                        <span className="text-[9px] font-mono text-white/25">0 – {MAX_MINUTES} min</span>
+                    </div>
+                    <div className="relative h-5 rounded-full bg-white/[0.04] overflow-hidden border border-white/[0.06]">
+                        <motion.div
+                            className="absolute inset-y-0 left-0 rounded-full"
+                            style={{ background: thermoColor }}
+                            animate={{ width: `${thermoPct}%` }}
+                            transition={spring}
+                        />
+                    </div>
+                </div>
+                <motion.div
+                    className="text-2xl font-mono font-bold shrink-0 w-20 text-right"
+                    animate={{ color: thermoColor }}
+                    transition={{ duration: 0.3 }}
+                >
+                    {clampedTotal > 0 ? clampedTotal.toFixed(0) : "—"}
+                    <span className="text-xs font-normal text-white/30 ml-1">min</span>
+                </motion.div>
+            </div>
         </div>
     );
 }

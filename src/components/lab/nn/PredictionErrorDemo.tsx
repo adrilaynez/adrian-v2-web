@@ -1,113 +1,170 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useI18n } from "@/i18n/context";
+import { Slider } from "@/components/ui/slider";
+import { NN_COLORS } from "./visualizer-theme";
 
 /*
-  The simplest possible opening hook:
-  Model has w₁=4, w₂=3. Inputs are 1 and 2.
-  Output = 4×1 + 3×2 = 10.  We wanted 3.
-  No bias. No ReLU. Just multiplication + addition.
+  Interactive challenge: user adjusts w₁, w₂, bias to match actual = 30 min.
+  Inputs fixed: x₁ = 5 (distance km), x₂ = 7 (traffic level).
+  Target = 30 min commute.
+  Shows predicted vs actual bars, sensitivity, success state.
 */
+
+const X1 = 5;
+const X2 = 7;
+const TARGET = 30;
+const BAR_MAX = 60;
 
 export function PredictionErrorDemo() {
     const { t } = useI18n();
+    const shouldReduceMotion = useReducedMotion();
+    const [w1, setW1] = useState(4.0);
+    const [w2, setW2] = useState(3.0);
+    const [bias, setBias] = useState(0.0);
 
-    const x1 = 1, x2 = 2;
-    const w1 = 4, w2 = 3;
-    const output = w1 * x1 + w2 * x2; // 10
-    const target = 3;
-    const error = output - target; // 7
+    const predicted = +(w1 * X1 + w2 * X2 + bias).toFixed(1);
+    const error = +(predicted - TARGET).toFixed(1);
+    const absError = Math.abs(error);
+    const isSuccess = absError < 1;
+    const isClose = absError < 5;
+
+    // Sensitivity: how much output changes per unit change in each weight
+    const sensW1 = X1; // 5
+    const sensW2 = X2; // 7
+
+    const spring = shouldReduceMotion ? { duration: 0 } : { type: "spring" as const, stiffness: 260, damping: 26 };
+
+    const predictedPct = Math.min(Math.max(predicted / BAR_MAX, 0), 1) * 100;
+    const targetPct = (TARGET / BAR_MAX) * 100;
 
     return (
-        <div className="rounded-2xl border border-rose-500/[0.15] bg-gradient-to-br from-rose-500/[0.04] to-transparent p-6">
-            <p className="text-xs font-mono uppercase tracking-widest text-rose-400/50 mb-5">
-                {t("neuralNetworkNarrative.howItLearns.predictionError.title")}
-            </p>
-
-            {/* The computation, step by step — big and clear */}
-            <div className="space-y-4 mb-6">
-                {/* The formula */}
-                <div className="rounded-xl bg-black/30 border border-white/[0.05] p-5">
-                    <div className="flex items-center justify-center gap-2 flex-wrap text-center">
-                        {/* w1 × x1 */}
-                        <div className="flex items-center gap-1.5">
-                            <div className="rounded-lg bg-rose-500/10 border border-rose-500/25 px-2.5 py-1.5">
-                                <span className="text-[9px] text-rose-400/60 block font-mono">w₁</span>
-                                <span className="text-lg font-mono font-bold text-rose-400">{w1}</span>
-                            </div>
-                            <span className="text-white/30 text-lg">×</span>
-                            <div className="rounded-lg bg-sky-500/10 border border-sky-500/25 px-2.5 py-1.5">
-                                <span className="text-[9px] text-sky-400/60 block font-mono">x₁</span>
-                                <span className="text-lg font-mono font-bold text-sky-400">{x1}</span>
-                            </div>
-                        </div>
-
-                        <span className="text-white/30 text-lg">+</span>
-
-                        {/* w2 × x2 */}
-                        <div className="flex items-center gap-1.5">
-                            <div className="rounded-lg bg-rose-500/10 border border-rose-500/25 px-2.5 py-1.5">
-                                <span className="text-[9px] text-rose-400/60 block font-mono">w₂</span>
-                                <span className="text-lg font-mono font-bold text-rose-400">{w2}</span>
-                            </div>
-                            <span className="text-white/30 text-lg">×</span>
-                            <div className="rounded-lg bg-amber-500/10 border border-amber-500/25 px-2.5 py-1.5">
-                                <span className="text-[9px] text-amber-400/60 block font-mono">x₂</span>
-                                <span className="text-lg font-mono font-bold text-amber-400">{x2}</span>
-                            </div>
-                        </div>
-
-                        <span className="text-white/30 text-lg">=</span>
-
-                        {/* Result */}
-                        <div className="rounded-lg bg-white/[0.04] border border-white/[0.1] px-3 py-1.5">
-                            <span className="text-[9px] text-white/40 block font-mono">output</span>
-                            <span className="text-2xl font-mono font-bold text-white/90">{output}</span>
-                        </div>
-                    </div>
-
-                    {/* Arithmetic breakdown */}
-                    <p className="text-center text-xs font-mono text-white/30 mt-3">
-                        {w1} × {x1} + {w2} × {x2} = {w1 * x1} + {w2 * x2} = {output}
-                    </p>
-                </div>
-            </div>
-
-            {/* Comparison: got vs wanted */}
-            <div className="grid grid-cols-2 gap-4 mb-5">
-                <div className="rounded-xl bg-white/[0.02] border border-white/[0.08] p-4 text-center">
-                    <span className="text-[10px] text-white/30 block font-mono uppercase tracking-widest mb-1">{t("neuralNetworkNarrative.howItLearns.predictionError.got")}</span>
-                    <span className="text-3xl font-mono font-bold text-white/80">{output}</span>
-                </div>
-                <div className="rounded-xl bg-emerald-500/[0.04] border border-emerald-500/20 p-4 text-center">
-                    <span className="text-[10px] text-emerald-400/60 block font-mono uppercase tracking-widest mb-1">{t("neuralNetworkNarrative.howItLearns.predictionError.expected")}</span>
-                    <span className="text-3xl font-mono font-bold text-emerald-400">{target}</span>
-                </div>
-            </div>
-
-            {/* Error highlight */}
-            <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.4 }}
-                className="rounded-xl bg-rose-500/[0.06] border border-rose-500/25 p-5 text-center"
-            >
-                <span className="text-[10px] text-rose-400/60 block font-mono uppercase tracking-widest mb-2">{t("neuralNetworkNarrative.howItLearns.predictionError.error")}</span>
-                <div className="flex items-center justify-center gap-3">
-                    <span className="text-sm font-mono text-white/40">{output} − {target} =</span>
-                    <motion.span
-                        initial={{ scale: 0.8 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
-                        className="text-4xl font-mono font-bold text-rose-400"
-                    >
-                        {error}
-                    </motion.span>
-                </div>
-                <p className="text-xs text-white/30 mt-3">
-                    {t("neuralNetworkNarrative.howItLearns.predictionError.offBy")}
+        <div className="p-5 sm:p-6 space-y-5">
+            {/* Challenge prompt */}
+            <div className="rounded-xl bg-amber-500/[0.05] border border-amber-500/20 px-4 py-3">
+                <p className="text-xs font-semibold text-amber-300/70 mb-0.5">
+                    {t("neuralNetworkNarrative.howItLearns.predictionError.challenge")}
                 </p>
+                <p className="text-[11px] text-white/40">
+                    {t("neuralNetworkNarrative.howItLearns.predictionError.challengeDesc")}
+                </p>
+            </div>
+
+            {/* Sliders */}
+            <div className="space-y-3">
+                {[
+                    { label: "w₁", sublabel: `(× distance ${X1} km)`, val: w1, set: setW1, min: -2, max: 8, step: 0.1, color: NN_COLORS.weight.hex, sens: sensW1, isWeight: true },
+                    { label: "w₂", sublabel: `(× traffic ${X2})`, val: w2, set: setW2, min: -2, max: 8, step: 0.1, color: NN_COLORS.weight.hex, sens: sensW2, isWeight: true },
+                    { label: "b", sublabel: "(bias)", val: bias, set: setBias, min: -20, max: 20, step: 0.5, color: NN_COLORS.bias.hex, sens: 1, isWeight: false },
+                ].map(({ label, sublabel, val, set, min, max, step, color, sens, isWeight }) => (
+                    <div key={label} className={`rounded-xl border px-4 py-3 ${isWeight ? "border-rose-500/15 bg-rose-500/[0.03]" : "border-violet-500/15 bg-violet-500/[0.03]"}`}>
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-mono font-bold" style={{ color }}>{label}</span>
+                                <span className="text-[10px] text-white/30">{sublabel}</span>
+                            </div>
+                            <span className="text-sm font-mono font-bold" style={{ color }}>{val.toFixed(1)}</span>
+                        </div>
+                        <Slider min={min} max={max} step={step} value={[val]} onValueChange={([v]) => set(v)} />
+                        {label !== "b" && (
+                            <p className="text-[10px] text-white/25 mt-1.5 font-mono">
+                                {t("neuralNetworkNarrative.howItLearns.predictionError.sensitivity").replace("{w}", label).replace("{n}", String(sens))}
+                            </p>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Predicted vs Actual bars */}
+            <div className="space-y-3">
+                <p className="text-[9px] font-mono uppercase tracking-widest text-white/25">
+                    {t("neuralNetworkNarrative.howItLearns.predictionError.comparison")}
+                </p>
+
+                {/* Predicted bar */}
+                <div>
+                    <div className="flex justify-between mb-1">
+                        <span className="text-[10px] font-mono text-white/40">{t("neuralNetworkNarrative.howItLearns.predictionError.got")}</span>
+                        <motion.span
+                            key={predicted}
+                            animate={{ scale: [1.1, 1] }}
+                            transition={spring}
+                            className="text-[10px] font-mono font-bold"
+                            style={{ color: isSuccess ? NN_COLORS.output.hex : isClose ? NN_COLORS.target.hex : NN_COLORS.error.hex }}
+                        >
+                            {predicted} min
+                        </motion.span>
+                    </div>
+                    <div className="relative h-4 rounded-full bg-white/[0.04] overflow-hidden">
+                        <motion.div
+                            className="absolute inset-y-0 left-0 rounded-full"
+                            style={{ background: isSuccess ? NN_COLORS.output.hex : isClose ? NN_COLORS.target.hex : NN_COLORS.error.hex }}
+                            animate={{ width: `${predictedPct}%` }}
+                            transition={spring}
+                        />
+                    </div>
+                </div>
+
+                {/* Actual bar */}
+                <div>
+                    <div className="flex justify-between mb-1">
+                        <span className="text-[10px] font-mono text-white/40">{t("neuralNetworkNarrative.howItLearns.predictionError.expected")}</span>
+                        <span className="text-[10px] font-mono font-bold" style={{ color: NN_COLORS.output.hex }}>{TARGET} min</span>
+                    </div>
+                    <div className="relative h-4 rounded-full bg-white/[0.04] overflow-hidden">
+                        <div
+                            className="absolute inset-y-0 left-0 rounded-full"
+                            style={{ width: `${targetPct}%`, background: NN_COLORS.output.hex + "60" }}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Sensitivity indicator */}
+            <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-sky-500/[0.04] border border-sky-500/15 p-2.5 text-center">
+                    <p className="text-[9px] font-mono text-sky-400/50 mb-0.5">w₁ +1 →</p>
+                    <p className="text-sm font-mono font-bold text-sky-400">+{sensW1} min</p>
+                </div>
+                <div className="rounded-lg bg-amber-500/[0.04] border border-amber-500/15 p-2.5 text-center">
+                    <p className="text-[9px] font-mono text-amber-400/50 mb-0.5">w₂ +1 →</p>
+                    <p className="text-sm font-mono font-bold text-amber-400">+{sensW2} min</p>
+                </div>
+            </div>
+
+            {/* Error readout / success state */}
+            <motion.div
+                className={`rounded-xl p-4 border text-center transition-colors ${isSuccess
+                    ? "bg-emerald-500/[0.08] border-emerald-500/30 shadow-[0_0_24px_-6px_rgba(52,211,153,0.25)]"
+                    : isClose
+                        ? "bg-amber-500/[0.06] border-amber-500/20"
+                        : "bg-rose-500/[0.05] border-rose-500/20"
+                    }`}
+            >
+                <span className="text-[10px] font-mono uppercase tracking-widest block mb-1"
+                    style={{ color: isSuccess ? NN_COLORS.output.hex : isClose ? NN_COLORS.target.hex : NN_COLORS.error.hex }}>
+                    {t("neuralNetworkNarrative.howItLearns.predictionError.error")}
+                </span>
+                <motion.span
+                    key={error}
+                    animate={{ scale: [1.12, 1] }}
+                    transition={spring}
+                    className="text-3xl font-mono font-bold block"
+                    style={{ color: isSuccess ? NN_COLORS.output.hex : isClose ? NN_COLORS.target.hex : NN_COLORS.error.hex }}
+                >
+                    {error > 0 ? "+" : ""}{error}
+                </motion.span>
+                {isSuccess ? (
+                    <p className="text-xs font-semibold mt-2" style={{ color: NN_COLORS.output.hex }}>
+                        {t("neuralNetworkNarrative.howItLearns.predictionError.success")}
+                    </p>
+                ) : (
+                    <p className="text-[11px] text-white/30 mt-2">
+                        {t("neuralNetworkNarrative.howItLearns.predictionError.offBy")}
+                    </p>
+                )}
             </motion.div>
         </div>
     );

@@ -13,12 +13,13 @@ export function TrainingWithTextDemo() {
     const [playing, setPlaying] = useState(true);
     const [speed, setSpeed] = useState(1);
     const [epoch, setEpoch] = useState(1);
+    const [showShortcutsHint, setShowShortcutsHint] = useState(true);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const text = DEFAULT_TEXT;
     const maxPos = text.length - windowSize;
 
-    const window = text.slice(pos, pos + windowSize);
+    const ctxWindow = text.slice(pos, pos + windowSize);
     const target = pos + windowSize < text.length ? text[pos + windowSize] : null;
 
     const advance = useCallback(() => {
@@ -31,6 +32,10 @@ export function TrainingWithTextDemo() {
         });
     }, [maxPos]);
 
+    const back = useCallback(() => {
+        setPos((p) => Math.max(0, p - 1));
+    }, []);
+
     useEffect(() => {
         if (!playing) return;
         timerRef.current = setTimeout(advance, 800 / speed);
@@ -41,6 +46,41 @@ export function TrainingWithTextDemo() {
         setPos(0);
         setEpoch(1);
     }, [windowSize]);
+
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            const tag = target?.tagName?.toLowerCase();
+            const isTypingTarget =
+                tag === "input" ||
+                tag === "textarea" ||
+                (target?.getAttribute("contenteditable") === "true");
+            if (isTypingTarget) return;
+
+            if (e.key === " ") {
+                e.preventDefault();
+                setShowShortcutsHint(false);
+                setPlaying((p) => !p);
+            }
+
+            if (e.key === "ArrowRight") {
+                e.preventDefault();
+                setShowShortcutsHint(false);
+                setPlaying(false);
+                advance();
+            }
+
+            if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                setShowShortcutsHint(false);
+                setPlaying(false);
+                back();
+            }
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [advance, back]);
 
     const reset = () => { setPos(0); setEpoch(1); };
 
@@ -57,11 +97,10 @@ export function TrainingWithTextDemo() {
                     <button
                         key={n}
                         onClick={() => setWindowSize(n)}
-                        className={`w-7 h-7 rounded-lg text-xs font-bold transition-all border ${
-                            windowSize === n
+                        className={`w-11 h-11 rounded-lg text-xs font-bold transition-all border ${windowSize === n
                                 ? "bg-rose-500/20 border-rose-500/30 text-rose-400"
                                 : "bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/60"
-                        }`}
+                            }`}
                     >
                         {n}
                     </button>
@@ -77,13 +116,12 @@ export function TrainingWithTextDemo() {
                         return (
                             <span
                                 key={i}
-                                className={`inline-block transition-all duration-200 px-[1px] ${
-                                    inWindow
-                                        ? "bg-rose-500/20 text-white border-b-2 border-rose-500/50 rounded-sm"
-                                        : isTarget
+                                className={`inline-block transition-all duration-200 px-[1px] ${inWindow
+                                    ? "bg-rose-500/20 text-white border-b-2 border-rose-500/50 rounded-sm"
+                                    : isTarget
                                         ? "text-amber-400 font-bold"
                                         : "text-white/25"
-                                }`}
+                                    }`}
                             >
                                 {ch === " " ? "\u00A0" : ch}
                             </span>
@@ -103,7 +141,7 @@ export function TrainingWithTextDemo() {
                     className="flex items-center gap-3 mb-5 font-mono text-sm"
                 >
                     <span className="px-2 py-1 rounded bg-rose-500/15 border border-rose-500/25 text-rose-400">
-                        {window.split("").map((c) => (c === " " ? "␣" : c)).join("")}
+                        {ctxWindow.split("").map((c) => (c === " " ? "␣" : c)).join("")}
                     </span>
                     <span className="text-white/20">→</span>
                     <span className="px-2 py-1 rounded bg-amber-500/15 border border-amber-500/25 text-amber-400 font-bold">
@@ -148,6 +186,12 @@ export function TrainingWithTextDemo() {
                     {t("neuralNetworkNarrative.training.textDemo.reset")}
                 </button>
 
+                {showShortcutsHint && (
+                    <span className="px-2 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest bg-white/[0.03] border border-white/[0.06] text-white/30">
+                        {t("neuralNetworkNarrative.training.textDemo.shortcutsHint")}
+                    </span>
+                )}
+
                 {/* Speed */}
                 <div className="flex items-center gap-2 ml-auto">
                     <span className="text-[10px] text-white/25">{t("neuralNetworkNarrative.training.textDemo.speed")}</span>
@@ -155,9 +199,8 @@ export function TrainingWithTextDemo() {
                         <button
                             key={s}
                             onClick={() => setSpeed(s)}
-                            className={`text-[10px] px-1.5 py-0.5 rounded transition-all ${
-                                speed === s ? "text-rose-400 bg-rose-500/15" : "text-white/30 hover:text-white/50"
-                            }`}
+                            className={`text-[10px] px-1.5 py-0.5 rounded transition-all ${speed === s ? "text-rose-400 bg-rose-500/15" : "text-white/30 hover:text-white/50"
+                                }`}
                         >
                             {s}x
                         </button>

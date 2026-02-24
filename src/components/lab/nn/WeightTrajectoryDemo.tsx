@@ -188,6 +188,21 @@ export function WeightTrajectoryDemo() {
                         {/* Axis labels */}
                         <text x={SVG_SIZE / 2} y={SVG_SIZE - 2} textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="10" fontFamily="monospace">w₁</text>
                         <text x={4} y={SVG_SIZE / 2} textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="10" fontFamily="monospace" transform={`rotate(-90, 8, ${SVG_SIZE / 2})`}>w₂</text>
+
+                        {/* Tick marks — w₁ (x-axis) */}
+                        {[0, 1, 2, 3, 4, 5].map(v => (
+                            <g key={`tx-${v}`}>
+                                <line x1={w1ToX(v)} y1={SVG_SIZE - 1} x2={w1ToX(v)} y2={SVG_SIZE - 5} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                                <text x={w1ToX(v)} y={SVG_SIZE - 7} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="7" fontFamily="monospace">{v}</text>
+                            </g>
+                        ))}
+                        {/* Tick marks — w₂ (y-axis) */}
+                        {[0, 1, 2, 3, 4, 5].map(v => (
+                            <g key={`ty-${v}`}>
+                                <line x1={1} y1={w2ToY(v)} x2={5} y2={w2ToY(v)} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                                <text x={8} y={w2ToY(v) + 3} textAnchor="start" fill="rgba(255,255,255,0.2)" fontSize="7" fontFamily="monospace">{v}</text>
+                            </g>
+                        ))}
                     </svg>
 
                     {/* Legend */}

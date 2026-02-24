@@ -16,8 +16,8 @@ export function OperationExplorer() {
     const { t } = useI18n();
     const [op, setOp] = useState<Op>("add");
 
-    const x1 = 3;
-    const x2 = 5;
+    const x1 = 8;
+    const x2 = 3;
 
     const w1 = 1;
     const w2 = 1;
@@ -71,7 +71,7 @@ export function OperationExplorer() {
                         <span className="text-sm font-mono font-bold text-sky-400">{x1}</span>
                     </div>
                     <div className="relative h-2 rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.08]">
-                        <div className="absolute inset-y-0 left-0 bg-sky-400/60" style={{ width: "60%" }} />
+                        <div className="absolute inset-y-0 left-0 bg-sky-400/60" style={{ width: "80%" }} />
                     </div>
                 </div>
                 <div className="space-y-2">
@@ -80,7 +80,7 @@ export function OperationExplorer() {
                         <span className="text-sm font-mono font-bold text-amber-400">{x2}</span>
                     </div>
                     <div className="relative h-2 rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.08]">
-                        <div className="absolute inset-y-0 left-0 bg-amber-400/60" style={{ width: "75%" }} />
+                        <div className="absolute inset-y-0 left-0 bg-amber-400/60" style={{ width: "30%" }} />
                     </div>
                 </div>
             </div>

@@ -109,6 +109,36 @@ export function LossFormulaMotivation() {
                     {t("neuralNetworkNarrative.howItLearns.lossMotive.lossExplain")}
                 </p>
             </motion.div>
+
+            {/* N8: Loss alternatives comparison */}
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.01] mt-5">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 px-4 pt-4 mb-3">
+                    {t("neuralNetworkNarrative.howItLearns.lossMotive.alternativesTitle")}
+                </p>
+                <div className="px-4 pb-4 space-y-2">
+                    {/* MSE */}
+                    <div className="grid grid-cols-[80px_1fr_100px] items-center gap-3 rounded-lg bg-rose-500/[0.04] border border-rose-500/15 p-2.5">
+                        <span className="text-[10px] font-mono font-bold text-rose-400">MSE</span>
+                        <span className="text-[10px] text-white/40">{t("neuralNetworkNarrative.howItLearns.lossMotive.mseDesc")}</span>
+                        <span className="text-xs font-mono text-white/50 text-right">(ŷ − y)² = {squaredError}</span>
+                    </div>
+                    {/* MAE */}
+                    <div className="grid grid-cols-[80px_1fr_100px] items-center gap-3 rounded-lg bg-amber-500/[0.04] border border-amber-500/15 p-2.5">
+                        <span className="text-[10px] font-mono font-bold text-amber-400">MAE</span>
+                        <span className="text-[10px] text-white/40">{t("neuralNetworkNarrative.howItLearns.lossMotive.maeDesc")}</span>
+                        <span className="text-xs font-mono text-white/50 text-right">|ŷ − y| = {Math.abs(rawError)}</span>
+                    </div>
+                    {/* Raw */}
+                    <div className="grid grid-cols-[80px_1fr_100px] items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.06] p-2.5">
+                        <span className="text-[10px] font-mono font-bold text-white/40">Raw</span>
+                        <span className="text-[10px] text-white/40">{t("neuralNetworkNarrative.howItLearns.lossMotive.rawDesc")}</span>
+                        <span className="text-xs font-mono text-white/50 text-right">ŷ − y = +{rawError}</span>
+                    </div>
+                </div>
+                <p className="text-[10px] text-white/25 px-4 pb-4 italic">
+                    {t("neuralNetworkNarrative.howItLearns.lossMotive.alternativesNote")}
+                </p>
+            </div>
         </div>
     );
 }

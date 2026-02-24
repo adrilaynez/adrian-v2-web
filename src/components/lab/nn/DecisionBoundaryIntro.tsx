@@ -134,8 +134,8 @@ export function DecisionBoundaryIntro() {
                     <button
                         onClick={() => handleScenarioChange("linear")}
                         className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold border transition-all ${scenario === "linear"
-                                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                                : "border-white/[0.06] bg-white/[0.02] text-white/30 hover:text-white/50"
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                            : "border-white/[0.06] bg-white/[0.02] text-white/30 hover:text-white/50"
                             }`}
                     >
                         {t("neuralNetworkNarrative.decisionBoundary.simpleBtn")}
@@ -143,8 +143,8 @@ export function DecisionBoundaryIntro() {
                     <button
                         onClick={() => handleScenarioChange("xor")}
                         className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold border transition-all ${scenario === "xor"
-                                ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
-                                : "border-white/[0.06] bg-white/[0.02] text-white/30 hover:text-white/50"
+                            ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                            : "border-white/[0.06] bg-white/[0.02] text-white/30 hover:text-white/50"
                             }`}
                     >
                         {t("neuralNetworkNarrative.decisionBoundary.complexBtn")}
@@ -241,7 +241,7 @@ export function DecisionBoundaryIntro() {
                             </div>
                             <input type="range" min={-2} max={2} step={0.1} value={w1}
                                 onChange={(e) => setW1(+e.target.value)}
-                                className="w-full cursor-pointer accent-rose-400" />
+                                className="w-full cursor-pointer" style={{ accentColor: '#fb7185' }} />
                         </div>
                         <div>
                             <div className="flex justify-between mb-1">
@@ -250,7 +250,7 @@ export function DecisionBoundaryIntro() {
                             </div>
                             <input type="range" min={-2} max={2} step={0.1} value={w2}
                                 onChange={(e) => setW2(+e.target.value)}
-                                className="w-full cursor-pointer accent-rose-400" />
+                                className="w-full cursor-pointer" style={{ accentColor: '#fb7185' }} />
                         </div>
                         <div>
                             <div className="flex justify-between mb-1">
@@ -259,15 +259,15 @@ export function DecisionBoundaryIntro() {
                             </div>
                             <input type="range" min={-2} max={2} step={0.1} value={bias}
                                 onChange={(e) => setBias(+e.target.value)}
-                                className="w-full cursor-pointer accent-amber-400" />
+                                className="w-full cursor-pointer" style={{ accentColor: '#a78bfa' }} />
                         </div>
 
                         {/* Accuracy indicator */}
                         <div className={`rounded-lg border p-3 text-center ${accuracy === 100
-                                ? "border-emerald-500/30 bg-emerald-500/[0.06]"
-                                : accuracy >= 75
-                                    ? "border-amber-500/30 bg-amber-500/[0.06]"
-                                    : "border-rose-500/30 bg-rose-500/[0.06]"
+                            ? "border-emerald-500/30 bg-emerald-500/[0.06]"
+                            : accuracy >= 75
+                                ? "border-amber-500/30 bg-amber-500/[0.06]"
+                                : "border-rose-500/30 bg-rose-500/[0.06]"
                             }`}>
                             <span className="text-[10px] font-mono uppercase tracking-wider text-white/30 block mb-1">
                                 {t("neuralNetworkNarrative.decisionBoundary.accuracyLabel")}

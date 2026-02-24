@@ -39,24 +39,15 @@ function softmax(logits: Record<string, number>): Record<string, number> {
     return Object.fromEntries(Object.entries(exps).map(([k, v]) => [k, v / sum]));
 }
 
-/* Layout constants */
-const SVG_W = 520;
-const SVG_H = 340;
+/* Layout constants — no hidden layer, direct input → 27 outputs */
+const SVG_W = 460;
+const SVG_H = 300;
 const INPUT_X = 52;
-const HIDDEN_X = 180;
-const OUTPUT_X = 360;
-const HIDDEN_COUNT = 4;
 const OUTPUT_COLS = 9;
-const OUTPUT_ROWS = 3;
-const OUT_CX = OUTPUT_X;
-const OUT_START_Y = 40;
+const OUT_CX = 160;
+const OUT_START_Y = 30;
 const OUT_GAP_X = 34;
 const OUT_GAP_Y = 88;
-
-function hiddenY(i: number): number {
-    const total = HIDDEN_COUNT;
-    return SVG_H / 2 - ((total - 1) / 2) * 60 + i * 60;
-}
 
 function outputPos(i: number): { x: number; y: number } {
     const col = i % OUTPUT_COLS;
@@ -69,18 +60,15 @@ function outputPos(i: number): { x: number; y: number } {
 
 interface Particle {
     id: number;
-    fromX: number;
-    fromY: number;
     toX: number;
     toY: number;
     delay: number;
-    layer: "ih" | "ho";
 }
 
 export function OutputLayerNetworkVisualizer() {
     const { t } = useI18n();
     const [selectedInput, setSelectedInput] = useState("t");
-    const [probs, setProbs] = useState<Record<string, number>>({});
+    const [logits, setLogits] = useState<Record<string, number>>({});
     const [particles, setParticles] = useState<Particle[]>([]);
     const [animating, setAnimating] = useState(false);
     const particleIdRef = useRef(0);
@@ -88,52 +76,35 @@ export function OutputLayerNetworkVisualizer() {
     const inputY = SVG_H / 2;
 
     useEffect(() => {
-        const logits = getLogits(selectedInput);
-        setProbs(softmax(logits));
+        const rawLogits = getLogits(selectedInput);
+        setLogits(rawLogits);
         triggerAnimation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedInput]);
 
     function triggerAnimation() {
         if (animating) return;
         setAnimating(true);
         const newParticles: Particle[] = [];
-        /* input → hidden */
-        for (let h = 0; h < HIDDEN_COUNT; h++) {
+        /* input → output directly */
+        for (let o = 0; o < CHARS.length; o += 2) {
+            const pos = outputPos(o);
             newParticles.push({
                 id: particleIdRef.current++,
-                fromX: INPUT_X,
-                fromY: inputY,
-                toX: HIDDEN_X,
-                toY: hiddenY(h),
-                delay: h * 0.06,
-                layer: "ih",
+                toX: pos.x,
+                toY: pos.y,
+                delay: (o / CHARS.length) * 0.3,
             });
-        }
-        /* hidden → output (sample 12 connections for perf) */
-        for (let h = 0; h < HIDDEN_COUNT; h++) {
-            for (let o = 0; o < CHARS.length; o += 3) {
-                const pos = outputPos(o);
-                newParticles.push({
-                    id: particleIdRef.current++,
-                    fromX: HIDDEN_X,
-                    fromY: hiddenY(h),
-                    toX: pos.x,
-                    toY: pos.y,
-                    delay: 0.3 + h * 0.05 + (o / CHARS.length) * 0.15,
-                    layer: "ho",
-                });
-            }
         }
         setParticles(newParticles);
         setTimeout(() => {
             setParticles([]);
             setAnimating(false);
-        }, 1400);
+        }, 1000);
     }
 
-    const sortedByProb = [...CHARS].sort((a, b) => (probs[b] ?? 0) - (probs[a] ?? 0));
-    const top3 = new Set(sortedByProb.slice(0, 3));
+    const sortedByLogit = [...CHARS].sort((a, b) => (logits[b] ?? -1) - (logits[a] ?? -1));
+    const top3 = new Set(sortedByLogit.slice(0, 3));
 
     const QUICK_INPUTS = ["t", "h", "e", "a", "i", "n", "s", "o", " ", "r"];
 
@@ -145,7 +116,7 @@ export function OutputLayerNetworkVisualizer() {
                     {t("neuralNetworkNarrative.fromNumbers.networkViz.label")}
                 </span>
                 <span className="text-[10px] text-white/20 font-mono">
-                    {t("neuralNetworkNarrative.fromNumbers.networkViz.arch")}
+                    1 input → 27 outputs
                 </span>
             </div>
 
@@ -159,11 +130,10 @@ export function OutputLayerNetworkVisualizer() {
                         <button
                             key={ch}
                             onClick={() => setSelectedInput(ch)}
-                            className={`w-8 h-8 rounded-lg text-xs font-mono font-bold transition-all border ${
-                                selectedInput === ch
-                                    ? "bg-sky-500/20 border-sky-500/40 text-sky-300"
-                                    : "bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/60 hover:border-white/[0.14]"
-                            }`}
+                            className={`w-8 h-8 rounded-lg text-xs font-mono font-bold transition-all border ${selectedInput === ch
+                                ? "bg-sky-500/20 border-sky-500/40 text-sky-300"
+                                : "bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/60 hover:border-white/[0.14]"
+                                }`}
                         >
                             {ch === " " ? "·" : ch}
                         </button>
@@ -171,51 +141,38 @@ export function OutputLayerNetworkVisualizer() {
                 </div>
             </div>
 
-            {/* SVG Network */}
+            {/* SVG Network — no hidden layer */}
             <div className="px-4 pb-2 overflow-x-auto">
                 <svg
                     viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-                    className="w-full max-w-[520px] mx-auto"
-                    style={{ minWidth: 320 }}
+                    className="w-full max-w-[460px] mx-auto"
+                    style={{ minWidth: 300 }}
                 >
-                    {/* Connection lines: input → hidden */}
-                    {Array.from({ length: HIDDEN_COUNT }, (_, h) => (
-                        <line
-                            key={`ih-${h}`}
-                            x1={INPUT_X} y1={inputY}
-                            x2={HIDDEN_X} y2={hiddenY(h)}
-                            stroke="rgba(139,92,246,0.12)"
-                            strokeWidth="1"
-                        />
-                    ))}
-
-                    {/* Connection lines: hidden → output (every 3rd for perf) */}
-                    {Array.from({ length: HIDDEN_COUNT }, (_, h) =>
-                        CHARS.map((ch, o) => {
-                            if (o % 4 !== 0) return null;
-                            const pos = outputPos(o);
-                            return (
-                                <line
-                                    key={`ho-${h}-${o}`}
-                                    x1={HIDDEN_X} y1={hiddenY(h)}
-                                    x2={pos.x} y2={pos.y}
-                                    stroke="rgba(244,63,94,0.06)"
-                                    strokeWidth="0.8"
-                                />
-                            );
-                        })
-                    )}
+                    {/* Connection lines: input → output (every 3rd for perf) */}
+                    {CHARS.map((_, o) => {
+                        if (o % 3 !== 0) return null;
+                        const pos = outputPos(o);
+                        return (
+                            <line
+                                key={`io-${o}`}
+                                x1={INPUT_X} y1={inputY}
+                                x2={pos.x} y2={pos.y}
+                                stroke="rgba(244,63,94,0.08)"
+                                strokeWidth="0.8"
+                            />
+                        );
+                    })}
 
                     {/* Animated particles */}
                     <AnimatePresence>
                         {particles.map((p) => (
                             <motion.circle
                                 key={p.id}
-                                r={p.layer === "ih" ? 3 : 2}
-                                fill={p.layer === "ih" ? "rgba(139,92,246,0.9)" : "rgba(244,63,94,0.8)"}
-                                initial={{ cx: p.fromX, cy: p.fromY, opacity: 0.9 }}
+                                r={2.5}
+                                fill="rgba(244,63,94,0.8)"
+                                initial={{ cx: INPUT_X, cy: inputY, opacity: 0.9 }}
                                 animate={{ cx: p.toX, cy: p.toY, opacity: 0 }}
-                                transition={{ duration: 0.55, delay: p.delay, ease: "easeIn" }}
+                                transition={{ duration: 0.45, delay: p.delay, ease: "easeIn" }}
                             />
                         ))}
                     </AnimatePresence>
@@ -248,38 +205,10 @@ export function OutputLayerNetworkVisualizer() {
                         input
                     </text>
 
-                    {/* Hidden neurons */}
-                    {Array.from({ length: HIDDEN_COUNT }, (_, h) => (
-                        <g key={`h-${h}`}>
-                            <circle
-                                cx={HIDDEN_X} cy={hiddenY(h)} r={13}
-                                fill="rgba(139,92,246,0.12)"
-                                stroke="rgba(139,92,246,0.35)"
-                                strokeWidth="1.2"
-                            />
-                            <text
-                                x={HIDDEN_X} y={hiddenY(h) + 1}
-                                textAnchor="middle" dominantBaseline="middle"
-                                fill="rgba(196,181,253,0.5)"
-                                fontSize="7" fontFamily="monospace"
-                            >
-                                h{h + 1}
-                            </text>
-                        </g>
-                    ))}
-                    <text
-                        x={HIDDEN_X} y={SVG_H - 8}
-                        textAnchor="middle"
-                        fill="rgba(139,92,246,0.3)"
-                        fontSize="8" fontFamily="monospace"
-                    >
-                        hidden
-                    </text>
-
-                    {/* Output neurons */}
+                    {/* Output neurons — raw logits */}
                     {CHARS.map((ch, i) => {
                         const pos = outputPos(i);
-                        const prob = probs[ch] ?? 0;
+                        const logit = logits[ch] ?? 0;
                         const isTop = top3.has(ch);
                         const radius = isTop ? 13 : 10;
                         return (
@@ -290,16 +219,12 @@ export function OutputLayerNetworkVisualizer() {
                                     fill={isTop ? "rgba(244,63,94,0.25)" : "rgba(255,255,255,0.04)"}
                                     stroke={isTop ? "rgba(244,63,94,0.7)" : "rgba(255,255,255,0.12)"}
                                     strokeWidth={isTop ? 1.5 : 0.8}
-                                    animate={isTop ? {
-                                        boxShadow: ["0 0 0px rgba(244,63,94,0)", "0 0 8px rgba(244,63,94,0.6)", "0 0 0px rgba(244,63,94,0)"],
-                                    } : {}}
-                                    transition={{ duration: 1.5, repeat: Infinity }}
                                 />
                                 <text
                                     x={pos.x} y={pos.y + 1}
                                     textAnchor="middle" dominantBaseline="middle"
-                                    fill={isTop ? "rgba(253,164,175,0.95)" : "rgba(255,255,255,0.3)"}
-                                    fontSize={isTop ? "8" : "7"}
+                                    fill={isTop ? "rgba(253,164,175,0.95)" : "rgba(255,255,255,0.55)"}
+                                    fontSize={isTop ? "9" : "8"}
                                     fontWeight={isTop ? "bold" : "normal"}
                                     fontFamily="monospace"
                                 >
@@ -312,7 +237,7 @@ export function OutputLayerNetworkVisualizer() {
                                         fill="rgba(253,164,175,0.6)"
                                         fontSize="7" fontFamily="monospace"
                                     >
-                                        {(prob * 100).toFixed(0)}%
+                                        {logit.toFixed(1)}
                                     </text>
                                 )}
                             </g>
@@ -324,19 +249,26 @@ export function OutputLayerNetworkVisualizer() {
                         fill="rgba(244,63,94,0.3)"
                         fontSize="8" fontFamily="monospace"
                     >
-                        27 outputs
+                        27 outputs · raw logits
                     </text>
                 </svg>
             </div>
 
-            {/* Top predictions strip */}
+            {/* Raw logits note */}
+            <div className="mx-4 mb-3 rounded-lg border border-amber-500/15 bg-amber-500/[0.04] px-3 py-2">
+                <p className="text-[10px] text-amber-400/70 font-mono">
+                    {t("neuralNetworkNarrative.fromNumbers.networkViz.logitsNote")}
+                </p>
+            </div>
+
+            {/* Top predictions strip — showing raw scores */}
             <div className="px-4 pb-4">
                 <p className="text-[10px] font-mono uppercase tracking-widest text-white/20 mb-2">
-                    {t("neuralNetworkNarrative.fromNumbers.networkViz.topPredictions")}
+                    {t("neuralNetworkNarrative.fromNumbers.networkViz.topRawScores")}
                 </p>
                 <div className="flex gap-2">
                     <AnimatePresence mode="popLayout">
-                        {sortedByProb.slice(0, 5).map((ch, rank) => (
+                        {sortedByLogit.slice(0, 5).map((ch, rank) => (
                             <motion.div
                                 key={`${selectedInput}-${ch}`}
                                 layout
@@ -344,19 +276,18 @@ export function OutputLayerNetworkVisualizer() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 transition={{ duration: 0.25, delay: rank * 0.04 }}
-                                className={`flex flex-col items-center px-3 py-2 rounded-xl border ${
-                                    rank === 0
-                                        ? "bg-rose-500/15 border-rose-500/30"
-                                        : rank < 3
+                                className={`flex flex-col items-center px-3 py-2 rounded-xl border ${rank === 0
+                                    ? "bg-rose-500/15 border-rose-500/30"
+                                    : rank < 3
                                         ? "bg-white/[0.04] border-white/[0.10]"
                                         : "bg-white/[0.02] border-white/[0.06]"
-                                }`}
+                                    }`}
                             >
                                 <span className={`text-lg font-bold font-mono ${rank === 0 ? "text-rose-300" : "text-white/50"}`}>
                                     {ch === " " ? "·" : ch}
                                 </span>
                                 <span className={`text-[10px] font-mono ${rank === 0 ? "text-rose-400/70" : "text-white/25"}`}>
-                                    {((probs[ch] ?? 0) * 100).toFixed(1)}%
+                                    {(logits[ch] ?? 0).toFixed(2)}
                                 </span>
                             </motion.div>
                         ))}
