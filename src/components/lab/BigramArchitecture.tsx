@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
 import { ArrowRight, Braces, Grid3x3, RefreshCw, Shuffle } from "lucide-react";
+
 import { useI18n } from "@/i18n/context";
 
 export function BigramArchitecture() {

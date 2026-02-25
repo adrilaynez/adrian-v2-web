@@ -1,11 +1,12 @@
 "use client";
 
+import { BlockMath } from "react-katex";
+
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, Cpu, Layers } from "lucide-react";
-import { useI18n } from "@/i18n/context";
+
 import { Badge } from "@/components/ui/badge";
-import { BlockMath } from "react-katex";
-import "katex/dist/katex.min.css";
+import { useI18n } from "@/i18n/context";
 
 interface NgramTechnicalExplanationProps {
     contextSize: number;

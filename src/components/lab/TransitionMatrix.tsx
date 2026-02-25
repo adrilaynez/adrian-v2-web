@@ -1,14 +1,16 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback, useMemo, memo } from "react";
-import { ZoomIn, ZoomOut, Maximize2, Minimize2, Info, Grid3x3, Search, Layers } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { memo,useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { motion } from "framer-motion";
+import { Info,Maximize2, Minimize2, Search, ZoomIn, ZoomOut } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/context";
-import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import type { TransitionMatrixViz } from "@/types/lmLab";
 
 interface TransitionMatrixProps {

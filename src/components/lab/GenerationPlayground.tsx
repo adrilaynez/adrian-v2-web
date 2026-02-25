@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+
 import { motion } from "framer-motion";
-import { useI18n } from "@/i18n/context";
-import { Card } from "@/components/ui/card";
+import { AlertCircle,Check, Copy, Sparkles } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, Copy, Check, AlertCircle } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 
 interface GenerationPlaygroundProps {
     onGenerate: (

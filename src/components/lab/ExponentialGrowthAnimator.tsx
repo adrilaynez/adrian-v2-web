@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, AnimatePresence, useInView } from "framer-motion";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useCallback,useEffect, useRef, useState } from "react";
+
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 
 const STEPS = [

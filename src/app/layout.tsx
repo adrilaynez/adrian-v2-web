@@ -1,10 +1,12 @@
+import "./globals.css";
+import "katex/dist/katex.min.css"; // LaTeX support
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+
 import { LayoutShell } from "@/components/layout/layout-shell";
+import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/i18n/context";
-import "katex/dist/katex.min.css"; // LaTeX support
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +18,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { Playfair_Display, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { JetBrains_Mono, Playfair_Display, Space_Grotesk } from "next/font/google";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",

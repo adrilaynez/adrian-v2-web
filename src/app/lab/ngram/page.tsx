@@ -1,40 +1,42 @@
 "use client";
 
-import { LabShell } from "@/components/lab/LabShell";
-import { ModelHero } from "@/components/lab/ModelHero";
+import { useCallback, useEffect, useMemo,useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
-import { useNgramVisualization } from "@/hooks/useNgramVisualization";
-import { useNgramStepwise } from "@/hooks/useNgramStepwise";
+import { AnimatePresence,motion } from "framer-motion";
+import {
+    Activity,
+    ArrowRight,
+    BarChart3,
+    ChevronDown,
+    Database,
+    Eye,
+    FlaskConical,
+    Gauge,
+    Hash,
+    Layers,
+    Microscope,
+    Sparkles,
+    TrendingDown,
+    Type,
+    Zap,
+} from "lucide-react";
+
+import { ErrorBoundary } from "@/components/lab/ErrorBoundary";
+import { LabShell } from "@/components/lab/LabShell";
+import { ModelHero } from "@/components/lab/ModelHero";
+import { NgramComparisonDashboard } from "@/components/lab/NgramComparisonDashboard";
+import { NgramLossChart } from "@/components/lab/NgramLossChart";
+import { NgramPerformanceSummary } from "@/components/lab/NgramPerformanceSummary";
+import { NgramSparsityIndicator } from "@/components/lab/NgramSparsityIndicator";
+import { useLabMode } from "@/context/LabModeContext";
 import { useNgramGeneration } from "@/hooks/useNgramGeneration";
+import { useNgramStepwise } from "@/hooks/useNgramStepwise";
+import { useNgramVisualization } from "@/hooks/useNgramVisualization";
+import { useI18n } from "@/i18n/context";
 import { visualizeNgram } from "@/lib/lmLabClient";
 import type { NGramTrainingInfo } from "@/types/lmLab";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-    FlaskConical,
-    Database,
-    Hash,
-    Activity,
-    Zap,
-    TrendingDown,
-    BarChart3,
-    Eye,
-    Layers,
-    Type,
-    Sparkles,
-    Gauge,
-    ChevronDown,
-    Microscope,
-    ArrowRight,
-} from "lucide-react";
-import { useEffect, useCallback, useRef, useState, useMemo } from "react";
-import { useI18n } from "@/i18n/context";
-import { useLabMode } from "@/context/LabModeContext";
-import { NgramSparsityIndicator } from "@/components/lab/NgramSparsityIndicator";
-import { NgramLossChart } from "@/components/lab/NgramLossChart";
-import { NgramComparisonDashboard } from "@/components/lab/NgramComparisonDashboard";
-import { NgramPerformanceSummary } from "@/components/lab/NgramPerformanceSummary";
 
 const ContextControl = dynamic(() =>
     import("@/components/lab/ContextControl").then((m) => m.ContextControl)
@@ -452,7 +454,7 @@ function NgramPageContent() {
             })
             .finally(() => { fetchingNsRef.current.delete(n); });
         return () => { active = false; };
-    }, [viz.contextSize]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [viz.contextSize]);  
 
     const handleAnalyze = useCallback((text: string, topK: number) => {
         lastTextRef.current = text;
@@ -493,10 +495,12 @@ function NgramPageContent() {
     if (isEdu) {
         return (
             <LabShell>
-                <NgramNarrative
-                    contextSize={viz.contextSize}
-                    vocabSize={vocabForScalability}
-                />
+                <ErrorBoundary fallbackMessage="The n-gram narrative encountered an error">
+                    <NgramNarrative
+                        contextSize={viz.contextSize}
+                        vocabSize={vocabForScalability}
+                    />
+                </ErrorBoundary>
             </LabShell>
         );
     }

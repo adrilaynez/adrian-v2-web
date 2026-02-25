@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
+import { AnimatePresence,motion } from "framer-motion";
 import { Play, RotateCcw } from "lucide-react";
+
 import { useI18n } from "@/i18n/context";
 
 interface CountData {

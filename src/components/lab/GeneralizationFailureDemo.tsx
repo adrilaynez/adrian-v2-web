@@ -1,8 +1,10 @@
 "use client";
 
-import { motion, AnimatePresence, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useEffect,useRef, useState } from "react";
+
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import { CheckCircle2, XCircle } from "lucide-react";
+
 import { useI18n } from "@/i18n/context";
 
 type RightState = "idle" | "loading" | "failed";

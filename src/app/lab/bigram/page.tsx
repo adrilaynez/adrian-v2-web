@@ -1,23 +1,24 @@
 "use client";
 
+import { useCallback,useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+
+import { motion } from "framer-motion";
+import { ArrowRight, FlaskConical } from "lucide-react";
+
+import { DatasetExplorerModal } from "@/components/lab/DatasetExplorerModal";
+import { ErrorBoundary } from "@/components/lab/ErrorBoundary";
+import { HistoricalContextPanel } from "@/components/lab/HistoricalContextPanel";
+import { LabSectionHeader } from "@/components/lab/LabSectionHeader";
 import { LabShell } from "@/components/lab/LabShell";
 import { ModelHero } from "@/components/lab/ModelHero";
 import { SectionDivider } from "@/components/lab/SectionDivider";
-import { HistoricalContextPanel } from "@/components/lab/HistoricalContextPanel";
-import { DatasetExplorerModal } from "@/components/lab/DatasetExplorerModal";
-import { LabSectionHeader } from "@/components/lab/LabSectionHeader";
-import dynamic from "next/dynamic";
-
-import { useBigramVisualization } from "@/hooks/useBigramVisualization";
+import { useLabMode } from "@/context/LabModeContext";
 import { useBigramGeneration } from "@/hooks/useBigramGeneration";
 import { useBigramStepwise } from "@/hooks/useBigramStepwise";
-import { motion } from "framer-motion";
-import { FlaskConical, Brain, Zap, BookOpen, Layers, ArrowRight } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { useBigramVisualization } from "@/hooks/useBigramVisualization";
 import { useI18n } from "@/i18n/context";
-import { useLabMode } from "@/context/LabModeContext";
-import Link from "next/link";
-import { TrainingInsights } from "@/components/lab/TrainingInsights";
 
 const BigramNarrative = dynamic(() =>
     import("@/components/lab/BigramNarrative").then((m) => m.BigramNarrative)
@@ -63,6 +64,7 @@ function BigramPageContent() {
         if (!viz.data && !viz.loading) {
             viz.analyze("hello", 10);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Run once on mount
 
     const handleCellClick = useCallback((rowLabel: string, colLabel: string) => {
@@ -83,21 +85,23 @@ function BigramPageContent() {
                 /* ═══════════════════════════════════════════
                    EDUCATIONAL MODE — Narrative blog layout
                    ═══════════════════════════════════════════ */
-                <BigramNarrative
-                    matrixData={viz.data?.visualization.transition_matrix ?? null}
-                    trainingData={viz.data?.visualization.training ?? null}
-                    onCellClick={handleCellClick}
-                    onAnalyze={viz.analyze}
-                    predictions={viz.data?.predictions ?? null}
-                    inferenceMs={viz.data?.metadata.inference_time_ms}
-                    device={viz.data?.metadata.device}
-                    vizLoading={viz.loading}
-                    vizError={viz.error}
-                    onGenerate={gen.generate}
-                    generatedText={gen.data?.generated_text ?? null}
-                    genLoading={gen.loading}
-                    genError={gen.error}
-                />
+                <ErrorBoundary fallbackMessage="The bigram narrative encountered an error">
+                    <BigramNarrative
+                        matrixData={viz.data?.visualization.transition_matrix ?? null}
+                        trainingData={viz.data?.visualization.training ?? null}
+                        onCellClick={handleCellClick}
+                        onAnalyze={viz.analyze}
+                        predictions={viz.data?.predictions ?? null}
+                        inferenceMs={viz.data?.metadata.inference_time_ms}
+                        device={viz.data?.metadata.device}
+                        vizLoading={viz.loading}
+                        vizError={viz.error}
+                        onGenerate={gen.generate}
+                        generatedText={gen.data?.generated_text ?? null}
+                        genLoading={gen.loading}
+                        genError={gen.error}
+                    />
+                </ErrorBoundary>
             ) : (
                 /* ═══════════════════════════════════════════
                    FREE LAB MODE — Full interactive playground
@@ -121,12 +125,14 @@ function BigramPageContent() {
                         transition={{ duration: 0.6 }}
                         className="max-w-4xl mx-auto px-6 mb-28"
                     >
-                        <BigramDiagramExperience
-                            mode="lab"
-                            matrixData={viz.data?.visualization.transition_matrix ?? null}
-                            trainingData={viz.data?.visualization.training ?? null}
-                            onCellClick={handleCellClick}
-                        />
+                        <ErrorBoundary fallbackMessage="The bigram diagram visualization encountered an error">
+                            <BigramDiagramExperience
+                                mode="lab"
+                                matrixData={viz.data?.visualization.transition_matrix ?? null}
+                                trainingData={viz.data?.visualization.training ?? null}
+                                onCellClick={handleCellClick}
+                            />
+                        </ErrorBoundary>
                     </motion.div>
 
                     {/* ─── 02 · INFERENCE & GENERATION ─── */}

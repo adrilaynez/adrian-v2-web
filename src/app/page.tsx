@@ -1,25 +1,27 @@
 "use client";
 import React, { useRef } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+
 import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  ArrowRight,
+  ChevronDown,
+  Cpu,
+  Database,
+  ExternalLink,
+  FlaskConical,
+  Github,
+  Layers,
+  Linkedin,
+  Mail,
+  Sigma,
+  Sparkles,
+} from "lucide-react";
+
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { Button } from "@/components/ui/button";
 import { NebulaBackground } from "@/components/ui/nebula-background";
-import {
-  Cpu,
-  FlaskConical,
-  Github,
-  Linkedin,
-  Mail,
-  ArrowRight,
-  ChevronDown,
-  Layers,
-  Database,
-  Sigma,
-  ExternalLink,
-  Sparkles,
-} from "lucide-react";
 import { useI18n } from "@/i18n/context";
 
 /* ─── Staggered Character Reveal ─── */
@@ -205,9 +207,9 @@ export default function Home() {
         <div className="container mx-auto max-w-screen-xl px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/[0.06]">
             {[
-              { value: "4+", label: t("landing.metrics.research") },
-              { value: "12+", label: t("landing.metrics.repos") },
-              { value: "3", label: t("landing.metrics.projects") },
+              { value: "4", label: t("landing.metrics.research") },
+              { value: "50+", label: t("landing.metrics.visualizations") },
+              { value: "2", label: t("landing.metrics.languages") },
               { value: "∞", label: t("landing.metrics.curiosity") },
             ].map((stat, i) => (
               <ScrollReveal key={stat.label}>
@@ -291,9 +293,8 @@ export default function Home() {
                 <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground/40">{t("landing.skills.title")}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {[
-                    "Python", "C++", "CUDA", "Rust", "PyTorch",
-                    t("landing.skills.linearAlgebra"), t("landing.skills.topology"), t("landing.skills.convexOpt"),
-                    "Docker", "LaTeX", "Git",
+                    "Python", "TypeScript", "React", "Next.js", "PyTorch", "FastAPI",
+                    t("landing.skills.linearAlgebra"), "LaTeX", "Git",
                   ].map((s) => (
                     <motion.span
                       key={s}
@@ -314,7 +315,7 @@ export default function Home() {
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" className="rounded-full border-white/[0.08] hover:bg-white/[0.04] text-xs h-9 px-5 group/btn" asChild>
-                  <Link href="https://linkedin.com" target="_blank">
+                  <Link href="https://linkedin.com/in/adrianlaynez" target="_blank">
                     <Linkedin className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover/btn:rotate-12" /> {t("landing.contact.linkedin")}
                   </Link>
                 </Button>

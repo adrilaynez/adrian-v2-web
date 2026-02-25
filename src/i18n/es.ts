@@ -53,20 +53,8 @@ export const es: TranslationDictionary = {
         },
         experiments: {
             title: "Experimentos Seleccionados",
-            items: {
-                distriKv: {
-                    title: "Distri-KV",
-                    desc: "Un almacén clave-valor distribuido implementado en Go, con consenso Raft y sharding.",
-                },
-                neuroVis: {
-                    title: "NeuroVis",
-                    desc: "Herramienta de visualización interactiva para activaciones de redes neuronales en tiempo real.",
-                },
-                autoAgent: {
-                    title: "Auto-Agent",
-                    desc: "Un framework de agente autónomo ligero enfocado en tareas de codificación.",
-                },
-            },
+            comingSoon: "Próximamente",
+            comingSoonDesc: "Proyectos y experimentos adicionales se publicarán aquí a medida que alcancen su finalización.",
         },
     },
     notes: {
@@ -422,9 +410,9 @@ export const es: TranslationDictionary = {
             },
         },
         metrics: {
-            research: "Años de Investigación",
-            repos: "Repos Open Source",
-            projects: "Proyectos Activos",
+            research: "Secciones de Investigación",
+            visualizations: "Visualizaciones Interactivas",
+            languages: "Idiomas",
             curiosity: "Curiosidad",
         },
         about: {

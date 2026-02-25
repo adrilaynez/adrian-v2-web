@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, ChevronDown } from "lucide-react";
+
+import { AnimatePresence,motion } from "framer-motion";
+import { ChevronDown,HelpCircle } from "lucide-react";
 
 interface ThinkFirstProps {
     question: string;

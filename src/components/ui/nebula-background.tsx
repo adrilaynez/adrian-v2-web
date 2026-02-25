@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, memo } from "react";
+import React, { memo,useEffect, useRef } from "react";
 
 interface NebulaProps {
     className?: string;

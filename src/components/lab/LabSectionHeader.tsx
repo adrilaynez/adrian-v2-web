@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+
 import { cn } from "@/lib/utils";
 
 type Accent = "emerald" | "violet" | "amber" | "indigo" | "blue" | "rose";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { useI18n } from "@/i18n/context";
 
 const ALLOWED_VOCABULARY = "abcdefghijklmnopqrstuvwxyz ";

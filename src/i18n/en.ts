@@ -330,9 +330,9 @@ export const en = {
             },
         },
         metrics: {
-            research: "Years of Research",
-            repos: "Open Source Repos",
-            projects: "Active Projects",
+            research: "Research Sections",
+            visualizations: "Interactive Visualizations",
+            languages: "Languages",
             curiosity: "Curiosity",
         },
         about: {
@@ -430,20 +430,8 @@ export const en = {
         },
         experiments: {
             title: "Selected Experiments",
-            items: {
-                distriKv: {
-                    title: "Distri-KV",
-                    desc: "A distributed key-value store implemented in Go, featuring Raft consensus and sharding.",
-                },
-                neuroVis: {
-                    title: "NeuroVis",
-                    desc: "Interactive visualization tool for neural network activations in real-time.",
-                },
-                autoAgent: {
-                    title: "Auto-Agent",
-                    desc: "A lightweight autonomous agent framework focused on coding tasks.",
-                },
-            },
+            comingSoon: "Coming Soon",
+            comingSoonDesc: "Additional projects and experiments will be published here as they reach completion.",
         },
     },
     notes: {

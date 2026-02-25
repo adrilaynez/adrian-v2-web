@@ -1,15 +1,17 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
+
+import { motion } from "framer-motion";
+import { ArrowRight,FlaskConical } from "lucide-react";
+
+import { ErrorBoundary } from "@/components/lab/ErrorBoundary";
 import { LabShell } from "@/components/lab/LabShell";
 import { ModelHero } from "@/components/lab/ModelHero";
 import { SectionDivider } from "@/components/lab/SectionDivider";
-
-import { motion } from "framer-motion";
-import { FlaskConical, ArrowRight } from "lucide-react";
-import { useI18n } from "@/i18n/context";
 import { useLabMode } from "@/context/LabModeContext";
-import Link from "next/link";
+import { useI18n } from "@/i18n/context";
 
 const NeuralNetworkNarrative = dynamic(
     () => import("@/components/lab/NeuralNetworkNarrative").then((m) => ({ default: m.NeuralNetworkNarrative })),
@@ -47,7 +49,9 @@ function NeuralNetworksPageContent() {
                 /* ═══════════════════════════════════════════
                    EDUCATIONAL MODE — Narrative blog layout
                    ═══════════════════════════════════════════ */
-                <NeuralNetworkNarrative />
+                <ErrorBoundary fallbackMessage="The neural network narrative encountered an error">
+                    <NeuralNetworkNarrative />
+                </ErrorBoundary>
             ) : (
                 /* ═══════════════════════════════════════════
                    FREE LAB MODE — Interactive playground

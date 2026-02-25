@@ -1,29 +1,30 @@
 "use client";
 
-import ModelSelector from "@/components/ModelSelector";
-import Link from "next/link";
 import { useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+
+import { AnimatePresence,motion } from "framer-motion";
 import {
-    Brain,
     Activity,
-    Layers,
-    Cpu,
-    ChevronRight,
-    BookOpen,
-    FlaskConical,
     ArrowRight,
-    Sparkles,
     BarChart3,
-    GraduationCap,
-    Zap,
-    Network,
+    BookOpen,
+    Brain,
     Check,
+    ChevronRight,
+    Cpu,
+    FlaskConical,
+    GraduationCap,
+    Layers,
+    Network,
+    Sparkles,
+    Zap,
 } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
 import { useLabMode } from "@/context/LabModeContext";
 import { useI18n } from "@/i18n/context";
+import { cn } from "@/lib/utils";
 
 const accentStyles: Record<string, { icon: string; border: string; glow: string; bar: string }> = {
     emerald: {

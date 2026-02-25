@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, RotateCcw, FastForward, StepForward, Pause } from "lucide-react";
+import { useEffect, useRef,useState } from "react";
+
+import {motion } from "framer-motion";
+import { FastForward, Pause,Play, RotateCcw, StepForward } from "lucide-react";
+
 import { useI18n } from "@/i18n/context";
 
 /* ─────────────────────────────────────────────
@@ -80,6 +82,7 @@ export function BigramBuilder() {
     // Effect to stop timer on unmount
     useEffect(() => {
         return () => stopAutoPlay();
+         
     }, []);
 
     const stopAutoPlay = () => {

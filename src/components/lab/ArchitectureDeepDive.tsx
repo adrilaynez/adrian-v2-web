@@ -1,19 +1,18 @@
 "use client";
 
+import { BlockMath, InlineMath } from "react-katex";
+
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
 import {
-    Cpu,
-    Zap,
     AlertTriangle,
     CheckCircle2,
-    Layers,
-    Type
+    Cpu,
+    Layers
 } from "lucide-react";
-import type { ArchitectureViz } from "@/types/lmLab";
-import { BlockMath, InlineMath } from "react-katex";
-import "katex/dist/katex.min.css";
+
+import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/i18n/context";
+import type { ArchitectureViz } from "@/types/lmLab";
 
 interface ArchitectureDeepDiveProps {
     data: ArchitectureViz | null;

@@ -1,174 +1,50 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { BookOpen, FlaskConical, ArrowDown, Lightbulb, ArrowRight, Beaker } from "lucide-react";
-import { ModeToggle } from "@/components/lab/ModeToggle";
-import { InferenceConsole } from "@/components/lab/InferenceConsole";
-import { GenerationPlayground } from "@/components/lab/GenerationPlayground";
-import { TransitionMatrix } from "@/components/lab/TransitionMatrix";
-import type { TransitionMatrixViz, Prediction, TrainingViz } from "@/types/lmLab";
-import { useI18n } from "@/i18n/context";
-import { BlockMath } from "react-katex";
-import "katex/dist/katex.min.css";
 import Link from "next/link";
-import { useLabMode } from "@/context/LabModeContext";
+
+import { motion } from "framer-motion";
+import { ArrowDown, ArrowRight, Beaker, BookOpen, FlaskConical } from "lucide-react";
+
 import { BigramBuilder } from "@/components/lab/BigramBuilder";
-import { TextToNumbersWidget } from "@/components/lab/TextToNumbersWidget";
-import { PairHighlighter } from "@/components/lab/PairHighlighter";
-import { HeroAutoComplete } from "@/components/lab/HeroAutoComplete";
-import { TinyMatrixExample } from "@/components/lab/TinyMatrixExample";
-import { PredictionChallenge } from "@/components/lab/PredictionChallenge";
-import { MemoryLimitDemo } from "@/components/lab/MemoryLimitDemo";
-import { NormalizationVisualizer } from "@/components/lab/NormalizationVisualizer";
-import { MatrixGuidedOverlay } from "@/components/lab/MatrixGuidedOverlay";
-import { SoftmaxTemperatureVisualizer } from "@/components/lab/mlp/SoftmaxTemperatureVisualizer";
-import { SectionProgressBar } from "@/components/lab/SectionProgressBar";
 import { ContinueToast } from "@/components/lab/ContinueToast";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
+import { GenerationPlayground } from "@/components/lab/GenerationPlayground";
 import { Term } from "@/components/lab/GlossaryTooltip";
+import { HeroAutoComplete } from "@/components/lab/HeroAutoComplete";
+import { InferenceConsole } from "@/components/lab/InferenceConsole";
 import { KeyTakeaway } from "@/components/lab/KeyTakeaway";
+import { MemoryLimitDemo } from "@/components/lab/MemoryLimitDemo";
+import { SoftmaxTemperatureVisualizer } from "@/components/lab/mlp/SoftmaxTemperatureVisualizer";
+import { ModeToggle } from "@/components/lab/ModeToggle";
+import { NormalizationVisualizer } from "@/components/lab/NormalizationVisualizer";
+import { PredictionChallenge } from "@/components/lab/PredictionChallenge";
 import { SectionAnchor } from "@/components/lab/SectionAnchor";
+import { SectionProgressBar } from "@/components/lab/SectionProgressBar";
+import { TextToNumbersWidget } from "@/components/lab/TextToNumbersWidget";
+import { TinyMatrixExample } from "@/components/lab/TinyMatrixExample";
+import { TransitionMatrix } from "@/components/lab/TransitionMatrix";
+import { useLabMode } from "@/context/LabModeContext";
+import { useI18n } from "@/i18n/context";
+import type { Prediction, TrainingViz, TransitionMatrixViz } from "@/types/lmLab";
 
-/* ─────────────────────────────────────────────
-   Primitive building blocks
-   ───────────────────────────────────────────── */
+import {
+    Callout as _Callout,
+    FormulaBlock as _FormulaBlock,
+    Heading, Highlight as _Highlight,
+    type HighlightColor,
+    Lead, type NarrativeAccent,
+    P, PullQuote as _PullQuote,
+    Section, SectionBreak,
+    SectionLabel as _SectionLabel,
+} from "./narrative-primitives";
 
-function Section({ id, children }: { id?: string; children: React.ReactNode }) {
-    return (
-        <motion.section
-            id={id}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6 }}
-            className="mb-20 md:mb-28"
-        >
-            {children}
-        </motion.section>
-    );
-}
-
-function SectionLabel({ number, label }: { number: string; label: string }) {
-    return (
-        <div className="flex items-center gap-3 mb-8">
-            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-mono font-bold text-emerald-400">
-                {number}
-            </span>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[var(--lab-text-subtle)]">
-                {label}
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-[var(--lab-border)] to-transparent" />
-        </div>
-    );
-}
-
-function Heading({ children }: { children: React.ReactNode }) {
-    return (
-        <h2 className="text-2xl md:text-[2rem] font-bold text-[var(--lab-text)] tracking-tight mb-6 leading-tight">
-            {children}
-        </h2>
-    );
-}
-
-function Lead({ children }: { children: React.ReactNode }) {
-    return (
-        <p className="text-lg md:text-xl text-[var(--lab-text-muted)] leading-[1.8] mb-6 font-light">
-            {children}
-        </p>
-    );
-}
-
-function P({ children }: { children: React.ReactNode }) {
-    return (
-        <p className="text-[15px] md:text-base text-[var(--lab-text-muted)] leading-[1.9] mb-5 last:mb-0">
-            {children}
-        </p>
-    );
-}
-
-function Highlight({ children }: { children: React.ReactNode }) {
-    return <strong className="text-emerald-400 font-semibold">{children}</strong>;
-}
-
-function Callout({
-    icon: Icon = Lightbulb,
-    title,
-    children,
-}: {
-    icon?: React.ComponentType<{ className?: string }>;
-    title?: string;
-    children: React.ReactNode;
-}) {
-    return (
-        <motion.aside
-            initial={{ opacity: 0, x: -8 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.4 }}
-            className="my-8 pl-4 border-l-2 border-emerald-400/50"
-        >
-            <div className="flex gap-4">
-                <div className="shrink-0 mt-0.5">
-                    <Icon className="w-4.5 h-4.5 text-emerald-400" />
-                </div>
-                <div className="min-w-0">
-                    {title && (
-                        <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">
-                            {title}
-                        </p>
-                    )}
-                    <div className="text-sm text-[var(--lab-text-muted)] leading-relaxed [&>p]:mb-2 [&>p:last-child]:mb-0">
-                        {children}
-                    </div>
-                </div>
-            </div>
-        </motion.aside>
-    );
-}
-
-function FormulaBlock({ formula, caption }: { formula: string; caption: string }) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-40px" }}
-            className="my-10 text-center"
-        >
-            <div className="flex items-center justify-center mb-6">
-                <div className="inline-block px-8 py-4 rounded-xl border border-emerald-400/20">
-                    <BlockMath math={formula} />
-                </div>
-            </div>
-            <p className="text-center text-sm md:text-base text-[var(--lab-text-muted)] italic font-light max-w-2xl mx-auto">
-                {caption}
-            </p>
-        </motion.div>
-    );
-}
-
-function PullQuote({ children }: { children: React.ReactNode }) {
-    return (
-        <motion.blockquote
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-40px" }}
-            className="my-10 md:my-12 pl-6 border-l-2 border-emerald-400/40"
-        >
-            <p className="text-lg md:text-xl text-[var(--lab-text-muted)] font-light italic leading-relaxed">
-                {children}
-            </p>
-        </motion.blockquote>
-    );
-}
-
-function SectionBreak() {
-    return (
-        <div className="flex items-center justify-center gap-3 my-16 md:my-20">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-[var(--lab-border)]" />
-            <div className="w-1.5 h-1.5 rounded-full bg-[var(--lab-border)]" />
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-[var(--lab-border)]" />
-        </div>
-    );
-}
+/* ─── Accent-bound wrappers ─── */
+const NA: NarrativeAccent = "emerald";
+const SectionLabel = (p: { number: string; label: string }) => <_SectionLabel accent={NA} {...p} />;
+const Highlight = ({ color, ...p }: { children: React.ReactNode; color?: HighlightColor; tooltip?: string }) => <_Highlight color={color ?? NA} {...p} />;
+const Callout = ({ accent, ...p }: Parameters<typeof _Callout>[0]) => <_Callout accent={accent ?? NA} {...p} />;
+const FormulaBlock = (p: { formula: string; caption: string }) => <_FormulaBlock accent={NA} {...p} />;
+const PullQuote = ({ children }: { children: React.ReactNode }) => <_PullQuote accent={NA}>{children}</_PullQuote>;
 
 function FigureWrapper({
     label,
@@ -252,12 +128,15 @@ export function BigramNarrative({
 }: BigramNarrativeProps) {
     const { t } = useI18n();
     const { setMode } = useLabMode();
+    const { hasStoredProgress, storedSection, clearProgress } = useProgressTracker("bigram");
 
     return (
         <article className="max-w-[920px] mx-auto px-6 pt-8 pb-24">
             <ContinueToast
-                pageId="bigram"
                 accent="emerald"
+                hasStoredProgress={hasStoredProgress}
+                storedSection={storedSection}
+                clearProgress={clearProgress}
                 sectionNames={{
                     "bigram-01": "How Computers See Text",
                     "bigram-02": "The Problem",

@@ -1,163 +1,58 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+
+import { AnimatePresence, motion } from "framer-motion";
 import {
-    BookOpen,
-    FlaskConical,
-    ArrowDown,
-    Lightbulb,
     AlertTriangle,
+    ArrowDown,
     ArrowRight,
     Beaker,
+    BookOpen,
     BrainCircuit,
     ChevronDown,
+    FlaskConical,
 } from "lucide-react";
-import { ModeToggle } from "@/components/lab/ModeToggle";
-import { useI18n } from "@/i18n/context";
-import { useRouter } from "next/navigation";
-import { useLabMode } from "@/context/LabModeContext";
 
+import { CombinatoricExplosionTable } from "@/components/lab/CombinatoricExplosionTable";
+import { ConcreteImprovementExample } from "@/components/lab/ConcreteImprovementExample";
+import { ContinueToast } from "@/components/lab/ContinueToast";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
+import { CountingComparisonWidget } from "@/components/lab/CountingComparisonWidget";
+import { ExponentialGrowthAnimator } from "@/components/lab/ExponentialGrowthAnimator";
+import { GeneralizationFailureDemo } from "@/components/lab/GeneralizationFailureDemo";
+import { Term } from "@/components/lab/GlossaryTooltip";
+import { InfiniteTableThoughtExperiment } from "@/components/lab/InfiniteTableThoughtExperiment";
+import { KeyTakeaway } from "@/components/lab/KeyTakeaway";
+import { ModeToggle } from "@/components/lab/ModeToggle";
+import { NgramGenerationBattle } from "@/components/lab/NgramGenerationBattle";
 import { NgramMiniTransitionTable } from "@/components/lab/NgramPedagogyPanels";
 import { NgramFiveGramScale } from "@/components/lab/NgramPedagogyPanels";
-import { CountingComparisonWidget } from "@/components/lab/CountingComparisonWidget";
-import { ConcreteImprovementExample } from "@/components/lab/ConcreteImprovementExample";
-import { ExponentialGrowthAnimator } from "@/components/lab/ExponentialGrowthAnimator";
-import { NgramGenerationBattle } from "@/components/lab/NgramGenerationBattle";
-import { GeneralizationFailureDemo } from "@/components/lab/GeneralizationFailureDemo";
-import { StatisticalEraTimeline } from "@/components/lab/StatisticalEraTimeline";
-import { CombinatoricExplosionTable } from "@/components/lab/CombinatoricExplosionTable";
-import { SparsityHeatmap } from "@/components/lab/SparsityHeatmap";
-import { InfiniteTableThoughtExperiment } from "@/components/lab/InfiniteTableThoughtExperiment";
-import { TypoWordBreaker } from "@/components/lab/TypoWordBreaker";
-import { SectionProgressBar } from "@/components/lab/SectionProgressBar";
-import { ContinueToast } from "@/components/lab/ContinueToast";
-import { Term } from "@/components/lab/GlossaryTooltip";
-import { KeyTakeaway } from "@/components/lab/KeyTakeaway";
 import { SectionAnchor } from "@/components/lab/SectionAnchor";
+import { SectionProgressBar } from "@/components/lab/SectionProgressBar";
+import { SparsityHeatmap } from "@/components/lab/SparsityHeatmap";
+import { StatisticalEraTimeline } from "@/components/lab/StatisticalEraTimeline";
+import { TypoWordBreaker } from "@/components/lab/TypoWordBreaker";
+import { useLabMode } from "@/context/LabModeContext";
+import { useI18n } from "@/i18n/context";
 
-/* ─────────────────────────────────────────────
-   Primitive building blocks (matches Bigram / NN narrative style)
-   ───────────────────────────────────────────── */
+import {
+    Callout as _Callout,
+    Heading, Highlight as _Highlight,
+    type HighlightColor,
+    Lead, type NarrativeAccent,
+    P, PullQuote as _PullQuote,
+    Section, SectionBreak,
+    SectionLabel as _SectionLabel,
+} from "./narrative-primitives";
 
-function Section({ id, children }: { id?: string; children: React.ReactNode }) {
-    return (
-        <motion.section
-            id={id}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6 }}
-            className="mb-20 md:mb-28"
-        >
-            {children}
-        </motion.section>
-    );
-}
-
-function SectionLabel({ number, label }: { number: string; label: string }) {
-    return (
-        <div className="flex items-center gap-3 mb-8">
-            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-500/10 border border-amber-500/20 text-[11px] font-mono font-bold text-amber-400">
-                {number}
-            </span>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[var(--lab-text-subtle)]">
-                {label}
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-[var(--lab-border)] to-transparent" />
-        </div>
-    );
-}
-
-function Heading({ children }: { children: React.ReactNode }) {
-    return (
-        <h2 className="text-2xl md:text-[2rem] font-bold text-[var(--lab-text)] tracking-tight mb-6 leading-tight">
-            {children}
-        </h2>
-    );
-}
-
-function Lead({ children }: { children: React.ReactNode }) {
-    return (
-        <p className="text-lg md:text-xl text-[var(--lab-text-muted)] leading-[1.8] mb-6 font-light">
-            {children}
-        </p>
-    );
-}
-
-function P({ children }: { children: React.ReactNode }) {
-    return (
-        <p className="text-[15px] md:text-base text-[var(--lab-text-muted)] leading-[1.9] mb-5 last:mb-0">
-            {children}
-        </p>
-    );
-}
-
-function Highlight({ children }: { children: React.ReactNode }) {
-    return <strong className="text-amber-400 font-semibold">{children}</strong>;
-}
-
-function Callout({
-    icon: Icon = Lightbulb,
-    title,
-    children,
-}: {
-    icon?: React.ComponentType<{ className?: string }>;
-    title?: string;
-    children: React.ReactNode;
-}) {
-    return (
-        <motion.aside
-            initial={{ opacity: 0, x: -8 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.4 }}
-            className="relative my-8 rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-5 md:p-6 overflow-hidden"
-        >
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/[0.06] to-transparent pointer-events-none" />
-            <div className="relative flex gap-4">
-                <div className="shrink-0 mt-0.5">
-                    <Icon className="w-4.5 h-4.5 text-amber-400" />
-                </div>
-                <div className="min-w-0">
-                    {title && (
-                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-amber-400 mb-2">
-                            {title}
-                        </p>
-                    )}
-                    <div className="text-sm text-[var(--lab-text-muted)] leading-relaxed [&>p]:mb-2 [&>p:last-child]:mb-0">
-                        {children}
-                    </div>
-                </div>
-            </div>
-        </motion.aside>
-    );
-}
-
-function PullQuote({ children }: { children: React.ReactNode }) {
-    return (
-        <motion.blockquote
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-40px" }}
-            className="my-10 md:my-12 pl-6 border-l-2 border-amber-400/40"
-        >
-            <p className="text-lg md:text-xl text-[var(--lab-text-muted)] font-light italic leading-relaxed">
-                {children}
-            </p>
-        </motion.blockquote>
-    );
-}
-
-function SectionBreak() {
-    return (
-        <div className="flex items-center justify-center gap-3 my-16 md:my-20">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-[var(--lab-border)]" />
-            <div className="w-1.5 h-1.5 rounded-full bg-[var(--lab-border)]" />
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-[var(--lab-border)]" />
-        </div>
-    );
-}
+/* ─── Accent-bound wrappers ─── */
+const NA: NarrativeAccent = "amber";
+const SectionLabel = (p: { number: string; label: string }) => <_SectionLabel accent={NA} {...p} />;
+const Highlight = ({ color, ...p }: { children: React.ReactNode; color?: HighlightColor; tooltip?: string }) => <_Highlight color={color ?? NA} {...p} />;
+const Callout = ({ accent, ...p }: Parameters<typeof _Callout>[0]) => <_Callout accent={accent ?? NA} {...p} />;
+const PullQuote = ({ children }: { children: React.ReactNode }) => <_PullQuote accent={NA}>{children}</_PullQuote>;
 
 function ExpandableSection({
     title,
@@ -411,12 +306,15 @@ export function NgramNarrative({
     const { t } = useI18n();
     const router = useRouter();
     const { setMode } = useLabMode();
+    const { hasStoredProgress, storedSection, clearProgress } = useProgressTracker("ngram");
 
     return (
         <article className="max-w-[920px] mx-auto px-6 pt-8 pb-24">
             <ContinueToast
-                pageId="ngram"
                 accent="amber"
+                hasStoredProgress={hasStoredProgress}
+                storedSection={storedSection}
+                clearProgress={clearProgress}
                 sectionNames={{
                     "ngram-01": "More Context",
                     "ngram-02": "Counting With Context",

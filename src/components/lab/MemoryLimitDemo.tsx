@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
+import { AnimatePresence,motion } from "framer-motion";
 import { Lock } from "lucide-react";
+
 import { useI18n } from "@/i18n/context";
 
 const SENTENCE = "the cat sat on the mat";

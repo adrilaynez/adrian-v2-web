@@ -1,18 +1,21 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useRef } from "react";
-import { LabShell } from "@/components/lab/LabShell";
-import { ModelHero } from "@/components/lab/ModelHero";
-import { SectionDivider } from "@/components/lab/SectionDivider";
+import dynamic from "next/dynamic";
+
 import { motion } from "framer-motion";
 import { FlaskConical } from "lucide-react";
-import { useLabMode } from "@/context/LabModeContext";
-import { useI18n } from "@/i18n/context";
-import { useMLPGrid } from "@/hooks/useMLPGrid";
-import type { UseMLPGridReturn } from "@/hooks/useMLPGrid";
-import type { MLPNarrativeProps } from "@/components/lab/MLPNarrative";
+
+import { ErrorBoundary } from "@/components/lab/ErrorBoundary";
+import { LabShell } from "@/components/lab/LabShell";
 import type { MLPHyperparameterExplorerProps } from "@/components/lab/mlp/MLPHyperparameterExplorer";
+import type { MLPNarrativeProps } from "@/components/lab/MLPNarrative";
+import { ModelHero } from "@/components/lab/ModelHero";
+import { SectionDivider } from "@/components/lab/SectionDivider";
+import { useLabMode } from "@/context/LabModeContext";
+import type { UseMLPGridReturn } from "@/hooks/useMLPGrid";
+import { useMLPGrid } from "@/hooks/useMLPGrid";
+import { useI18n } from "@/i18n/context";
 
 const MLPNarrative = dynamic<MLPNarrativeProps>(
     () => import("@/components/lab/MLPNarrative").then((m) => ({ default: m.MLPNarrative })),
@@ -123,7 +126,9 @@ function MlpPageContent() {
                 /* ═══════════════════════════════════════════
                    EDUCATIONAL MODE — Narrative blog layout
                    ═══════════════════════════════════════════ */
-                <MLPNarrative mlpGrid={mlpGrid} />
+                <ErrorBoundary fallbackMessage="The MLP narrative encountered an error">
+                    <MLPNarrative mlpGrid={mlpGrid} />
+                </ErrorBoundary>
             ) : (
                 /* ═══════════════════════════════════════════
                    FREE LAB MODE — Full interactive lab

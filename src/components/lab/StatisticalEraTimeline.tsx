@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useRef, useState } from "react";
+
+import { AnimatePresence, motion, useInView } from "framer-motion";
 
 const NODES = [
     {

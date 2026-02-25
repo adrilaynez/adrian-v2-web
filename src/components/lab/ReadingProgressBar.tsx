@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useScroll } from "@/context/ScrollContext";
 
 const ACCENT_COLORS: Record<string, string> = {
     rose: "#fb7185",
@@ -14,18 +14,7 @@ interface ReadingProgressBarProps {
 }
 
 export function ReadingProgressBar({ accent = "rose" }: ReadingProgressBarProps) {
-    const [pct, setPct] = useState(0);
-
-    useEffect(() => {
-        const onScroll = () => {
-            const scrolled = window.scrollY;
-            const total = document.documentElement.scrollHeight - window.innerHeight;
-            setPct(total > 0 ? (scrolled / total) * 100 : 0);
-        };
-        window.addEventListener("scroll", onScroll, { passive: true });
-        onScroll();
-        return () => window.removeEventListener("scroll", onScroll);
-    }, []);
+    const { scrollPct: pct } = useScroll();
 
     return (
         <div

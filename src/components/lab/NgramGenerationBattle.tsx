@@ -1,8 +1,10 @@
 "use client";
 
+import { useCallback, useEffect, useRef,useState } from "react";
+
 import { motion } from "framer-motion";
-import { Swords, RefreshCw, Copy, CheckCircle2, WifiOff } from "lucide-react";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { CheckCircle2, Copy, RefreshCw, Swords, WifiOff } from "lucide-react";
+
 import { useI18n } from "@/i18n/context";
 import { generateNgram } from "@/lib/lmLabClient";
 

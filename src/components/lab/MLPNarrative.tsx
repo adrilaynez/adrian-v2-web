@@ -1,234 +1,66 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, FlaskConical, ArrowDown, Lightbulb, AlertTriangle, Beaker, BrainCircuit } from "lucide-react";
-import { ModeToggle } from "@/components/lab/ModeToggle";
+import { lazy, Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLabMode } from "@/context/LabModeContext";
 
-import { BlockMath } from "react-katex";
-import "katex/dist/katex.min.css";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertTriangle, ArrowDown, Beaker, BookOpen, BrainCircuit, FlaskConical, Lightbulb } from "lucide-react";
 
-import { MLPNonLinearityVisualizer } from "@/components/lab/mlp/MLPNonLinearityVisualizer";
-import { PedagogicalEmbeddingVisualizer } from "@/components/lab/mlp/PedagogicalEmbeddingVisualizer";
-import { MLPHyperparameterExplorer } from "@/components/lab/mlp/MLPHyperparameterExplorer";
-import { InitializationSensitivityVisualizer } from "@/components/lab/mlp/InitializationSensitivityVisualizer";
-import { GradientFlowVisualizer } from "@/components/lab/mlp/GradientFlowVisualizer";
-import { BatchNormEffectVisualizer } from "@/components/lab/mlp/BatchNormEffectVisualizer";
-import { ContextWindowVisualizer } from "@/components/lab/mlp/ContextWindowVisualizer";
-import { ConcatenationBottleneckVisualizer } from "@/components/lab/mlp/ConcatenationBottleneckVisualizer";
-import { PositionSensitivityVisualizer } from "@/components/lab/mlp/PositionSensitivityVisualizer";
-import { LongRangeDependencyDemo } from "@/components/lab/mlp/LongRangeDependencyDemo";
-import { LossIntuitionVisualizer } from "@/components/lab/mlp/LossIntuitionVisualizer";
-import { MLPPipelineVisualizer } from "@/components/lab/mlp/MLPPipelineVisualizer";
-import { SoftmaxTemperatureVisualizer } from "@/components/lab/mlp/SoftmaxTemperatureVisualizer";
-import { MLPArchitectureDiagram } from "@/components/lab/mlp/MLPArchitectureDiagram";
-import { OneHotDimensionalityVisual } from "@/components/lab/mlp/OneHotDimensionalityVisual";
-import { ThinkFirst } from "@/components/lab/mlp/ThinkFirst";
-import { MLPGuidedExperiments } from "@/components/lab/mlp/MLPGuidedExperiments";
-import type { UseMLPGridReturn } from "@/hooks/useMLPGrid";
-import { useI18n } from "@/i18n/context";
-import { SectionProgressBar } from "@/components/lab/SectionProgressBar";
 import { ContinueToast } from "@/components/lab/ContinueToast";
 import { Term } from "@/components/lab/GlossaryTooltip";
 import { KeyTakeaway } from "@/components/lab/KeyTakeaway";
+import { LazySection, SectionSkeleton } from "@/components/lab/LazySection";
+import { ModeToggle } from "@/components/lab/ModeToggle";
 import { SectionAnchor } from "@/components/lab/SectionAnchor";
+import { SectionProgressBar } from "@/components/lab/SectionProgressBar";
+import { useLabMode } from "@/context/LabModeContext";
+import type { UseMLPGridReturn } from "@/hooks/useMLPGrid";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
+import { useI18n } from "@/i18n/context";
+
+/* ─── Lazy-loaded interactive visualizers ─── */
+const BatchNormEffectVisualizer = lazy(() => import("@/components/lab/mlp/BatchNormEffectVisualizer").then(m => ({ default: m.BatchNormEffectVisualizer })));
+const ConcatenationBottleneckVisualizer = lazy(() => import("@/components/lab/mlp/ConcatenationBottleneckVisualizer").then(m => ({ default: m.ConcatenationBottleneckVisualizer })));
+const ContextWindowVisualizer = lazy(() => import("@/components/lab/mlp/ContextWindowVisualizer").then(m => ({ default: m.ContextWindowVisualizer })));
+const GradientFlowVisualizer = lazy(() => import("@/components/lab/mlp/GradientFlowVisualizer").then(m => ({ default: m.GradientFlowVisualizer })));
+const InitializationSensitivityVisualizer = lazy(() => import("@/components/lab/mlp/InitializationSensitivityVisualizer").then(m => ({ default: m.InitializationSensitivityVisualizer })));
+const LongRangeDependencyDemo = lazy(() => import("@/components/lab/mlp/LongRangeDependencyDemo").then(m => ({ default: m.LongRangeDependencyDemo })));
+const LossIntuitionVisualizer = lazy(() => import("@/components/lab/mlp/LossIntuitionVisualizer").then(m => ({ default: m.LossIntuitionVisualizer })));
+const MLPArchitectureDiagram = lazy(() => import("@/components/lab/mlp/MLPArchitectureDiagram").then(m => ({ default: m.MLPArchitectureDiagram })));
+const MLPGuidedExperiments = lazy(() => import("@/components/lab/mlp/MLPGuidedExperiments").then(m => ({ default: m.MLPGuidedExperiments })));
+const MLPHyperparameterExplorer = lazy(() => import("@/components/lab/mlp/MLPHyperparameterExplorer").then(m => ({ default: m.MLPHyperparameterExplorer })));
+const MLPNonLinearityVisualizer = lazy(() => import("@/components/lab/mlp/MLPNonLinearityVisualizer").then(m => ({ default: m.MLPNonLinearityVisualizer })));
+const MLPPipelineVisualizer = lazy(() => import("@/components/lab/mlp/MLPPipelineVisualizer").then(m => ({ default: m.MLPPipelineVisualizer })));
+const OneHotDimensionalityVisual = lazy(() => import("@/components/lab/mlp/OneHotDimensionalityVisual").then(m => ({ default: m.OneHotDimensionalityVisual })));
+const PedagogicalEmbeddingVisualizer = lazy(() => import("@/components/lab/mlp/PedagogicalEmbeddingVisualizer").then(m => ({ default: m.PedagogicalEmbeddingVisualizer })));
+const PositionSensitivityVisualizer = lazy(() => import("@/components/lab/mlp/PositionSensitivityVisualizer").then(m => ({ default: m.PositionSensitivityVisualizer })));
+const SoftmaxTemperatureVisualizer = lazy(() => import("@/components/lab/mlp/SoftmaxTemperatureVisualizer").then(m => ({ default: m.SoftmaxTemperatureVisualizer })));
+const ThinkFirst = lazy(() => import("@/components/lab/mlp/ThinkFirst").then(m => ({ default: m.ThinkFirst })));
+
+import {
+    Callout as _Callout,
+    FormulaBlock as _FormulaBlock,
+    Heading, Highlight as _Highlight,
+    type HighlightColor,
+    Lead, type NarrativeAccent,
+    P, PullQuote as _PullQuote,
+    Section, SectionBreak,
+    SectionLabel as _SectionLabel,
+} from "./narrative-primitives";
+
+/* ─── Accent-bound wrappers ─── */
+const NA: NarrativeAccent = "violet";
+const SectionLabel = (p: { number: string; label: string }) => <_SectionLabel accent={NA} {...p} />;
+const Highlight = ({ color, ...p }: { children: React.ReactNode; color?: HighlightColor; tooltip?: string }) => <_Highlight color={color ?? NA} {...p} />;
+const Callout = ({ accent, ...p }: Parameters<typeof _Callout>[0]) => <_Callout accent={accent ?? NA} {...p} />;
+const FormulaBlock = (p: { formula: string; caption: string }) => <_FormulaBlock accent={NA} {...p} />;
+const PullQuote = ({ children }: { children: React.ReactNode }) => <_PullQuote accent={NA}>{children}</_PullQuote>;
 
 export interface MLPNarrativeProps {
     mlpGrid: UseMLPGridReturn;
 }
 
-/* ─────────────────────────────────────────────
-   Primitive building blocks (matches NN / Ngram narrative style)
-   ───────────────────────────────────────────── */
-
-function Section({ id, children }: { id?: string; children: React.ReactNode }) {
-    return (
-        <motion.section
-            id={id}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6 }}
-            className="mb-20 md:mb-28"
-        >
-            {children}
-        </motion.section>
-    );
-}
-
-function SectionLabel({ number, label }: { number: string; label: string }) {
-    return (
-        <div className="flex items-center gap-3 mb-8">
-            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-violet-500/10 border border-violet-500/20 text-[11px] font-mono font-bold text-violet-400">
-                {number}
-            </span>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[var(--lab-text-subtle)]">
-                {label}
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-[var(--lab-border)] to-transparent" />
-        </div>
-    );
-}
-
-function Heading({ children }: { children: React.ReactNode }) {
-    return (
-        <h2 className="text-2xl md:text-[2rem] font-bold text-[var(--lab-text)] tracking-tight mb-6 leading-tight">
-            {children}
-        </h2>
-    );
-}
-
-function Lead({ children }: { children: React.ReactNode }) {
-    return (
-        <p className="text-lg md:text-xl text-[var(--lab-text-muted)] leading-[1.8] mb-6 font-light">
-            {children}
-        </p>
-    );
-}
-
-function P({ children }: { children: React.ReactNode }) {
-    return (
-        <p className="text-[15px] md:text-base text-[var(--lab-text-muted)] leading-[1.9] mb-5 last:mb-0">
-            {children}
-        </p>
-    );
-}
-
-function Highlight({ children, color = "violet" }: { children: React.ReactNode; color?: "violet" | "amber" | "indigo" | "emerald" | "rose" }) {
-    const colors = {
-        violet: "text-violet-400",
-        amber: "text-amber-400",
-        indigo: "text-indigo-400",
-        emerald: "text-emerald-400",
-        rose: "text-rose-400",
-    };
-    return <strong className={`${colors[color]} font-semibold`}>{children}</strong>;
-}
-
-function Callout({
-    icon: Icon = Lightbulb,
-    accent = "violet",
-    title,
-    children,
-}: {
-    icon?: React.ComponentType<{ className?: string }>;
-    accent?: "violet" | "amber" | "indigo" | "emerald" | "rose";
-    title?: string;
-    children: React.ReactNode;
-}) {
-    const accentMap = {
-        violet: {
-            border: "border-violet-500/20",
-            bg: "bg-violet-500/[0.04]",
-            icon: "text-violet-400",
-            title: "text-violet-400",
-            glow: "from-violet-500/[0.06]",
-        },
-        amber: {
-            border: "border-amber-500/20",
-            bg: "bg-amber-500/[0.04]",
-            icon: "text-amber-400",
-            title: "text-amber-400",
-            glow: "from-amber-500/[0.06]",
-        },
-        indigo: {
-            border: "border-indigo-500/20",
-            bg: "bg-indigo-500/[0.04]",
-            icon: "text-indigo-400",
-            title: "text-indigo-400",
-            glow: "from-indigo-500/[0.06]",
-        },
-        emerald: {
-            border: "border-emerald-500/20",
-            bg: "bg-emerald-500/[0.04]",
-            icon: "text-emerald-400",
-            title: "text-emerald-400",
-            glow: "from-emerald-500/[0.06]",
-        },
-        rose: {
-            border: "border-rose-500/20",
-            bg: "bg-rose-500/[0.04]",
-            icon: "text-rose-400",
-            title: "text-rose-400",
-            glow: "from-rose-500/[0.06]",
-        },
-    };
-    const a = accentMap[accent];
-
-    return (
-        <motion.aside
-            initial={{ opacity: 0, x: -12 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.4 }}
-            className={`relative my-8 rounded-xl border ${a.border} ${a.bg} p-5 md:p-6 overflow-hidden`}
-        >
-            <div className={`absolute inset-0 bg-gradient-to-br ${a.glow} to-transparent pointer-events-none`} />
-            <div className="relative flex gap-4">
-                <div className="shrink-0 mt-0.5">
-                    <Icon className={`w-4.5 h-4.5 ${a.icon}`} />
-                </div>
-                <div className="min-w-0">
-                    {title && (
-                        <p className={`text-xs font-bold uppercase tracking-[0.15em] ${a.title} mb-2`}>
-                            {title}
-                        </p>
-                    )}
-                    <div className="text-sm text-[var(--lab-text-muted)] leading-relaxed [&>p]:mb-2 [&>p:last-child]:mb-0">
-                        {children}
-                    </div>
-                </div>
-            </div>
-        </motion.aside>
-    );
-}
-
-function FormulaBlock({ formula, caption }: { formula: string; caption: string }) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-40px" }}
-            className="my-10 text-center"
-        >
-            <div className="flex items-center justify-center mb-10">
-                <div className="inline-block px-8 py-4 rounded-2xl bg-violet-500/[0.04] border border-violet-500/[0.15] backdrop-blur-sm shadow-[0_0_40px_-15px_rgba(139,92,246,0.15)]">
-                    <BlockMath math={formula} />
-                </div>
-            </div>
-            <p className="text-center text-sm md:text-base text-[var(--lab-text-muted)] italic font-light max-w-2xl mx-auto">
-                {caption}
-            </p>
-        </motion.div>
-    );
-}
-
-function PullQuote({ children }: { children: React.ReactNode }) {
-    return (
-        <motion.blockquote
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-40px" }}
-            className="my-10 md:my-12 pl-6 border-l-2 border-violet-500/30"
-        >
-            <p className="text-lg md:text-xl text-[var(--lab-text-muted)] font-light italic leading-relaxed">
-                {children}
-            </p>
-        </motion.blockquote>
-    );
-}
-
-function SectionBreak() {
-    return (
-        <div className="flex items-center justify-center gap-3 my-16 md:my-20">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-[var(--lab-border)]" />
-            <div className="w-1.5 h-1.5 rounded-full bg-[var(--lab-border)]" />
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-[var(--lab-border)]" />
-        </div>
-    );
-}
+/* ─── MLP-specific local components ─── */
 
 function TrainingChallengePanel({ title, preview, defaultOpen = false, children }: { title: string; preview: string; defaultOpen?: boolean; children: React.ReactNode }) {
     const [open, setOpen] = useState(defaultOpen);
@@ -393,12 +225,15 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
     const router = useRouter();
     const { setMode } = useLabMode();
     const { t } = useI18n();
+    const { hasStoredProgress, storedSection, clearProgress } = useProgressTracker("mlp");
 
     return (
         <article className="max-w-[920px] mx-auto px-6 pt-8 pb-24">
             <ContinueToast
-                pageId="mlp"
                 accent="violet"
+                hasStoredProgress={hasStoredProgress}
+                storedSection={storedSection}
+                clearProgress={clearProgress}
                 sectionNames={{
                     "mlp-00": "From Blocks to Language",
                     "mlp-01": "Feeding Language to a NN",
@@ -474,12 +309,14 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
 
                 <P>{t("models.mlp.narrative.s00.p1")}</P>
 
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s00.figLabel1")}
-                    hint={t("models.mlp.narrative.s00.figHint1")}
-                >
-                    <MLPArchitectureDiagram />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper
+                        label={t("models.mlp.narrative.s00.figLabel1")}
+                        hint={t("models.mlp.narrative.s00.figHint1")}
+                    >
+                        <Suspense fallback={<SectionSkeleton />}><MLPArchitectureDiagram /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
 
                 <P>{t("models.mlp.narrative.s00.p2")}</P>
 
@@ -492,17 +329,21 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                     <p>{t("models.mlp.narrative.s00.calloutText")}</p>
                 </Callout>
 
-                <ThinkFirst
-                    question={t("models.mlp.narrative.thinkFirst.xor.question")}
-                    reveal={t("models.mlp.narrative.thinkFirst.xor.reveal")}
-                />
+                <Suspense fallback={<SectionSkeleton />}>
+                    <ThinkFirst
+                        question={t("models.mlp.narrative.thinkFirst.xor.question")}
+                        reveal={t("models.mlp.narrative.thinkFirst.xor.reveal")}
+                    />
+                </Suspense>
 
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s00.figLabel2")}
-                    hint={t("models.mlp.narrative.s00.figHint2")}
-                >
-                    <MLPNonLinearityVisualizer />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper
+                        label={t("models.mlp.narrative.s00.figLabel2")}
+                        hint={t("models.mlp.narrative.s00.figHint2")}
+                    >
+                        <Suspense fallback={<SectionSkeleton />}><MLPNonLinearityVisualizer /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
             </Section>
 
             <SectionBreak />
@@ -527,9 +368,11 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                     <p>{t("models.mlp.narrative.s01.calloutP1")}</p>
                     <p>{t("models.mlp.narrative.s01.calloutP2")}</p>
                 </Callout>
-                <FigureWrapper label={t("models.mlp.narrative.s01.figLabel1")} hint={t("models.mlp.narrative.s01.figHint1")}>
-                    <LossIntuitionVisualizer />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper label={t("models.mlp.narrative.s01.figLabel1")} hint={t("models.mlp.narrative.s01.figHint1")}>
+                        <Suspense fallback={<SectionSkeleton />}><LossIntuitionVisualizer /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
                 <P>
                     {t("models.mlp.narrative.s01.p2")}{" "}
                     <Highlight color="emerald">{t("models.mlp.narrative.s01.p2H1")}</Highlight>
@@ -539,9 +382,11 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                 <Callout icon={Lightbulb} accent="emerald" title={t("models.mlp.narrative.s01.calloutTitle2")}>
                     <p>{t("models.mlp.narrative.s01.calloutText2")}</p>
                 </Callout>
-                <FigureWrapper label={t("models.mlp.narrative.s01.figLabel2")} hint={t("models.mlp.narrative.s01.figHint2")}>
-                    <MLPPipelineVisualizer selectedConfig={mlpGrid.selectedConfig} />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper label={t("models.mlp.narrative.s01.figLabel2")} hint={t("models.mlp.narrative.s01.figHint2")}>
+                        <Suspense fallback={<SectionSkeleton />}><MLPPipelineVisualizer selectedConfig={mlpGrid.selectedConfig} /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
             </Section>
 
             <SectionBreak />
@@ -562,12 +407,14 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                     <p>{t("models.mlp.narrative.s02.calloutText")}</p>
                 </Callout>
 
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s02.figLabel1")}
-                    hint={t("models.mlp.narrative.s02.figHint1")}
-                >
-                    <OneHotDimensionalityVisual />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper
+                        label={t("models.mlp.narrative.s02.figLabel1")}
+                        hint={t("models.mlp.narrative.s02.figHint1")}
+                    >
+                        <Suspense fallback={<SectionSkeleton />}><OneHotDimensionalityVisual /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
             </Section>
 
             <SectionBreak />
@@ -578,10 +425,12 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                 <SectionAnchor id="mlp-03"><Heading>{t("models.mlp.narrative.s03.heading")}</Heading></SectionAnchor>
                 <Lead>{t("models.mlp.narrative.s03.lead")}</Lead>
 
-                <ThinkFirst
-                    question={t("models.mlp.narrative.thinkFirst.embedding.question")}
-                    reveal={t("models.mlp.narrative.thinkFirst.embedding.reveal")}
-                />
+                <Suspense fallback={<SectionSkeleton />}>
+                    <ThinkFirst
+                        question={t("models.mlp.narrative.thinkFirst.embedding.question")}
+                        reveal={t("models.mlp.narrative.thinkFirst.embedding.reveal")}
+                    />
+                </Suspense>
                 <P>{t("models.mlp.narrative.s03.p1")}</P>
                 <FormulaBlock
                     formula="e_t = E[t] = E^\top \cdot \text{onehot}(t) \in \mathbb{R}^D"
@@ -600,9 +449,11 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                 </P>
                 <P>{t("models.mlp.narrative.s03.p4")}</P>
                 <PullQuote>{t("models.mlp.narrative.s03.pullQuote")}</PullQuote>
-                <FigureWrapper label={t("models.mlp.narrative.s03.figLabel1")} hint={t("models.mlp.narrative.s03.figHint1")}>
-                    <PedagogicalEmbeddingVisualizer />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper label={t("models.mlp.narrative.s03.figLabel1")} hint={t("models.mlp.narrative.s03.figHint1")}>
+                        <Suspense fallback={<SectionSkeleton />}><PedagogicalEmbeddingVisualizer /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
 
                 <KeyTakeaway accent="violet">
                     <Term word="embedding">Embeddings</Term> replace wasteful <Term word="one-hot encoding">one-hot vectors</Term> with dense, learned representations where similar tokens get similar vectors. This is the key insight that makes <Term word="MLP">MLPs</Term> powerful for language.
@@ -617,10 +468,12 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                 <SectionAnchor id="mlp-04"><Heading>{t("models.mlp.narrative.s04.heading")}</Heading></SectionAnchor>
                 <Lead>{t("models.mlp.narrative.s04.lead")}</Lead>
 
-                <ThinkFirst
-                    question={t("models.mlp.narrative.thinkFirst.hyperparams.question")}
-                    reveal={t("models.mlp.narrative.thinkFirst.hyperparams.reveal")}
-                />
+                <Suspense fallback={<SectionSkeleton />}>
+                    <ThinkFirst
+                        question={t("models.mlp.narrative.thinkFirst.hyperparams.question")}
+                        reveal={t("models.mlp.narrative.thinkFirst.hyperparams.reveal")}
+                    />
+                </Suspense>
                 <P>
                     {t("models.mlp.narrative.s04.p1")}{" "}
                     <Highlight>{t("models.mlp.narrative.s04.p1H1")}</Highlight>
@@ -644,31 +497,37 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                         </div>
                     ))}
                 </motion.div>
-                <FigureWrapper label={t("models.mlp.narrative.s04.figLabel1")} hint={t("models.mlp.narrative.s04.figHint1")}>
-                    <SoftmaxTemperatureVisualizer />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper label={t("models.mlp.narrative.s04.figLabel1")} hint={t("models.mlp.narrative.s04.figHint1")}>
+                        <Suspense fallback={<SectionSkeleton />}><SoftmaxTemperatureVisualizer /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
                 <Callout title={t("models.mlp.narrative.s04.calloutTitle")}>
                     <p>{t("models.mlp.narrative.s04.calloutText")}</p>
                 </Callout>
 
-                <MLPGuidedExperiments />
+                <Suspense fallback={<SectionSkeleton />}><MLPGuidedExperiments /></Suspense>
 
-                <FigureWrapper label={t("models.mlp.narrative.s04.figLabel2")} hint={t("models.mlp.narrative.s04.figHint2")}>
-                    <MLPHyperparameterExplorer
-                        configs={mlpGrid.configs}
-                        selectedConfig={mlpGrid.selectedConfig}
-                        onSelectClosest={mlpGrid.selectClosest}
-                        timeline={mlpGrid.timeline}
-                        timelineLoading={mlpGrid.timelineLoading}
-                        onFetchTimeline={mlpGrid.fetchTimelineData}
-                        generation={mlpGrid.generation}
-                        generationLoading={mlpGrid.generationLoading}
-                        onGenerate={mlpGrid.generateText}
-                        gridLoading={mlpGrid.gridLoading}
-                        gridError={mlpGrid.gridError}
-                        isNarrativeMode={true}
-                    />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper label={t("models.mlp.narrative.s04.figLabel2")} hint={t("models.mlp.narrative.s04.figHint2")}>
+                        <Suspense fallback={<SectionSkeleton />}>
+                            <MLPHyperparameterExplorer
+                                configs={mlpGrid.configs}
+                                selectedConfig={mlpGrid.selectedConfig}
+                                onSelectClosest={mlpGrid.selectClosest}
+                                timeline={mlpGrid.timeline}
+                                timelineLoading={mlpGrid.timelineLoading}
+                                onFetchTimeline={mlpGrid.fetchTimelineData}
+                                generation={mlpGrid.generation}
+                                generationLoading={mlpGrid.generationLoading}
+                                onGenerate={mlpGrid.generateText}
+                                gridLoading={mlpGrid.gridLoading}
+                                gridError={mlpGrid.gridError}
+                                isNarrativeMode={true}
+                            />
+                        </Suspense>
+                    </FigureWrapper>
+                </LazySection>
                 <P>{t("models.mlp.narrative.s04.p3")}</P>
             </Section>
 
@@ -689,17 +548,21 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
 
                 <P>{t("models.mlp.narrative.s05.p2")}</P>
 
-                <ThinkFirst
-                    question={t("models.mlp.narrative.thinkFirst.contextWindow.question")}
-                    reveal={t("models.mlp.narrative.thinkFirst.contextWindow.reveal")}
-                />
+                <Suspense fallback={<SectionSkeleton />}>
+                    <ThinkFirst
+                        question={t("models.mlp.narrative.thinkFirst.contextWindow.question")}
+                        reveal={t("models.mlp.narrative.thinkFirst.contextWindow.reveal")}
+                    />
+                </Suspense>
 
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s05.figLabel1")}
-                    hint={t("models.mlp.narrative.s05.figHint1")}
-                >
-                    <ContextWindowVisualizer />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper
+                        label={t("models.mlp.narrative.s05.figLabel1")}
+                        hint={t("models.mlp.narrative.s05.figHint1")}
+                    >
+                        <Suspense fallback={<SectionSkeleton />}><ContextWindowVisualizer /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
 
                 {/* ── Limitation 2: Long-range dependencies ── */}
                 <P>
@@ -707,12 +570,14 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                     {t("models.mlp.narrative.s05.p3")}
                 </P>
 
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s05.figLabel2")}
-                    hint={t("models.mlp.narrative.s05.figHint2")}
-                >
-                    <LongRangeDependencyDemo />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper
+                        label={t("models.mlp.narrative.s05.figLabel2")}
+                        hint={t("models.mlp.narrative.s05.figHint2")}
+                    >
+                        <Suspense fallback={<SectionSkeleton />}><LongRangeDependencyDemo /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
 
                 {/* ── Limitation 3: Position-dependent meaning ── */}
                 <P>
@@ -720,12 +585,14 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                     {t("models.mlp.narrative.s05.p4")}
                 </P>
 
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s05.figLabel3")}
-                    hint={t("models.mlp.narrative.s05.figHint3")}
-                >
-                    <PositionSensitivityVisualizer />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper
+                        label={t("models.mlp.narrative.s05.figLabel3")}
+                        hint={t("models.mlp.narrative.s05.figHint3")}
+                    >
+                        <Suspense fallback={<SectionSkeleton />}><PositionSensitivityVisualizer /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
 
                 {/* ── Limitation 4: Concatenation bottleneck ── */}
                 <P>
@@ -733,12 +600,14 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                     {t("models.mlp.narrative.s05.p5")}
                 </P>
 
-                <FigureWrapper
-                    label={t("models.mlp.narrative.s05.figLabel4")}
-                    hint={t("models.mlp.narrative.s05.figHint4")}
-                >
-                    <ConcatenationBottleneckVisualizer />
-                </FigureWrapper>
+                <LazySection>
+                    <FigureWrapper
+                        label={t("models.mlp.narrative.s05.figLabel4")}
+                        hint={t("models.mlp.narrative.s05.figHint4")}
+                    >
+                        <Suspense fallback={<SectionSkeleton />}><ConcatenationBottleneckVisualizer /></Suspense>
+                    </FigureWrapper>
+                </LazySection>
 
                 <Callout icon={AlertTriangle} accent="amber" title={t("models.mlp.narrative.s05.calloutTitle")}>
                     <p>{t("models.mlp.narrative.s05.calloutText")}</p>
@@ -767,9 +636,11 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                         formula="W_{ij} \sim \mathcal{N}\!\left(0,\; \frac{2}{n_{\text{in}}}\right)"
                         caption={t("models.mlp.narrative.s06.formulaCaption1")}
                     />
-                    <FigureWrapper label={t("models.mlp.narrative.s06.figLabel1")} hint={t("models.mlp.narrative.s06.figHint1")}>
-                        <InitializationSensitivityVisualizer timeline={mlpGrid.timeline} />
-                    </FigureWrapper>
+                    <LazySection>
+                        <FigureWrapper label={t("models.mlp.narrative.s06.figLabel1")} hint={t("models.mlp.narrative.s06.figHint1")}>
+                            <Suspense fallback={<SectionSkeleton />}><InitializationSensitivityVisualizer timeline={mlpGrid.timeline} /></Suspense>
+                        </FigureWrapper>
+                    </LazySection>
                 </TrainingChallengePanel>
 
                 <TrainingChallengePanel
@@ -781,9 +652,11 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                         formula="\frac{\partial \mathcal{L}}{\partial W_1} = \frac{\partial \mathcal{L}}{\partial h_L} \cdot \prod_{l=2}^{L} \frac{\partial h_l}{\partial h_{l-1}} \cdot \frac{\partial h_1}{\partial W_1}"
                         caption={t("models.mlp.narrative.s06.formulaCaption2")}
                     />
-                    <FigureWrapper label={t("models.mlp.narrative.s06.figLabel2")} hint={t("models.mlp.narrative.s06.figHint2")}>
-                        <GradientFlowVisualizer timeline={mlpGrid.timeline} />
-                    </FigureWrapper>
+                    <LazySection>
+                        <FigureWrapper label={t("models.mlp.narrative.s06.figLabel2")} hint={t("models.mlp.narrative.s06.figHint2")}>
+                            <Suspense fallback={<SectionSkeleton />}><GradientFlowVisualizer timeline={mlpGrid.timeline} /></Suspense>
+                        </FigureWrapper>
+                    </LazySection>
                     <P>{t("models.mlp.narrative.s06.p3")}</P>
                 </TrainingChallengePanel>
 
@@ -799,9 +672,11 @@ export function MLPNarrative({ mlpGrid }: MLPNarrativeProps) {
                     <Callout icon={Lightbulb} accent="indigo" title={t("models.mlp.narrative.s06.calloutTitle")}>
                         <p>{t("models.mlp.narrative.s06.calloutText")}</p>
                     </Callout>
-                    <FigureWrapper label={t("models.mlp.narrative.s06.figLabel3")} hint={t("models.mlp.narrative.s06.figHint3")}>
-                        <BatchNormEffectVisualizer />
-                    </FigureWrapper>
+                    <LazySection>
+                        <FigureWrapper label={t("models.mlp.narrative.s06.figLabel3")} hint={t("models.mlp.narrative.s06.figHint3")}>
+                            <Suspense fallback={<SectionSkeleton />}><BatchNormEffectVisualizer /></Suspense>
+                        </FigureWrapper>
+                    </LazySection>
                 </TrainingChallengePanel>
             </Section>
 

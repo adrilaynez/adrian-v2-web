@@ -1,8 +1,10 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
+
+import { motion, useInView } from "framer-motion";
 import { TrendingUp } from "lucide-react";
+
 import { useI18n } from "@/i18n/context";
 
 const STEPS = [
