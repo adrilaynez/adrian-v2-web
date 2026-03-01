@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef,useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { motion } from "framer-motion";
 import { CheckCircle2, Copy, RefreshCw, Swords, WifiOff } from "lucide-react";
@@ -110,7 +110,7 @@ function CopyButton({ text }: { text: string }) {
    Main component
    ───────────────────────────────────────────── */
 
-export function NgramGenerationBattle({
+export const NgramGenerationBattle = memo(function NgramGenerationBattle({
     seeds = ["the ", "I wa", "hello"],
     nValues = [1, 2, 3, 4],
     maxTokens = 80,
@@ -140,7 +140,7 @@ export function NgramGenerationBattle({
                 const res = await generateNgram(selectedSeed, maxTokens, temperature, n);
                 setResults((prev) => ({
                     ...prev,
-                    [n]: { text: res.generated_text ?? "", loading: false, error: null },
+                    [n]: { text: res.generated_only ?? "", loading: false, error: null },
                 }));
             } catch (err) {
                 setResults((prev) => ({
@@ -343,4 +343,4 @@ export function NgramGenerationBattle({
             </p>
         </div>
     );
-}
+});

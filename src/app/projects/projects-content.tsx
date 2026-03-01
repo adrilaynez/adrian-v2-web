@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-
 import { motion } from "framer-motion";
 import {
     ArrowRight,
     Boxes,
-    Brain,     FlaskConical,     Sparkles} from "lucide-react";
+    Brain, FlaskConical, Sparkles
+} from "lucide-react";
+
+import { FadeInView } from "@/components/lab/FadeInView";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,12 +64,7 @@ export function ProjectsContent() {
                         <div className="h-px bg-border flex-1"></div>
                     </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                    >
+                    <FadeInView>
                         <Card className="relative overflow-hidden border-emerald-500/20 bg-gradient-to-br from-black via-emerald-950/20 to-black group hover:border-emerald-500/30 transition-all duration-700">
                             {/* Animated background grid */}
                             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:32px_32px] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -184,17 +181,12 @@ export function ProjectsContent() {
                                 </div>
                             </div>
                         </Card>
-                    </motion.div>
+                    </FadeInView>
                 </div>
 
                 {/* Coming Soon Section */}
                 <section>
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-center py-16"
-                    >
+                    <FadeInView className="text-center py-16">
                         <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-mono uppercase tracking-widest text-primary mb-6">
                             <Sparkles className="h-3 w-3" />
                             {t("projects.experiments.comingSoon")}
@@ -205,7 +197,7 @@ export function ProjectsContent() {
                         <p className="text-muted-foreground/60 max-w-md mx-auto text-sm">
                             {t("projects.experiments.comingSoonDesc")}
                         </p>
-                    </motion.div>
+                    </FadeInView>
                 </section>
 
             </section>

@@ -22,7 +22,7 @@ import { KeyboardShortcutsPanel } from "@/components/lab/KeyboardShortcutsPanel"
 import { ReadingProgressBar } from "@/components/lab/ReadingProgressBar";
 import { Badge } from "@/components/ui/badge";
 import { LanguageToggle } from "@/components/ui/language-toggle";
-import { ScrollProvider, useScroll } from "@/context/ScrollContext";
+import { ScrollProvider, useScrollY } from "@/context/ScrollContext";
 import { useUser } from "@/context/UserContext";
 import { useBackendHealth } from "@/hooks/useBackendHealth";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -141,7 +141,7 @@ function LabShellInner({ children }: { children: React.ReactNode }) {
     const pageId = pathname?.replace("/lab/", "").replace(/\//g, "-") || "lab";
     const { currentSection } = useProgressTracker(pageId);
 
-    const { scrollY } = useScroll();
+    const scrollY = useScrollY();
     const showBackToTop = scrollY > 600;
     const scrollToTop = useCallback(() => window.scrollTo({ top: 0, behavior: "smooth" }), []);
 

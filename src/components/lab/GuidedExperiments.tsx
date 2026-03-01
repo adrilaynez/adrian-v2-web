@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 
-import { AnimatePresence,motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Lightbulb } from "lucide-react";
+
+import { FadeInView } from "@/components/lab/FadeInView";
 
 import { useI18n } from "@/i18n/context";
 
@@ -20,13 +22,7 @@ export function GuidedExperiments() {
     ] as const;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.5 }}
-            className="mb-8 rounded-xl border border-amber-500/[0.12] bg-amber-500/[0.02] overflow-hidden"
-        >
+        <FadeInView margin="-40px" className="mb-8 rounded-xl border border-amber-500/[0.12] bg-amber-500/[0.02] overflow-hidden">
             <button
                 onClick={() => setOpen(!open)}
                 className="w-full flex items-center gap-3 px-5 py-4 text-left group hover:bg-amber-500/[0.03] transition-colors"
@@ -68,7 +64,7 @@ export function GuidedExperiments() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </FadeInView>
     );
 }
 

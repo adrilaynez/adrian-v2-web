@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 
-import { AnimatePresence,motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { useI18n } from "@/i18n/context";
 
@@ -65,7 +65,7 @@ function CountRow({ context, next, count, pct, tooltipKey }: {
     );
 }
 
-export function CountingComparisonWidget() {
+export const CountingComparisonWidget = memo(function CountingComparisonWidget() {
     const { t } = useI18n();
     return (
         <div className="grid md:grid-cols-2 gap-4 p-4 sm:p-6">
@@ -120,4 +120,4 @@ export function CountingComparisonWidget() {
             </div>
         </div>
     );
-}
+});

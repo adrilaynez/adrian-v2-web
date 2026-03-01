@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, ArrowDown, Beaker, BookOpen, ChevronDown, FlaskConical, History, Layers, Lightbulb } from "lucide-react";
 
 import { ContinueToast } from "@/components/lab/ContinueToast";
+import { FadeInView } from "@/components/lab/FadeInView";
 import { Term } from "@/components/lab/GlossaryTooltip";
 import { KeyTakeaway } from "@/components/lab/KeyTakeaway";
 import { LazySection, SectionSkeleton } from "@/components/lab/LazySection";
@@ -105,12 +106,7 @@ function HistorySidebar({ t }: { t: (key: string) => string }) {
     ];
 
     return (
-        <motion.aside
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            className="my-12 rounded-2xl border border-rose-500/20 overflow-hidden relative"
-        >
+        <FadeInView as="aside" margin="-40px" className="my-12 rounded-2xl border border-rose-500/20 overflow-hidden relative">
             <button
                 onClick={() => setOpen(!open)}
                 className="w-full flex items-center gap-4 px-6 py-5 text-left group transition-all duration-300 relative bg-gradient-to-br from-rose-500/[0.08] via-pink-500/[0.04] to-rose-500/[0.06] hover:from-rose-500/[0.12] hover:via-pink-500/[0.06] hover:to-rose-500/[0.08]"
@@ -265,7 +261,7 @@ function HistorySidebar({ t }: { t: (key: string) => string }) {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.aside>
+        </FadeInView>
     );
 }
 
@@ -1628,12 +1624,7 @@ export function NeuralNetworkNarrative() {
             </Section>
 
             {/* ───────────────── CODA ───────────────── */}
-            <motion.footer
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                className="mt-8 pt-12 border-t border-[var(--lab-border)] text-center"
-            >
+            <FadeInView as="footer" className="mt-8 pt-12 border-t border-[var(--lab-border)] text-center">
                 <p className="text-sm text-[var(--lab-text-subtle)] italic max-w-md mx-auto leading-relaxed mb-10">
                     {t("neuralNetworkNarrative.footer.text")}
                 </p>
@@ -1641,7 +1632,7 @@ export function NeuralNetworkNarrative() {
                     <FlaskConical className="h-3 w-3" />
                     {t("neuralNetworkNarrative.footer.brand")}
                 </div>
-            </motion.footer>
+            </FadeInView>
         </article >
     );
 }

@@ -3,8 +3,9 @@
 import React, { useEffect } from "react";
 import { BlockMath } from "react-katex";
 
-import { motion } from "framer-motion";
 import { Lightbulb } from "lucide-react";
+
+import { FadeInView } from "@/components/lab/FadeInView";
 
 import { cn } from "@/lib/utils";
 
@@ -62,16 +63,9 @@ const PULLQUOTE_BORDER: Record<NarrativeAccent, string> = {
 
 export function Section({ id, children }: { id?: string; children: React.ReactNode }) {
     return (
-        <motion.section
-            id={id}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6 }}
-            className="mb-20 md:mb-28"
-        >
+        <FadeInView as="section" id={id} margin="-80px" className="mb-20 md:mb-28">
             {children}
-        </motion.section>
+        </FadeInView>
     );
 }
 
@@ -203,13 +197,7 @@ export function Callout({
     const a = CALLOUT_COLORS[accent];
 
     return (
-        <motion.aside
-            initial={{ opacity: 0, x: -12 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.4 }}
-            className={`relative my-8 rounded-xl border ${a.border} ${a.bg} p-5 md:p-6 overflow-hidden`}
-        >
+        <FadeInView as="aside" margin="-40px" className={`relative my-8 rounded-xl border ${a.border} ${a.bg} p-5 md:p-6 overflow-hidden`}>
             <div className={`absolute inset-0 bg-gradient-to-br ${a.glow} to-transparent pointer-events-none`} />
             <div className="relative flex gap-4">
                 <div className="shrink-0 mt-0.5">
@@ -226,7 +214,7 @@ export function Callout({
                     </div>
                 </div>
             </div>
-        </motion.aside>
+        </FadeInView>
     );
 }
 
@@ -250,12 +238,7 @@ export function FormulaBlock({
 
     const s = FORMULA_STYLES[accent];
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-40px" }}
-            className="my-10 text-center"
-        >
+        <FadeInView margin="-40px" className="my-10 text-center">
             <div className="flex items-center justify-center mb-10">
                 <div className={`inline-block px-8 py-4 rounded-2xl ${s.bg} border ${s.border} backdrop-blur-sm ${s.shadow}`}>
                     <BlockMath math={formula} />
@@ -264,7 +247,7 @@ export function FormulaBlock({
             <p className="text-center text-sm md:text-base text-[var(--lab-text-muted)] italic font-light max-w-2xl mx-auto">
                 {caption}
             </p>
-        </motion.div>
+        </FadeInView>
     );
 }
 
@@ -280,16 +263,11 @@ export function PullQuote({
     accent?: NarrativeAccent;
 }) {
     return (
-        <motion.blockquote
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-40px" }}
-            className={`my-10 md:my-12 pl-6 border-l-2 ${PULLQUOTE_BORDER[accent]}`}
-        >
+        <FadeInView as="blockquote" margin="-40px" className={`my-10 md:my-12 pl-6 border-l-2 ${PULLQUOTE_BORDER[accent]}`}>
             <p className="text-lg md:text-xl text-[var(--lab-text-muted)] font-light italic leading-relaxed">
                 {children}
             </p>
-        </motion.blockquote>
+        </FadeInView>
     );
 }
 

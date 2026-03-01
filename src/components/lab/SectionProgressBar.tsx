@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useScroll } from "@/context/ScrollContext";
+import { useScrollY } from "@/context/ScrollContext";
 
 export type SectionProgressItem = {
     id: string;
@@ -31,7 +31,7 @@ export function SectionProgressBar({
     const rafRef = useRef<number | null>(null);
     const [activeIdx, setActiveIdx] = useState(0);
 
-    const { scrollY } = useScroll();
+    const scrollY = useScrollY();
 
     // Cache section elements when ids change
     useEffect(() => {

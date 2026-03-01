@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { motion, useScroll, useTransform } from "framer-motion";
+
+import { FadeInView } from "@/components/lab/FadeInView";
 import {
   ArrowRight,
   ChevronDown,
@@ -64,29 +66,18 @@ function FadeUp({ children, delay = 0, className = "" }: { children: React.React
 /* ─── Scroll Reveal Block ─── */
 function ScrollReveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 42 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className={className}
-    >
+    <FadeInView margin="-80px" className={className}>
       {children}
-    </motion.div>
+    </FadeInView>
   );
 }
 
 /* ─── Animated Counter ─── */
 function Counter({ value, suffix = "" }: { value: string; suffix?: string }) {
   return (
-    <motion.span
-      initial={{ opacity: 0, scale: 0.7 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
-    >
+    <FadeInView as="span">
       {value}{suffix}
-    </motion.span>
+    </FadeInView>
   );
 }
 
@@ -241,13 +232,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
                 {/* Floating Status Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, delay: 0.25 }}
-                  className="absolute bottom-0 left-0 right-0 p-6"
-                >
+                <FadeInView delay={0.25} className="absolute bottom-0 left-0 right-0 p-6">
                   <div className="bg-background/80 rounded-xl border border-white/[0.08] p-5 shadow-2xl">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -256,7 +241,7 @@ export default function Home() {
                     <p className="text-sm font-medium text-foreground">{t("landing.about.projectTitle")}</p>
                     <p className="text-xs text-muted-foreground/60 mt-1">{t("landing.about.projectDesc")}</p>
                   </div>
-                </motion.div>
+                </FadeInView>
 
                 {/* Corner Accent */}
                 <div className="absolute top-4 right-4 flex gap-1.5">

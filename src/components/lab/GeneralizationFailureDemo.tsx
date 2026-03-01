@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect,useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import { CheckCircle2, XCircle } from "lucide-react";
@@ -9,7 +9,7 @@ import { useI18n } from "@/i18n/context";
 
 type RightState = "idle" | "loading" | "failed";
 
-export function GeneralizationFailureDemo() {
+export const GeneralizationFailureDemo = memo(function GeneralizationFailureDemo() {
     const { t } = useI18n();
     const ref = useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: "-80px" });
@@ -158,4 +158,4 @@ export function GeneralizationFailureDemo() {
             </motion.p>
         </div>
     );
-}
+});

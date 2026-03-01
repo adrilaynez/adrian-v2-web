@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo,useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
-import { AnimatePresence,motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+
+import { FadeInView } from "@/components/lab/FadeInView";
 import {
     Activity,
     ArrowRight,
@@ -96,12 +98,7 @@ function LabSection({
     const a = accentMap[accent];
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.5 }}
-        >
+        <FadeInView margin="-60px">
             <div className={`rounded-2xl border ${a.border} bg-gradient-to-br from-white/[0.02] to-black/20 overflow-hidden`}>
                 <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.015]">
                     <div className={`p-1.5 rounded-lg ${a.bg}`}>
@@ -114,7 +111,7 @@ function LabSection({
                 </div>
                 <div className="p-5">{children}</div>
             </div>
-        </motion.div>
+        </FadeInView>
     );
 }
 
@@ -124,15 +121,9 @@ function LabSection({
 
 function FlowHint({ text }: { text: string }) {
     return (
-        <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            className="max-w-6xl mx-auto px-6 mb-4 text-[11px] text-white/30 leading-relaxed border-l-2 border-amber-500/20 pl-3"
-        >
+        <FadeInView as="p" className="max-w-6xl mx-auto px-6 mb-4 text-[11px] text-white/30 leading-relaxed border-l-2 border-amber-500/20 pl-3">
             {text}
-        </motion.p>
+        </FadeInView>
     );
 }
 
@@ -454,7 +445,7 @@ function NgramPageContent() {
             })
             .finally(() => { fetchingNsRef.current.delete(n); });
         return () => { active = false; };
-    }, [viz.contextSize]);  
+    }, [viz.contextSize]);
 
     const handleAnalyze = useCallback((text: string, topK: number) => {
         lastTextRef.current = text;
@@ -658,12 +649,7 @@ function NgramPageContent() {
                 {/* ROW 3+4: Advanced Metrics (collapsed by default) */}
                 {(hasPerformanceData || hasLossHistory) && (
                     <div className="max-w-6xl mx-auto px-6 mb-4">
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-40px" }}
-                            transition={{ duration: 0.4 }}
-                        >
+                        <FadeInView margin="-40px">
                             <AdvancedMetricsCollapsible
                                 hasPerformanceData={hasPerformanceData}
                                 hasLossHistory={!!hasLossHistory}
@@ -671,7 +657,7 @@ function NgramPageContent() {
                                 training={training}
                                 contextSize={viz.contextSize}
                             />
-                        </motion.div>
+                        </FadeInView>
                     </div>
                 )}
 
@@ -746,12 +732,7 @@ function NgramPageContent() {
                 />
 
                 {/* Footer */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    className="mt-16 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-6"
-                >
+                <FadeInView className="mt-16 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-6">
                     <p className="text-xs text-white/30 max-w-sm text-center leading-relaxed">
                         {t("ngramNarrative.endOfCounting.hookLine")}
                     </p>
@@ -766,7 +747,7 @@ function NgramPageContent() {
                         <FlaskConical className="h-3 w-3" />
                         {t("models.ngram.lab.footer")}
                     </div>
-                </motion.div>
+                </FadeInView>
             </div>
         </LabShell>
     );

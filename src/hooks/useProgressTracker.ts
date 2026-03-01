@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useScroll } from "@/context/ScrollContext";
+import { getScrollState } from "@/context/ScrollContext";
 
 export interface StoredProgress {
     lastSection: string;
@@ -27,8 +27,6 @@ export function useProgressTracker(pageId: string): UseProgressTrackerReturn {
     const [storedSection, setStoredSection] = useState("");
     const [hasStoredProgress, setHasStoredProgress] = useState(false);
 
-    const { scrollPct } = useScroll();
-
     const writeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const currentSectionRef = useRef("");
 
@@ -48,13 +46,14 @@ export function useProgressTracker(pageId: string): UseProgressTrackerReturn {
         }
     }, [storageKey]);
 
+    // Read scrollPct imperatively at write time — no reactive dependency
     const scheduleWrite = useCallback(() => {
         if (writeTimerRef.current) clearTimeout(writeTimerRef.current);
         writeTimerRef.current = setTimeout(() => {
             if (!currentSectionRef.current) return;
             const payload: StoredProgress = {
                 lastSection: currentSectionRef.current,
-                scrollPct: Math.round(scrollPct),
+                scrollPct: Math.round(getScrollState().scrollPct),
                 timestamp: Date.now(),
             };
             try {
@@ -63,7 +62,7 @@ export function useProgressTracker(pageId: string): UseProgressTrackerReturn {
                 // quota exceeded — ignore
             }
         }, DEBOUNCE_MS);
-    }, [storageKey, scrollPct]);
+    }, [storageKey]);
 
     // IntersectionObserver to track which section is most visible
     useEffect(() => {

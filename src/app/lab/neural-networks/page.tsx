@@ -3,8 +3,9 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
-import { motion } from "framer-motion";
-import { ArrowRight,FlaskConical } from "lucide-react";
+import { ArrowRight, FlaskConical } from "lucide-react";
+
+import { FadeInView } from "@/components/lab/FadeInView";
 
 import { ErrorBoundary } from "@/components/lab/ErrorBoundary";
 import { LabShell } from "@/components/lab/LabShell";
@@ -73,32 +74,17 @@ function NeuralNetworksPageContent() {
                     />
 
                     <div className="max-w-5xl mx-auto px-6 mb-28">
-                        <motion.div
-                            initial={{ opacity: 0, y: 16 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-40px" }}
-                            transition={{ duration: 0.5 }}
-                        >
+                        <FadeInView margin="-40px">
                             <GuidedExperiments />
-                        </motion.div>
+                        </FadeInView>
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-60px" }}
-                            transition={{ duration: 0.6 }}
-                        >
+                        <FadeInView margin="-60px">
                             <NNPlayground />
-                        </motion.div>
+                        </FadeInView>
                     </div>
 
                     {/* ─── FOOTER ─── */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        className="mt-32 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-6"
-                    >
+                    <FadeInView className="mt-32 border-t border-white/[0.05] pt-12 flex flex-col items-center gap-6">
                         <p className="text-xs text-white/30 max-w-sm text-center leading-relaxed">
                             {t("neuralNetworkNarrative.bigramConnection.p3")?.slice(0, 120)}…
                         </p>
@@ -113,7 +99,7 @@ function NeuralNetworksPageContent() {
                             <FlaskConical className="h-3 w-3" />
                             <span>LM-Lab · {t("models.neuralNetworks.hero.badge")}</span>
                         </div>
-                    </motion.div>
+                    </FadeInView>
                 </div>
             )}
         </LabShell>

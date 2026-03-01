@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 
 import { motion, useInView } from "framer-motion";
 import { TrendingUp } from "lucide-react";
@@ -40,7 +40,7 @@ const STEPS = [
     },
 ];
 
-export function ConcreteImprovementExample() {
+export const ConcreteImprovementExample = memo(function ConcreteImprovementExample() {
     const { t } = useI18n();
     const ref = useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: "-80px" });
@@ -162,4 +162,4 @@ export function ConcreteImprovementExample() {
             </motion.div>
         </div>
     );
-}
+});

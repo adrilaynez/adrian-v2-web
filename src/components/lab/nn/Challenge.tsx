@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
-import { AnimatePresence,motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
+import { FadeInView } from "@/components/lab/FadeInView";
 import { useI18n } from "@/i18n/context";
 
 interface ChallengeProps {
@@ -92,13 +93,7 @@ export function Challenge({
     if (skipped) return null;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.45 }}
-            className="relative my-8 -mx-2 sm:mx-0"
-        >
+        <FadeInView margin="-40px" className="relative my-8 -mx-2 sm:mx-0">
             <AnimatePresence>
                 {showParticles && <SuccessParticles />}
             </AnimatePresence>
@@ -210,6 +205,6 @@ export function Challenge({
                     )}
                 </div>
             </motion.div>
-        </motion.div>
+        </FadeInView>
     );
 }
