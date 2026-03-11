@@ -49,6 +49,26 @@ export function AttentionHeatmapViz() {
 
     return (
         <div className="py-6 sm:py-8 px-1 sm:px-4 space-y-4" style={{ minHeight: 300 }}>
+
+            {/* Recipe banner */}
+            <motion.div
+                className="rounded-xl px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4"
+                style={{ background: "rgba(34,211,238,0.05)", border: "1px solid rgba(34,211,238,0.12)" }}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+            >
+                <span className="text-[9px] uppercase tracking-widest font-bold text-cyan-400/40 shrink-0">The Recipe</span>
+                <div className="flex flex-col gap-0.5">
+                    <p className="text-[12px] sm:text-[13px] font-medium text-white/50">
+                        This matrix tells each word <span className="text-cyan-300/65">where to look</span>.
+                    </p>
+                    <p className="text-[11px] text-white/25 italic">
+                        The next section shows what we <span className="text-cyan-300/45 not-italic font-medium">cook with it</span> — new contextual embeddings.
+                    </p>
+                </div>
+            </motion.div>
+
             {/* Heatmap grid */}
             <div className="overflow-x-auto pb-2 flex justify-center">
                 <div className="inline-block">
@@ -260,6 +280,21 @@ export function AttentionHeatmapViz() {
                 </div>
                 <span className="text-[9px] text-white/20">High</span>
             </div>
+
+            {/* Forward pointer */}
+            <motion.div
+                className="flex flex-col items-center gap-1.5 pt-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+            >
+                <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent" />
+                <div className="flex items-center gap-2 text-[11px] text-white/20">
+                    <span>Now we use this recipe</span>
+                    <span className="text-cyan-400/35 font-bold">→</span>
+                    <span className="text-cyan-300/40 font-medium">to build new embeddings</span>
+                </div>
+            </motion.div>
         </div>
     );
 }

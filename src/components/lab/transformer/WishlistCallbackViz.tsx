@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 
 import { motion } from "framer-motion";
-import { Check, ListChecks, Eye, Shuffle, MapPin, Zap } from "lucide-react";
+import { Check, Eye, Shuffle, MapPin, Zap } from "lucide-react";
 
 /*
   WishlistCallbackViz — v2
@@ -68,119 +68,92 @@ export function WishlistCallbackViz({ solvedItems = [] }: WishlistCallbackVizPro
     const progress = solvedCount / total;
 
     return (
-        <div className="py-6 sm:py-10">
-            <div className="w-full max-w-xl mx-auto space-y-6">
+        <div className="py-8 sm:py-12">
+            <div className="w-full max-w-lg mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between px-1">
-                    <div>
-                        <h4 className="text-base sm:text-lg font-bold text-white/80 tracking-tight">Architecture Wishlist</h4>
-                        <p className="text-xs text-white/30 mt-0.5">
-                            {solvedCount === 0
-                                ? "4 problems to solve across this chapter"
-                                : solvedCount < total
-                                    ? `${solvedCount} of ${total} solved`
-                                    : "All solved!"}
-                        </p>
-                    </div>
-                    {/* Circular progress indicator */}
-                    <div className="relative w-10 h-10">
-                        <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                            <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="2" />
-                            <motion.circle
-                                cx="18" cy="18" r="15"
-                                fill="none"
-                                stroke="url(#wishlist-gradient)"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeDasharray={`${progress * 94.2} 94.2`}
-                                initial={{ strokeDasharray: "0 94.2" }}
-                                animate={{ strokeDasharray: `${progress * 94.2} 94.2` }}
-                                transition={{ duration: 0.8, ease: "easeOut" }}
-                            />
-                            <defs>
-                                <linearGradient id="wishlist-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#22d3ee" />
-                                    <stop offset="100%" stopColor="#34d399" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-mono font-bold text-white/35">
-                            {solvedCount}/{total}
-                        </span>
-                    </div>
+                <div className="text-center mb-8">
+                    <p className="text-[10px] uppercase tracking-[0.2em] font-semibold text-cyan-400/30 mb-1.5">What we need to build</p>
+                    <h4 className="text-lg sm:text-xl font-semibold text-white/70 tracking-tight">Architecture Wishlist</h4>
+                    {solvedCount > 0 && solvedCount < total && (
+                        <p className="text-[11px] text-white/20 mt-1">{solvedCount} of {total} solved</p>
+                    )}
                 </div>
 
-                {/* Items */}
-                <div className="space-y-3">
-                    {WISHLIST_ITEMS.map((item, idx) => {
-                        const isSolved = solvedSet.has(item.id);
-                        const section = SOLVED_SECTIONS[item.id];
-                        const Icon = item.icon;
+                {/* Items with timeline */}
+                <div className="relative">
+                    {/* Vertical connecting line */}
+                    <div
+                        className="absolute left-[15px] top-2 bottom-2 w-px"
+                        style={{ background: "linear-gradient(180deg, rgba(34,211,238,0.12), rgba(251,191,36,0.08), rgba(251,191,36,0.08), rgba(244,63,94,0.12))" }}
+                    />
 
-                        return (
-                            <motion.div
-                                key={item.id}
-                                className="flex items-start gap-3.5 py-3 px-3.5 rounded-xl transition-all duration-500"
-                                style={{
-                                    background: isSolved
-                                        ? "rgba(16, 185, 129, 0.03)"
-                                        : "rgba(255, 255, 255, 0.015)",
-                                }}
-                                initial={{ opacity: 0, x: -8 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: idx * 0.08, duration: 0.4 }}
-                            >
-                                {/* Icon */}
-                                <div className="mt-0.5 shrink-0">
-                                    {isSolved ? (
-                                        <motion.div
-                                            className="flex items-center justify-center w-7 h-7 rounded-lg"
-                                            style={{ background: "rgba(16, 185, 129, 0.12)" }}
-                                            initial={{ scale: 0, rotate: -90 }}
-                                            animate={{ scale: 1, rotate: 0 }}
-                                            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                                        >
-                                            <Check className="w-4 h-4 text-emerald-400/80" />
-                                        </motion.div>
-                                    ) : (
-                                        <div className="flex items-center justify-center w-7 h-7 rounded-lg"
-                                            style={{ background: "rgba(255, 255, 255, 0.03)" }}
-                                        >
-                                            <Icon className={`w-3.5 h-3.5 ${item.unsolvedColor.iconColor}`} />
-                                        </div>
-                                    )}
-                                </div>
+                    <div className="space-y-6">
+                        {WISHLIST_ITEMS.map((item, idx) => {
+                            const isSolved = solvedSet.has(item.id);
+                            const section = SOLVED_SECTIONS[item.id];
+                            const Icon = item.icon;
 
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-start gap-2 flex-wrap">
-                                        <span className={`text-[13px] sm:text-sm font-semibold leading-snug ${isSolved ? "text-emerald-300/60 line-through decoration-emerald-400/15" : item.unsolvedColor.text}`}>
-                                            {item.title}
-                                        </span>
-                                        {isSolved && section && (
-                                            <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded text-emerald-400/50"
-                                                style={{ background: "rgba(16, 185, 129, 0.08)" }}
+                            return (
+                                <motion.div
+                                    key={item.id}
+                                    className="flex items-start gap-4 relative"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.1, duration: 0.5, ease: "easeOut" }}
+                                >
+                                    {/* Timeline node */}
+                                    <div className="shrink-0 relative z-10">
+                                        {isSolved ? (
+                                            <motion.div
+                                                className="flex items-center justify-center w-[30px] h-[30px] rounded-full"
+                                                style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.25)" }}
+                                                initial={{ scale: 0, rotate: -90 }}
+                                                animate={{ scale: 1, rotate: 0 }}
+                                                transition={{ type: "spring", stiffness: 300, damping: 15 }}
                                             >
-                                                {section}
-                                            </span>
+                                                <Check className="w-3.5 h-3.5 text-emerald-400/80" />
+                                            </motion.div>
+                                        ) : (
+                                            <div
+                                                className="flex items-center justify-center w-[30px] h-[30px] rounded-full"
+                                                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+                                            >
+                                                <Icon className={`w-3.5 h-3.5 ${item.unsolvedColor.iconColor}`} />
+                                            </div>
                                         )}
                                     </div>
-                                    <p className={`text-xs mt-1 leading-relaxed ${isSolved ? "text-white/15" : "text-white/30"}`}>
-                                        {item.description}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        );
-                    })}
+
+                                    {/* Content */}
+                                    <div className="flex-1 min-w-0 pt-0.5">
+                                        <div className="flex items-start gap-2 flex-wrap">
+                                            <span className={`text-sm sm:text-[15px] font-semibold leading-snug ${isSolved ? "text-emerald-300/50 line-through decoration-emerald-400/15" : item.unsolvedColor.text}`}>
+                                                {item.title}
+                                            </span>
+                                            {isSolved && section && (
+                                                <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded text-emerald-400/40"
+                                                    style={{ background: "rgba(16, 185, 129, 0.06)" }}
+                                                >
+                                                    {section}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className={`text-[12px] mt-1 leading-relaxed ${isSolved ? "text-white/12" : "text-white/25"}`}>
+                                            {item.description}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
                 </div>
 
-                {/* Subtle footer hint */}
-                <p className="text-[11px] text-white/15 text-center">
+                {/* Subtle footer */}
+                <p className="text-[11px] text-white/12 text-center mt-8">
                     {solvedCount === 0
-                        ? "Each item will check off as you discover the solution in later sections"
+                        ? "Each item will check off as you discover the solution"
                         : solvedCount < total
                             ? `${total - solvedCount} remaining`
-                            : "Every problem solved. The transformer architecture is complete."}
+                            : "Every problem solved. The transformer is complete."}
                 </p>
             </div>
         </div>

@@ -185,11 +185,11 @@ export function ValueCompletesViz() {
                                 className="rounded-xl px-4 sm:px-5 py-3"
                                 style={{
                                     background: isTop
-                                        ? "linear-gradient(135deg, rgba(34,211,238,0.03), rgba(34,211,238,0.005))"
-                                        : "rgba(255,255,255,0.012)",
+                                        ? "linear-gradient(135deg, rgba(34,211,238,0.06), rgba(34,211,238,0.015))"
+                                        : "rgba(255,255,255,0.025)",
                                     border: isTop
-                                        ? "1px solid rgba(34,211,238,0.07)"
-                                        : "1px solid rgba(255,255,255,0.025)",
+                                        ? "1px solid rgba(34,211,238,0.14)"
+                                        : "1px solid rgba(255,255,255,0.05)",
                                 }}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -203,14 +203,14 @@ export function ValueCompletesViz() {
                                     >
                                         {item.word}
                                     </span>
-                                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.025)" }}>
+                                    <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
                                         <motion.div
                                             className="h-full rounded-full"
                                             style={{
                                                 background: isTop
-                                                    ? "linear-gradient(90deg, rgba(34,211,238,0.4), rgba(34,211,238,0.1))"
-                                                    : "linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
-                                                boxShadow: rank === 0 ? "0 0 8px -2px rgba(34,211,238,0.2)" : "none",
+                                                    ? "linear-gradient(90deg, rgba(34,211,238,0.6), rgba(34,211,238,0.2))"
+                                                    : "linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.04))",
+                                                boxShadow: rank === 0 ? "0 0 10px -2px rgba(34,211,238,0.3)" : "none",
                                             }}
                                             initial={{ width: 0 }}
                                             animate={{ width: `${barW}%` }}
@@ -219,7 +219,7 @@ export function ValueCompletesViz() {
                                     </div>
                                     <span
                                         className="text-sm sm:text-base font-mono font-bold w-10 text-right shrink-0"
-                                        style={{ color: isTop ? "rgba(34,211,238,0.6)" : "rgba(255,255,255,0.2)" }}
+                                        style={{ color: isTop ? "rgba(34,211,238,0.8)" : "rgba(255,255,255,0.35)" }}
                                     >
                                         {pct}%
                                     </span>
@@ -233,12 +233,12 @@ export function ValueCompletesViz() {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.1 + rank * 0.04 }}
                                     >
-                                        <span className="text-[9px] text-white/12 font-mono w-4 shrink-0">V</span>
+                                        <span className="text-[9px] text-white/25 font-mono w-4 shrink-0">V</span>
                                         <div className="flex items-center gap-2">
                                             {item.valueFeatures.map((f, fi) => (
                                                 <div key={fi} className="flex items-center gap-1">
-                                                    <span className="text-[9px] text-white/15">{FEATURE_LABELS[fi]}</span>
-                                                    <span className="text-[11px] sm:text-xs font-mono text-white/25">{f.toFixed(1)}</span>
+                                                    <span className="text-[9px] text-white/30">{FEATURE_LABELS[fi]}</span>
+                                                    <span className="text-[11px] sm:text-xs font-mono text-white/40">{f.toFixed(1)}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -253,14 +253,14 @@ export function ValueCompletesViz() {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.2 + rank * 0.04 }}
                                     >
-                                        <span className="text-[9px] font-mono w-4 shrink-0 text-cyan-400/30">×</span>
+                                        <span className="text-[9px] font-mono w-4 shrink-0 text-cyan-400/50">×</span>
                                         <div className="flex items-center gap-2">
                                             {scaled.map((s, fi) => (
                                                 <div key={fi} className="flex items-center gap-1">
-                                                    <span className="text-[9px] text-white/10">{FEATURE_LABELS[fi]}</span>
+                                                    <span className="text-[9px] text-white/20">{FEATURE_LABELS[fi]}</span>
                                                     <span
                                                         className="text-xs sm:text-[13px] font-mono font-bold"
-                                                        style={{ color: `rgba(34,211,238,${0.3 + s * 2})` }}
+                                                        style={{ color: `rgba(34,211,238,${0.45 + s * 2})` }}
                                                     >
                                                         {s.toFixed(2)}
                                                     </span>
@@ -324,14 +324,14 @@ export function ValueCompletesViz() {
                     <motion.div
                         className="max-w-md mx-auto rounded-xl px-5 sm:px-6 py-5"
                         style={{
-                            background: "linear-gradient(145deg, rgba(52,211,153,0.04), rgba(34,211,238,0.02))",
-                            border: "1px solid rgba(52,211,153,0.12)",
+                            background: "linear-gradient(145deg, rgba(52,211,153,0.06), rgba(34,211,238,0.03))",
+                            border: "1px solid rgba(52,211,153,0.18)",
                         }}
                         initial={{ opacity: 0, y: 12, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{ delay: 0.5, type: "spring", stiffness: 120 }}
                     >
-                        <p className="text-[9px] text-emerald-400/40 uppercase tracking-[0.2em] font-semibold text-center mb-4">
+                        <p className="text-[9px] text-emerald-400/60 uppercase tracking-[0.2em] font-semibold text-center mb-4">
                             New representation of &ldquo;{queryWord}&rdquo;
                         </p>
 
@@ -344,22 +344,22 @@ export function ValueCompletesViz() {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.65 + fi * 0.1 }}
                                 >
-                                    <span className="text-xs sm:text-[13px] font-medium w-16 text-right text-emerald-300/35">
+                                    <span className="text-xs sm:text-[13px] font-medium w-16 text-right text-emerald-300/55">
                                         {FEATURE_LABELS[fi]}
                                     </span>
                                     <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.025)" }}>
                                         <motion.div
                                             className="h-full rounded-full"
                                             style={{
-                                                background: "linear-gradient(90deg, rgba(52,211,153,0.4), rgba(52,211,153,0.12))",
-                                                boxShadow: "0 0 8px -2px rgba(52,211,153,0.2)",
+                                                background: "linear-gradient(90deg, rgba(52,211,153,0.55), rgba(52,211,153,0.18))",
+                                                boxShadow: "0 0 10px -2px rgba(52,211,153,0.3)",
                                             }}
                                             initial={{ width: 0 }}
                                             animate={{ width: `${Math.min(v * 150, 100)}%` }}
                                             transition={{ duration: 0.5, delay: 0.75 + fi * 0.1 }}
                                         />
                                     </div>
-                                    <span className="text-base sm:text-lg font-mono font-bold text-emerald-300/60 w-12 text-right tabular-nums">
+                                    <span className="text-base sm:text-lg font-mono font-bold text-emerald-300/80 w-12 text-right tabular-nums">
                                         {v.toFixed(2)}
                                     </span>
                                 </motion.div>
@@ -367,12 +367,12 @@ export function ValueCompletesViz() {
                         </div>
 
                         <motion.p
-                            className="mt-4 text-[12px] sm:text-[13px] text-emerald-300/25 text-center leading-relaxed"
+                            className="mt-4 text-[12px] sm:text-[13px] text-emerald-300/40 text-center leading-relaxed"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 1.1 }}
                         >
-                            Each number is a <span className="text-emerald-300/40 font-medium">weighted sum</span> of
+                            Each number is a <span className="text-emerald-300/60 font-medium">weighted sum</span> of
                             every word&apos;s Value — &ldquo;{queryWord}&rdquo; now carries context.
                         </motion.p>
                     </motion.div>

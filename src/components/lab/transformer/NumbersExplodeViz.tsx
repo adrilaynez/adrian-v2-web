@@ -85,7 +85,8 @@ export function NumbersExplodeViz() {
                 <input
                     type="range" min={2} max={128} step={1} value={dim}
                     onChange={e => setDim(Number(e.target.value))}
-                    className="w-full accent-cyan-400"
+                    className="nev-slider w-full"
+                    style={{ "--slider-accent": dimColor } as React.CSSProperties}
                 />
                 <div className="flex justify-between text-[10px] text-white/15">
                     <span>2</span>

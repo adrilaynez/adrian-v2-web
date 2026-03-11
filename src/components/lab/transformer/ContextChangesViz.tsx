@@ -242,6 +242,30 @@ function SentencePanel({ data, side }: { data: SentenceData; side: "left" | "rig
                     );
                 })}
             </motion.div>
+
+            {/* Result badge */}
+            <motion.div
+                className="flex justify-center"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: baseDelay + 1.0, duration: 0.4 }}
+            >
+                <div
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-medium"
+                    style={{
+                        background: `rgba(${rgb}, 0.07)`,
+                        border: `1px solid rgba(${rgb}, 0.2)`,
+                    }}
+                >
+                    <span className="font-mono text-[10px]" style={{ color: `rgba(${rgb}, 0.5)` }}>bank</span>
+                    <span style={{ color: `rgba(${rgb}, 0.3)` }}>→</span>
+                    <span style={{ color: `rgba(${rgb}, 0.7)` }}>
+                        {data.label === "Financial context" ? "financial meaning" : "nature meaning"}
+                    </span>
+                    <span className="text-white/20">·</span>
+                    <span className="italic" style={{ color: `rgba(${rgb}, 0.4)` }}>embedding shifted</span>
+                </div>
+            </motion.div>
         </div>
     );
 }

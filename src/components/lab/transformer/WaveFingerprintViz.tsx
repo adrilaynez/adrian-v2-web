@@ -19,18 +19,22 @@ const NUM_WAVES = 6;
 const MAX_POS = 50;
 
 /*
-  Geometric frequency progression:
-  Wave 0 (Adjacent): ~8 full cycles across 50 positions → rapid oscillation
-  Wave 5 (Chapter): < 0.5 cycle across 50 → barely curves
-  Each wave ~2.8x slower than the previous.
+  Period-doubling progression (shifted so Adjacent is readable):
+  Wave 0: period = 4 positions  (~12.5 cycles across 50 — clearly fast)
+  Wave 1: period = 8 positions  (~6 cycles — phrase level)
+  Wave 2: period = 16 positions (clause level)
+  Wave 3: period = 32 positions (paragraph level)
+  Wave 4: period = 64 positions (section level — < 1 full cycle)
+  Wave 5: period = 128 positions (chapter level — barely curves)
+  Angular freq = 2π / period
 */
-const WAVES: { freq: number; label: string; width: number; opacity: number }[] = [
-    { freq: 1.00, label: "Adjacent", width: 2.4, opacity: 0.90 },
-    { freq: 0.36, label: "Phrase", width: 2.1, opacity: 0.78 },
-    { freq: 0.13, label: "Clause", width: 1.9, opacity: 0.65 },
-    { freq: 0.046, label: "Paragraph", width: 1.7, opacity: 0.55 },
-    { freq: 0.016, label: "Section", width: 1.5, opacity: 0.45 },
-    { freq: 0.006, label: "Chapter", width: 1.4, opacity: 0.38 },
+const WAVES: { freq: number; label: string; period: number; width: number; opacity: number }[] = [
+    { freq: Math.PI / 2, label: "Adjacent", period: 4, width: 2.4, opacity: 0.90 },
+    { freq: Math.PI / 4, label: "Phrase", period: 8, width: 2.1, opacity: 0.80 },
+    { freq: Math.PI / 8, label: "Clause", period: 16, width: 1.9, opacity: 0.70 },
+    { freq: Math.PI / 16, label: "Paragraph", period: 32, width: 1.7, opacity: 0.60 },
+    { freq: Math.PI / 32, label: "Section", period: 64, width: 1.5, opacity: 0.50 },
+    { freq: Math.PI / 64, label: "Chapter", period: 128, width: 1.4, opacity: 0.42 },
 ];
 
 function waveValue(pos: number, idx: number): number {
@@ -41,7 +45,20 @@ function fingerprint(pos: number): number[] {
     return WAVES.map((_, i) => waveValue(pos, i));
 }
 
-function cosineSimilarity(a: number[], b: number[]): number {
+/*
+  Similarity: use D=64 proper sinusoidal encoding (like PositionalSimilarityViz)
+  for accurate distance-based decay. The 6 visual waves are pedagogical samples.
+*/
+const SIM_D = 64;
+function fullEncoding(pos: number): number[] {
+    return Array.from({ length: SIM_D }, (_, i) => {
+        const freq = 1 / Math.pow(10000, (2 * Math.floor(i / 2)) / SIM_D);
+        return i % 2 === 0 ? Math.sin(pos * freq) : Math.cos(pos * freq);
+    });
+}
+function cosineSimilarity(posA: number, posB: number): number {
+    const a = fullEncoding(posA);
+    const b = fullEncoding(posB);
     let dot = 0, magA = 0, magB = 0;
     for (let i = 0; i < a.length; i++) {
         dot += a[i] * b[i];
@@ -55,13 +72,13 @@ function cosineSimilarity(a: number[], b: number[]): number {
 const SVG_W = 720;
 const LABEL_W = 90;
 const WAVE_AREA_W = SVG_W - LABEL_W;
-const WAVE_H = 56;
-const WAVE_GAP = 16;
-const TOP_PAD = 8;
-const TOTAL_H = TOP_PAD + NUM_WAVES * (WAVE_H + WAVE_GAP) - WAVE_GAP + 8;
+const WAVE_H = 42;
+const WAVE_GAP = 10;
+const TOP_PAD = 6;
+const TOTAL_H = TOP_PAD + NUM_WAVES * (WAVE_H + WAVE_GAP) - WAVE_GAP + 6;
 
 /* ── Fingerprint bar layout ── */
-const FP_BAR_H = 28;
+const FP_BAR_H = 22;
 
 export function WaveFingerprintViz() {
     const [selectedPos, setSelectedPos] = useState(5);
@@ -75,7 +92,7 @@ export function WaveFingerprintViz() {
     );
     const similarity = useMemo(() => {
         if (comparePos === null) return null;
-        return cosineSimilarity(fingerprint(selectedPos), fingerprint(comparePos));
+        return cosineSimilarity(selectedPos, comparePos);
     }, [selectedPos, comparePos]);
 
     const handleSlider = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

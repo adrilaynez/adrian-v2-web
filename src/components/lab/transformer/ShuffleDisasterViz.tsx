@@ -39,14 +39,14 @@ function MiniHeatmap({ words, label }: { words: string[]; label: string }) {
 
     return (
         <div className="flex flex-col items-center gap-2.5">
-            <p className="text-[14px] font-medium text-white/50 italic">
+            <p className="text-[14px] font-medium text-white/60 italic">
                 {label}
             </p>
             <div className="flex gap-1.5 mb-0.5">
                 {words.map((w, i) => (
                     <span
                         key={`${w}-${i}`}
-                        className="px-2 py-0.5 rounded text-[14px] font-mono font-bold text-white/60"
+                        className="px-2 py-0.5 rounded text-[14px] font-mono font-bold text-white/70"
                     >
                         {w}
                     </span>
@@ -61,7 +61,7 @@ function MiniHeatmap({ words, label }: { words: string[]; label: string }) {
                         textAnchor="end" fontSize={13}
                         fontFamily="ui-monospace, monospace"
                         fontWeight="600"
-                        fill="white" fillOpacity={0.55}
+                        fill="white" fillOpacity={0.65}
                     >{w}</text>
                 ))}
                 {/* Column labels */}
@@ -72,7 +72,7 @@ function MiniHeatmap({ words, label }: { words: string[]; label: string }) {
                         textAnchor="middle" fontSize={13}
                         fontFamily="ui-monospace, monospace"
                         fontWeight="600"
-                        fill="white" fillOpacity={0.55}
+                        fill="white" fillOpacity={0.65}
                     >{w}</text>
                 ))}
                 {/* Cells */}
@@ -82,8 +82,8 @@ function MiniHeatmap({ words, label }: { words: string[]; label: string }) {
                            Color mapping: low values → dark teal, high values → vivid cyan.
                            Using two-tone fill: cyan base + extra bright for high values.
                         */
-                        const intensity = val * 0.85;
-                        const isHigh = val > 0.25;
+                        const intensity = Math.min(1, val * 1.05);
+                        const isHigh = val > 0.20;
 
                         return (
                             <g key={`${i}-${j}`}>
@@ -91,7 +91,7 @@ function MiniHeatmap({ words, label }: { words: string[]; label: string }) {
                                 <rect
                                     x={pad + j * cell} y={pad + i * cell}
                                     width={cell} height={cell} rx={0}
-                                    fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1}
+                                    fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={1}
                                 />
                                 {/* Colored fill */}
                                 <motion.rect
@@ -107,8 +107,8 @@ function MiniHeatmap({ words, label }: { words: string[]; label: string }) {
                                     <rect
                                         x={pad + j * cell + 1.5} y={pad + i * cell + 1.5}
                                         width={cell - 3} height={cell - 3} rx={5}
-                                        fill="rgba(34,211,238,0.08)"
-                                        style={{ filter: "blur(2px)" }}
+                                        fill="rgba(34,211,238,0.12)"
+                                        style={{ filter: "blur(3px)" }}
                                     />
                                 )}
                                 {/* Number */}
@@ -116,7 +116,7 @@ function MiniHeatmap({ words, label }: { words: string[]; label: string }) {
                                     x={pad + j * cell + cell / 2} y={pad + i * cell + cell / 2 + 5}
                                     textAnchor="middle" fontSize={13}
                                     fontFamily="ui-monospace, monospace" fontWeight="bold"
-                                    fill="white" fillOpacity={isHigh ? 0.9 : 0.35}
+                                    fill="white" fillOpacity={isHigh ? 0.95 : 0.45}
                                 >{Math.round(val * 100)}</text>
                             </g>
                         );
@@ -134,13 +134,13 @@ export function ShuffleDisasterViz() {
                 <MiniHeatmap words={SENTENCE_A} label={`"${SENTENCE_A.join(" ")}"`} />
                 <div className="hidden md:flex flex-col items-center justify-center self-center gap-2">
                     <div className="w-px h-14 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-                    <span className="text-[15px] font-bold text-amber-400/70">=</span>
-                    <div className="w-px h-14 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+                    <span className="text-[15px] font-bold text-amber-400/80">=</span>
+                    <div className="w-px h-14 bg-gradient-to-b from-transparent via-white/12 to-transparent" />
                 </div>
                 <div className="md:hidden flex items-center justify-center w-full gap-3">
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                    <span className="text-[15px] font-bold text-amber-400/70">=</span>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/12 to-transparent" />
+                    <span className="text-[15px] font-bold text-amber-400/80">=</span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/12 to-transparent" />
                 </div>
                 <MiniHeatmap words={SENTENCE_B} label={`"${SENTENCE_B.join(" ")}"`} />
             </div>
@@ -154,8 +154,8 @@ export function ShuffleDisasterViz() {
                 <div
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full"
                     style={{
-                        background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.05))",
-                        border: "1px solid rgba(251,191,36,0.25)",
+                        background: "linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.06))",
+                        border: "1px solid rgba(251,191,36,0.3)",
                     }}
                 >
                     <span className="text-[14px] font-semibold text-amber-400">

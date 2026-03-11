@@ -14,6 +14,123 @@ import { ATTENTION } from "./SpotlightViz";
 const WORDS = ["The", "king", "who", "wore", "the", "golden", "crown", "ruled", "the", "vast", "kingdom", "wisely"];
 const FEAT = ["royalty", "action", "object", "quality"];
 
+/* 5 feature bars shown in the inspector — before and after attention */
+const INSPECTOR_FEATURES = ["royalty", "action", "object", "quality", "context"];
+
+/* Per-word "before" feature values — these are the static word embeddings */
+const BEFORE_FEATURES: Record<number, number[]> = {
+    0: [0.05, 0.05, 0.05, 0.10, 0.08],  /* The    */
+    1: [0.85, 0.20, 0.15, 0.12, 0.10],  /* king   */
+    2: [0.10, 0.05, 0.08, 0.05, 0.06],  /* who    */
+    3: [0.12, 0.75, 0.20, 0.15, 0.10],  /* wore   */
+    4: [0.05, 0.05, 0.05, 0.10, 0.08],  /* the    */
+    5: [0.20, 0.10, 0.15, 0.90, 0.12],  /* golden */
+    6: [0.65, 0.10, 0.85, 0.25, 0.12],  /* crown  */
+    7: [0.20, 0.88, 0.12, 0.10, 0.14],  /* ruled  */
+    8: [0.05, 0.05, 0.05, 0.10, 0.08],  /* the    */
+    9: [0.15, 0.08, 0.12, 0.78, 0.10],  /* vast   */
+    10: [0.80, 0.12, 0.72, 0.18, 0.15],  /* kingdom*/
+    11: [0.12, 0.10, 0.08, 0.72, 0.12],  /* wisely */
+};
+
+/* "After" values are computed by blending — but we also have hand-crafted per-word targets */
+const AFTER_FEATURES: Record<number, number[]> = {
+    1: [0.92, 0.55, 0.40, 0.70, 0.85],  /* king — gets crown, ruled, kingdom context */
+    6: [0.78, 0.30, 0.90, 0.65, 0.80],  /* crown — gets royalty context */
+    7: [0.55, 0.92, 0.35, 0.45, 0.78],  /* ruled — gets king context */
+    10: [0.88, 0.38, 0.80, 0.55, 0.82],  /* kingdom — gets royalty context */
+};
+
+/* ─── Feature Inspector sub-component ─── */
+function FeatureInspector({ active, phase }: { active: number; phase: string }) {
+    const before = BEFORE_FEATURES[active] ?? [0.2, 0.2, 0.2, 0.2, 0.2];
+    const after = AFTER_FEATURES[active] ?? before.map(v => Math.min(1, v + 0.25));
+    const isAssembled = phase === "assembled";
+    const isTransporting = phase === "transporting";
+    const cyanRgb = "34, 211, 238";
+    const amberRgb = "251, 191, 36";
+
+    return (
+        <motion.div
+            className="max-w-sm mx-auto space-y-3"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+            {/* Word label */}
+            <p className="text-center text-[10px] uppercase tracking-widest font-semibold text-white/50">
+                Embedding of &ldquo;{WORDS[active]}&rdquo;
+            </p>
+
+            {/* Feature rows — before | label | after */}
+            <div className="space-y-1">
+                {INSPECTOR_FEATURES.map((feat, fi) => {
+                    const bVal = before[fi];
+                    const aVal = after[fi];
+                    const changed = isAssembled && Math.abs(aVal - bVal) > 0.08;
+                    const currentVal = isAssembled ? aVal : bVal;
+
+                    return (
+                        <div key={fi} className="grid items-center gap-2" style={{ gridTemplateColumns: "46px 1fr 28px" }}>
+                            <span className="text-[9px] font-medium text-white/50 text-right truncate">
+                                {feat}
+                            </span>
+                            <div className="relative h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                                {/* Before bar (ghost) — always shows as faint reference */}
+                                {isAssembled && (
+                                    <div
+                                        className="absolute inset-y-0 left-0 rounded-full"
+                                        style={{
+                                            width: `${bVal * 100}%`,
+                                            background: `rgba(${cyanRgb}, 0.3)`,
+                                        }}
+                                    />
+                                )}
+                                {/* Active bar */}
+                                <motion.div
+                                    className="absolute inset-y-0 left-0 rounded-full"
+                                    animate={{ width: `${currentVal * 100}%` }}
+                                    transition={isTransporting
+                                        ? { duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] }
+                                        : { type: "spring", stiffness: 100, damping: 16 }
+                                    }
+                                    style={{
+                                        background: isAssembled
+                                            ? changed
+                                                ? `linear-gradient(90deg, rgba(${amberRgb}, 0.6), rgba(${amberRgb}, 0.9))`
+                                                : `rgba(${amberRgb}, 0.55)`
+                                            : `rgba(${cyanRgb}, 0.6)`,
+                                        boxShadow: changed ? `0 0 12px rgba(${amberRgb}, 0.35)` : "none",
+                                    }}
+                                />
+                            </div>
+                            <span
+                                className="text-[9px] font-mono tabular-nums text-right"
+                                style={{
+                                    color: changed
+                                        ? `rgba(${amberRgb}, 0.95)`
+                                        : isAssembled
+                                            ? `rgba(${amberRgb}, 0.6)`
+                                            : "rgba(255,255,255,0.45)",
+                                }}
+                            >
+                                {Math.round(currentVal * 100)}
+                            </span>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Phase label */}
+            <p className="text-[10px] text-center italic" style={{ color: isAssembled ? `rgba(${amberRgb}, 0.65)` : `rgba(${cyanRgb}, 0.55)` }}>
+                {isAssembled
+                    ? "Attention rewrote the embedding — different numbers, different meaning."
+                    : "Before attention. These numbers will change."}
+            </p>
+        </motion.div>
+    );
+}
+
 const V_VECTORS: number[][] = [
     [0.1, 0.0, 0.2, 0.0],
     [0.9, 0.2, 0.1, 0.1],
@@ -142,7 +259,7 @@ export function ContextAssemblyFilmViz() {
     }, []);
 
     return (
-        <div className="py-8 sm:py-12 px-2 sm:px-4" style={{ minHeight: 420 }}>
+        <div className="py-6 sm:py-8 px-2 sm:px-4" style={{ minHeight: 380 }}>
             <div ref={containerRef} className="relative">
                 {/* SVG arc + particle layer */}
                 <svg
@@ -356,12 +473,29 @@ export function ContextAssemblyFilmViz() {
                 </div>
             </div>
 
+            {/* Feature Inspector — shown when word selected, transporting, or assembled */}
+            <AnimatePresence>
+                {active !== null && phase !== "idle" && (
+                    <motion.div
+                        key={`inspector-${active}`}
+                        className="mt-4 mb-2"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        style={{ overflow: "hidden" }}
+                    >
+                        <FeatureInspector active={active} phase={phase} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Phase-dependent content below sentence */}
             <AnimatePresence mode="wait">
                 {phase === "idle" && (
                     <motion.p
                         key="idle-hint"
-                        className="text-center text-[13px] sm:text-sm text-white/30 mt-4"
+                        className="text-center text-[13px] sm:text-sm text-white/40 mt-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: [0.2, 0.4, 0.2] }}
                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -410,7 +544,7 @@ export function ContextAssemblyFilmViz() {
                                         >
                                             {WORDS[i]}
                                         </span>
-                                        <span className="text-[10px] font-mono text-white/15 tabular-nums">
+                                        <span className="text-[10px] font-mono text-white/25 tabular-nums">
                                             {Math.round(w * 100)}%
                                         </span>
                                     </motion.span>
@@ -505,7 +639,7 @@ function AssembledPanel({
         >
             {/* Contextual output vector */}
             <div className="text-center mb-4">
-                <p className="text-[10px] uppercase tracking-widest text-amber-400/40 font-semibold mb-2">
+                <p className="text-[10px] uppercase tracking-widest text-amber-400/60 font-semibold mb-2">
                     Contextual Representation
                 </p>
                 <div className="flex justify-center gap-1.5">
@@ -517,7 +651,7 @@ function AssembledPanel({
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: d * 0.08 }}
                         >
-                            <span className="text-[7px] text-white/15 mb-0.5">{FEAT[d]}</span>
+                            <span className="text-[7px] text-white/25 mb-0.5">{FEAT[d]}</span>
                             <span
                                 className="text-xs sm:text-sm font-mono font-bold px-2 py-1 rounded-lg"
                                 style={{
@@ -534,7 +668,7 @@ function AssembledPanel({
 
             {/* Composition breakdown */}
             <div className="text-center mb-3">
-                <p className="text-[10px] uppercase tracking-widest text-white/15 font-semibold mb-2">
+                <p className="text-[10px] uppercase tracking-widest text-white/25 font-semibold mb-2">
                     Composed from
                 </p>
                 <div className="flex items-center justify-center gap-x-3 gap-y-1 flex-wrap">
@@ -568,7 +702,7 @@ function AssembledPanel({
                                 >
                                     {WORDS[i]}
                                 </span>
-                                <span className="text-[9px] font-mono text-white/12 tabular-nums">
+                                <span className="text-[9px] font-mono text-white/22 tabular-nums">
                                     {Math.round(w * 100)}%
                                 </span>
                             </motion.button>
@@ -592,7 +726,7 @@ function AssembledPanel({
                             <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
                                 {/* V vector */}
                                 <div className="text-center">
-                                    <div className="text-[8px] uppercase tracking-widest text-amber-400/30 font-semibold mb-1">
+                                    <div className="text-[8px] uppercase tracking-widest text-amber-400/50 font-semibold mb-1">
                                         V({WORDS[inspectWord]})
                                     </div>
                                     <div className="flex gap-0.5">
@@ -639,7 +773,7 @@ function AssembledPanel({
 
             {/* Caption */}
             <motion.p
-                className="text-center text-[12px] sm:text-[13px] leading-relaxed text-white/25 italic max-w-sm mx-auto mt-3"
+                className="text-center text-[12px] sm:text-[13px] leading-relaxed text-white/40 italic max-w-sm mx-auto mt-3"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}

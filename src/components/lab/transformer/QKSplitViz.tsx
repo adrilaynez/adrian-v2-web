@@ -94,7 +94,7 @@ function FeatureBar({
     accentColor: string;
     delay: number;
 }) {
-    const isHigh = value >= 0.5;
+    const isHigh = value >= 0.4;
     return (
         <motion.div
             className="flex items-center gap-2.5"
@@ -104,18 +104,18 @@ function FeatureBar({
         >
             <span
                 className="text-[10px] sm:text-[11px] w-14 text-right font-medium shrink-0"
-                style={{ color: isHigh ? `${accentColor}` : "rgba(255,255,255,0.2)" }}
+                style={{ color: isHigh ? `${accentColor}` : "rgba(255,255,255,0.35)" }}
             >
                 {label}
             </span>
-            <div className="flex-1 h-[5px] rounded-full bg-white/[0.03] overflow-hidden">
+            <div className="flex-1 h-[6px] rounded-full bg-white/[0.05] overflow-hidden">
                 <motion.div
                     className="h-full rounded-full"
                     style={{
                         background: isHigh
-                            ? `linear-gradient(90deg, ${accentColor}80, ${accentColor}20)`
-                            : `linear-gradient(90deg, ${accentColor}30, ${accentColor}08)`,
-                        boxShadow: isHigh ? `0 0 8px -2px ${accentColor}25` : "none",
+                            ? `linear-gradient(90deg, ${accentColor}cc, ${accentColor}55)`
+                            : `linear-gradient(90deg, ${accentColor}60, ${accentColor}20)`,
+                        boxShadow: isHigh ? `0 0 10px -1px ${accentColor}40` : "none",
                     }}
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.max(value * 100, 3)}%` }}
@@ -124,7 +124,7 @@ function FeatureBar({
             </div>
             <motion.span
                 className="text-[9px] sm:text-[10px] font-mono w-6 text-right tabular-nums shrink-0"
-                style={{ color: isHigh ? `${accentColor}90` : "rgba(255,255,255,0.12)" }}
+                style={{ color: isHigh ? `${accentColor}` : "rgba(255,255,255,0.25)" }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: delay + 0.2 }}
@@ -233,8 +233,8 @@ export function QKSplitViz() {
                         <motion.div
                             className="rounded-xl px-5 py-3.5 w-full max-w-[210px]"
                             style={{
-                                background: `linear-gradient(145deg, ${w.color}08, transparent 70%)`,
-                                border: `1px solid ${w.color}12`,
+                                background: `linear-gradient(145deg, ${w.color}15, transparent 70%)`,
+                                border: `1px solid ${w.color}25`,
                             }}
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -242,7 +242,7 @@ export function QKSplitViz() {
                         >
                             <p
                                 className="text-[8px] uppercase tracking-[0.2em] font-semibold text-center mb-1.5"
-                                style={{ color: `${w.color}55` }}
+                                style={{ color: `${w.color}80` }}
                             >
                                 embedding
                             </p>
@@ -290,7 +290,7 @@ export function QKSplitViz() {
                             {/* Left branch to Query */}
                             <motion.path
                                 d="M 100 12 Q 100 20, 50 28"
-                                stroke="rgba(34,211,238,0.15)"
+                                stroke="rgba(34,211,238,0.35)"
                                 strokeWidth="1"
                                 fill="none"
                                 strokeLinecap="round"
@@ -301,7 +301,7 @@ export function QKSplitViz() {
                             {/* Right branch to Key */}
                             <motion.path
                                 d="M 100 12 Q 100 20, 150 28"
-                                stroke="rgba(52,211,153,0.15)"
+                                stroke="rgba(52,211,153,0.35)"
                                 strokeWidth="1"
                                 fill="none"
                                 strokeLinecap="round"
@@ -312,7 +312,7 @@ export function QKSplitViz() {
                             {/* Center dot */}
                             <motion.circle
                                 cx="100" cy="12" r="1.5"
-                                fill="rgba(255,255,255,0.1)"
+                                fill="rgba(255,255,255,0.2)"
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.25, type: "spring" }}
@@ -326,17 +326,17 @@ export function QKSplitViz() {
                         <motion.div
                             className="rounded-xl px-3 sm:px-4 py-3.5"
                             style={{
-                                background: "linear-gradient(145deg, rgba(34,211,238,0.04), transparent 70%)",
-                                border: "1px solid rgba(34,211,238,0.08)",
+                                background: "linear-gradient(145deg, rgba(34,211,238,0.1), transparent 70%)",
+                                border: "1px solid rgba(34,211,238,0.18)",
                             }}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.35, duration: 0.4, ease: EASE }}
                         >
-                            <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] font-semibold text-center mb-0.5 text-cyan-400/45">
+                            <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-semibold text-center mb-0.5 text-cyan-400/70">
                                 🔍 Query
                             </p>
-                            <p className="text-center text-[10px] sm:text-[11px] text-cyan-200/25 mb-3 italic">
+                            <p className="text-center text-[10px] sm:text-[11px] text-cyan-200/45 mb-3 italic">
                                 &ldquo;What I&apos;m looking for&rdquo;
                             </p>
                             <div className="space-y-2">
@@ -351,7 +351,7 @@ export function QKSplitViz() {
                                 ))}
                             </div>
                             <motion.p
-                                className="text-[9px] sm:text-[10px] text-cyan-200/20 mt-3 text-center leading-relaxed"
+                                className="text-[9px] sm:text-[10px] text-cyan-200/40 mt-3 text-center leading-relaxed"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.7 }}
@@ -364,17 +364,17 @@ export function QKSplitViz() {
                         <motion.div
                             className="rounded-xl px-3 sm:px-4 py-3.5"
                             style={{
-                                background: "linear-gradient(145deg, rgba(52,211,153,0.04), transparent 70%)",
-                                border: "1px solid rgba(52,211,153,0.08)",
+                                background: "linear-gradient(145deg, rgba(52,211,153,0.1), transparent 70%)",
+                                border: "1px solid rgba(52,211,153,0.18)",
                             }}
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.35, duration: 0.4, ease: EASE }}
                         >
-                            <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] font-semibold text-center mb-0.5 text-emerald-400/45">
+                            <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-semibold text-center mb-0.5 text-emerald-400/70">
                                 🔑 Key
                             </p>
-                            <p className="text-center text-[10px] sm:text-[11px] text-emerald-200/25 mb-3 italic">
+                            <p className="text-center text-[10px] sm:text-[11px] text-emerald-200/45 mb-3 italic">
                                 &ldquo;What I have to offer&rdquo;
                             </p>
                             <div className="space-y-2">
@@ -389,7 +389,7 @@ export function QKSplitViz() {
                                 ))}
                             </div>
                             <motion.p
-                                className="text-[9px] sm:text-[10px] text-emerald-200/20 mt-3 text-center leading-relaxed"
+                                className="text-[9px] sm:text-[10px] text-emerald-200/40 mt-3 text-center leading-relaxed"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.7 }}
@@ -406,7 +406,7 @@ export function QKSplitViz() {
                 <motion.p
                     key={idx}
                     className="text-center text-[12px] sm:text-[13px] max-w-md mx-auto leading-relaxed"
-                    style={{ color: "rgba(255,255,255,0.28)" }}
+                    style={{ color: "rgba(255,255,255,0.45)" }}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}

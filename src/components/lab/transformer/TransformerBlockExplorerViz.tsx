@@ -18,7 +18,7 @@ import { AnimatePresence, motion } from "framer-motion";
    ═══════════════════════════════════════════════════════════════ */
 
 const TOKENS = ["The", "professor", "published", "the", "paper"];
-const TOKEN_COLORS = ["#67e8f9", "#34d399", "#a78bfa", "#fbbf24", "#f472b6"];
+const TOKEN_COLORS = ["#22d3ee", "#34d399", "#a78bfa", "#fbbf24", "#f472b6"];
 const D_MODEL = 8;
 
 /* Fake embeddings (8-dim) */
@@ -138,13 +138,13 @@ interface BlockDef {
 const BLOCKS: BlockDef[] = [
     {
         id: "input", label: "Input Embedding", shortLabel: "Input\nEmbedding",
-        color: "#f9a8d4", icon: "📥", zoomable: true,
+        color: "#f0abfc", icon: "📥", zoomable: true,
         description: "Token embeddings + positional encoding",
         details: "Each word is converted into a vector of numbers that captures its meaning and position in the sentence.",
     },
     {
         id: "attn", label: "Masked Multi-Head Attention", shortLabel: "Masked\nMulti-Head\nAttention",
-        color: "#fb923c", icon: "👁️", zoomable: true,
+        color: "#f97316", icon: "👁️", zoomable: true,
         description: "Tokens gather context from each other",
         details: "Each token creates Query, Key, and Value vectors. Queries and Keys determine how much attention to pay. Values carry the actual information to gather.",
     },
@@ -156,7 +156,7 @@ const BLOCKS: BlockDef[] = [
     },
     {
         id: "ffn", label: "Feed-Forward Network", shortLabel: "Feed\nForward",
-        color: "#60a5fa", icon: "🧠", zoomable: true,
+        color: "#3b82f6", icon: "🧠", zoomable: true,
         description: "Each token thinks privately",
         details: "A two-layer MLP applied to each token independently. Expands to 4× the dimension, applies ReLU, then compresses back down.",
     },
@@ -1628,49 +1628,12 @@ export function TransformerBlockExplorerViz() {
 
     return (
         <div
-            className="py-8 sm:py-10 px-3 sm:px-6 relative"
-            style={{ minHeight: 600 }}
+            className="py-6 sm:py-8 px-3 sm:px-6 relative"
         >
             {/* ═══ HEADER ═══ */}
             <div className="text-center mb-6">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400/25 font-semibold mb-1">Interactive</p>
                 <p className="text-base sm:text-lg font-bold text-white/40">Transformer Decoder Architecture</p>
-            </div>
-
-            {/* ═══ TOKEN SELECTOR ═══ */}
-            <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
-                <span className="text-[13px] text-white/20 font-semibold mr-1">Token:</span>
-                {TOKENS.map((tok, i) => {
-                    const isSelected = selectedToken === i;
-                    const c = TOKEN_COLORS[i];
-                    return (
-                        <motion.button
-                            key={i}
-                            onClick={() => setSelectedToken(i)}
-                            className="px-3 py-1.5 text-sm font-bold transition-all cursor-pointer"
-                            style={{
-                                color: isSelected ? c : "rgba(255,255,255,0.15)",
-                                borderBottom: isSelected ? `2px solid ${c}50` : "2px solid transparent",
-                            }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            {tok}
-                        </motion.button>
-                    );
-                })}
-            </div>
-
-            {/* ═══ TOKEN EMBEDDINGS (before/after) ═══ */}
-            <div className="flex items-center justify-center gap-3 sm:gap-5 mb-5 flex-wrap">
-                {TOKENS.map((tok, i) => (
-                    <TokenEmbeddingBar
-                        key={i}
-                        values={currentEmbeddings[i]}
-                        color={TOKEN_COLORS[i]}
-                        label={tok.slice(0, 4)}
-                        small
-                    />
-                ))}
             </div>
 
             {/* ═══ MAIN CONTENT: Diagram + Detail Panel ═══ */}

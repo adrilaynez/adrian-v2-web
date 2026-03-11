@@ -21,38 +21,69 @@ interface Preset {
 
 const PRESETS: Preset[] = [
     {
-        label: "The cat sat on the mat",
-        words: ["The", "cat", "sat", "on", "the", "mat"],
+        label: "I sat by the river bank.",
+        words: ["I", "sat", "by", "the", "river", "bank"],
         dynamicWeights: [
-            [.05, .40, .15, .10, .10, .20],
-            [.08, .05, .35, .05, .05, .42],
-            [.05, .45, .05, .20, .05, .20],
-            [.05, .05, .10, .05, .30, .45],
-            [.10, .05, .05, .05, .05, .70],
-            [.10, .42, .15, .18, .10, .05],
+            [.05, .15, .10, .05, .30, .35],
+            [.08, .05, .10, .05, .25, .47],
+            [.05, .10, .05, .10, .35, .35],
+            [.05, .05, .08, .05, .40, .37],
+            [.05, .20, .12, .08, .05, .50],
+            [.05, .18, .10, .05, .52, .10],
         ],
     },
     {
-        label: "She gave him the book",
-        words: ["She", "gave", "him", "the", "book"],
+        label: "She deposited money at the bank.",
+        words: ["She", "deposited", "money", "at", "the", "bank"],
         dynamicWeights: [
-            [.05, .50, .10, .05, .30],
-            [.35, .05, .30, .05, .25],
-            [.10, .45, .05, .05, .35],
-            [.05, .05, .05, .05, .80],
-            [.10, .35, .15, .15, .05],
+            [.05, .35, .20, .05, .05, .30],
+            [.30, .05, .35, .05, .05, .20],
+            [.10, .40, .05, .05, .05, .35],
+            [.05, .05, .05, .05, .40, .40],
+            [.05, .05, .05, .40, .05, .40],
+            [.10, .30, .38, .05, .07, .10],
         ],
     },
     {
-        label: "Dogs chase cats quickly",
-        words: ["Dogs", "chase", "cats", "quickly"],
+        label: "The blood bank saved three lives.",
+        words: ["blood", "bank", "saved", "three", "lives"],
         dynamicWeights: [
-            [.05, .50, .35, .10],
-            [.30, .05, .45, .20],
-            [.40, .40, .05, .15],
-            [.10, .55, .15, .05],
+            [.05, .55, .20, .05, .15],
+            [.50, .05, .25, .05, .15],
+            [.15, .30, .05, .20, .30],
+            [.05, .10, .25, .05, .55],
+            [.20, .25, .35, .15, .05],
         ],
     },
+];
+
+/* Per-word bar heights for MLP — static, never changes with context */
+const MLP_BARS: Record<string, number[]> = {
+    bank: [0.72, 0.28, 0.55, 0.41, 0.64, 0.18],
+    river: [0.35, 0.62, 0.20, 0.78, 0.44, 0.55],
+    money: [0.58, 0.85, 0.32, 0.47, 0.70, 0.25],
+    blood: [0.80, 0.35, 0.65, 0.22, 0.55, 0.42],
+    saved: [0.30, 0.70, 0.50, 0.38, 0.60, 0.45],
+    lives: [0.48, 0.55, 0.75, 0.30, 0.42, 0.68],
+    I: [0.25, 0.48, 0.35, 0.62, 0.18, 0.55],
+    sat: [0.55, 0.30, 0.70, 0.42, 0.28, 0.60],
+    She: [0.38, 0.65, 0.28, 0.50, 0.72, 0.35],
+    deposited: [0.62, 0.45, 0.80, 0.30, 0.55, 0.22],
+    three: [0.44, 0.70, 0.38, 0.55, 0.28, 0.65],
+    default: [0.50, 0.40, 0.60, 0.35, 0.55, 0.30],
+};
+
+/* "bank" output bars differ per sentence in Attention panel — context shifts them */
+const ATTN_BANK_BARS: number[][] = [
+    [0.82, 0.22, 0.30, 0.68, 0.15, 0.75],  /* river bank  */
+    [0.25, 0.88, 0.72, 0.18, 0.60, 0.35],  /* money bank  */
+    [0.45, 0.55, 0.80, 0.30, 0.88, 0.20],  /* blood bank  */
+];
+
+const ATTN_WORD_BASE: number[][] = [
+    [0.55, 0.40, 0.28, 0.70, 0.35, 0.60],
+    [0.35, 0.75, 0.55, 0.20, 0.65, 0.45],
+    [0.65, 0.30, 0.70, 0.45, 0.25, 0.58],
 ];
 
 /* ─── Arc path ─── */
@@ -66,6 +97,78 @@ function arcPath(from: { x: number; y: number }, to: { x: number; y: number }): 
     return `M ${from.x} ${from.y} Q ${midX} ${midY} ${to.x} ${to.y}`;
 }
 
+/* ─── Frozen embedding bar (MLP result) ─── */
+function FrozenEmbeddingBar({ word }: { word: string }) {
+    const bars = MLP_BARS[word] ?? MLP_BARS.default;
+    return (
+        <div className="space-y-1.5">
+            <div className="flex items-end gap-[4px] justify-center h-10">
+                {bars.map((h, i) => (
+                    <div key={i} className="relative flex flex-col items-center gap-0.5">
+                        <span className="text-[8px] font-mono text-white/18 tabular-nums">
+                            {Math.round(h * 100)}
+                        </span>
+                        <div
+                            className="w-[10px] rounded-sm"
+                            style={{ height: `${h * 32}px`, background: "rgba(255,255,255,0.18)" }}
+                        />
+                    </div>
+                ))}
+            </div>
+            <p className="text-[9px] text-center text-white/20 italic">
+                &ldquo;{word}&rdquo; — same output, always
+            </p>
+        </div>
+    );
+}
+
+/* ─── Shifting embedding bar (Attention result) ─── */
+function ShiftingEmbeddingBar({ word, presetIdx, hoveredIdx }: { word: string; presetIdx: number; hoveredIdx: number | null }) {
+    const rgb = "34, 211, 238";
+    /* If hovering "bank", show context-specific bars. Otherwise use word-specific base + small shift */
+    const wordLower = word.toLowerCase();
+    let bars: number[];
+    if (wordLower === "bank") {
+        bars = ATTN_BANK_BARS[presetIdx % ATTN_BANK_BARS.length];
+    } else {
+        const base = ATTN_WORD_BASE[presetIdx % ATTN_WORD_BASE.length];
+        const mlpBase = MLP_BARS[word] ?? MLP_BARS.default;
+        /* Blend MLP base with ATTN_WORD_BASE to show contextual shift */
+        bars = mlpBase.map((v, i) => {
+            const shift = (base[i] - 0.5) * 0.35 * (hoveredIdx !== null ? 1 : 0.4);
+            return Math.max(0.08, Math.min(1, v + shift));
+        });
+    }
+
+    return (
+        <div className="space-y-1.5">
+            <div className="flex items-end gap-[4px] justify-center h-10">
+                {bars.map((h, i) => (
+                    <div key={i} className="relative flex flex-col items-center gap-0.5">
+                        <motion.span
+                            className="text-[8px] font-mono tabular-nums"
+                            style={{ color: `rgba(${rgb}, 0.4)` }}
+                            animate={{ opacity: 1 }}
+                        >
+                            {Math.round(h * 100)}
+                        </motion.span>
+                        <motion.div
+                            key={`${presetIdx}-${word}-${i}`}
+                            className="w-[10px] rounded-sm"
+                            animate={{ height: `${h * 32}px` }}
+                            transition={{ type: "spring", stiffness: 180, damping: 20 }}
+                            style={{ background: `rgba(${rgb}, 0.42)` }}
+                        />
+                    </div>
+                ))}
+            </div>
+            <p className="text-[9px] text-center italic" style={{ color: `rgba(${rgb}, 0.35)` }}>
+                &ldquo;{word}&rdquo; — shifts with context
+            </p>
+        </div>
+    );
+}
+
 /* ─── MLP Panel ─── */
 function MLPPanel({
     words, presetIdx, hoveredIdx, onHover,
@@ -73,6 +176,7 @@ function MLPPanel({
     words: string[]; presetIdx: number; hoveredIdx: number | null; onHover: (idx: number | null) => void;
 }) {
     const isActive = hoveredIdx !== null;
+    const focusedWord = hoveredIdx !== null ? words[hoveredIdx] : words[0];
 
     return (
         <div className="flex-1 space-y-2">
@@ -92,17 +196,12 @@ function MLPPanel({
                 >
                     {words.map((word, i) => {
                         const isFocused = hoveredIdx === i;
-
-                        /* MLP: hovered word shines bright, everything else dims hard */
                         const color = isFocused
                             ? "rgba(255, 255, 255, 0.9)"
                             : isActive
                                 ? "rgba(255, 255, 255, 0.15)"
                                 : "rgba(255, 255, 255, 0.65)";
-
-                        const textShadow = isFocused
-                            ? "0 0 14px rgba(255, 255, 255, 0.25)"
-                            : "none";
+                        const textShadow = isFocused ? "0 0 14px rgba(255, 255, 255, 0.25)" : "none";
 
                         return (
                             <motion.span
@@ -116,7 +215,6 @@ function MLPPanel({
                                 }}
                                 onMouseEnter={() => onHover(i)}
                             >
-                                {/* Subtle underline for focused word */}
                                 {isFocused && (
                                     <motion.span
                                         className="absolute -bottom-0.5 left-0 right-0 h-[1px] rounded-full pointer-events-none"
@@ -158,6 +256,24 @@ function MLPPanel({
                     </motion.p>
                 )}
             </AnimatePresence>
+
+            {/* ── Result row ── */}
+            <div className="pt-3 mt-1 border-t border-white/5">
+                <p className="text-[9px] uppercase tracking-widest font-semibold text-center text-white/18 mb-2">
+                    Output embedding
+                </p>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={`mlp-result-${hoveredIdx ?? "idle"}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <FrozenEmbeddingBar word={focusedWord} />
+                    </motion.div>
+                </AnimatePresence>
+            </div>
         </div>
     );
 }
@@ -371,6 +487,18 @@ function AttentionPanel({
                     </motion.p>
                 )}
             </AnimatePresence>
+
+            {/* ── Result row ── */}
+            <div className="pt-3 mt-1 border-t border-cyan-400/8">
+                <p className="text-[9px] uppercase tracking-widest font-semibold text-center mb-2" style={{ color: "rgba(34,211,238,0.2)" }}>
+                    Output embedding
+                </p>
+                <ShiftingEmbeddingBar
+                    word={hoveredIdx !== null ? words[hoveredIdx] : words[0]}
+                    presetIdx={presetIdx}
+                    hoveredIdx={hoveredIdx}
+                />
+            </div>
         </div>
     );
 }

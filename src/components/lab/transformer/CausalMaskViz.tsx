@@ -1,169 +1,296 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 /*
-  V50 — CausalMaskViz
-  8×8 attention matrix. Upper triangle = masked (black). Click row to highlight visible tokens.
-  Toggle mask on/off to see the difference.
+  CausalMaskViz — §08 Beat 3 (REBUILD)
+
+  Interactive 8×8 causal attention mask on character-level sequence.
+  Click any row to see what that position can attend to.
+  Toggle: "With mask" (triangle) vs "Without mask" (full — cheating).
+
+  One concept: causal masking prevents looking into the future.
 */
 
-const TOKENS = ["The", "cat", "sat", "on", "the", "mat", "and", "slept"];
-const COLORS = ["#67e8f9", "#34d399", "#a78bfa", "#fbbf24", "#f472b6", "#fb923c", "#60a5fa", "#f9a8d4"];
+const CHARS = ["t", "h", "e", " ", "c", "a", "t", " "];
+const N = CHARS.length;
+
+const displayChar = (ch: string) => (ch === " " ? "␣" : ch);
+
+/* Pre-computed fake attention weights — row i can attend to cols 0..i */
+function computeWeights(row: number, masked: boolean): number[] {
+    const raw = Array.from({ length: N }, (_, col) => {
+        if (masked && col > row) return -Infinity;
+        /* Slightly realistic: nearby positions get higher scores */
+        const dist = Math.abs(row - col);
+        return 2.0 - dist * 0.3 + Math.sin(row * 5 + col * 3) * 0.5;
+    });
+    /* Softmax */
+    const finite = raw.filter((v) => v !== -Infinity);
+    const max = Math.max(...finite);
+    const exps = raw.map((v) => (v === -Infinity ? 0 : Math.exp(v - max)));
+    const sum = exps.reduce((a, b) => a + b, 0);
+    return exps.map((e) => e / sum);
+}
 
 export function CausalMaskViz() {
     const [selectedRow, setSelectedRow] = useState(4);
     const [showMask, setShowMask] = useState(true);
-    const N = TOKENS.length;
+
+    /* Weights for selected row */
+    const weights = useMemo(
+        () => computeWeights(selectedRow, showMask),
+        [selectedRow, showMask],
+    );
+
+    /* All rows weights for the grid */
+    const allWeights = useMemo(
+        () => Array.from({ length: N }, (_, r) => computeWeights(r, showMask)),
+        [showMask],
+    );
+
+    /* What selected row can see */
+    const canSee = useMemo(() => {
+        const limit = showMask ? selectedRow + 1 : N;
+        return CHARS.slice(0, limit);
+    }, [selectedRow, showMask]);
+
+    const cannotSee = useMemo(() => {
+        if (!showMask) return [];
+        return CHARS.slice(selectedRow + 1);
+    }, [selectedRow, showMask]);
 
     return (
-        <div className="py-5 px-4 sm:px-6">
-            {/* Toggle */}
-            <div className="flex items-center justify-center gap-3 mb-4">
-                <motion.button
+        <div className="flex flex-col items-center gap-6 w-full py-2">
+            {/* ── Toggle ── */}
+            <div
+                className="inline-flex rounded-xl p-1"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+            >
+                <button
                     onClick={() => setShowMask(true)}
-                    className="px-4 py-1.5 rounded-lg text-[13px] font-bold"
+                    className="px-4 py-1.5 rounded-lg text-[12px] font-semibold tracking-wide transition-all duration-200"
                     style={{
-                        background: showMask ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.02)",
-                        border: `1.5px solid ${showMask ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.06)"}`,
-                        color: showMask ? "#34d399" : "rgba(255,255,255,0.2)",
+                        background: showMask ? "rgba(34,211,238,0.15)" : "transparent",
+                        color: showMask ? "rgba(34,211,238,1)" : "rgba(255,255,255,0.3)",
                     }}
-                    whileTap={{ scale: 0.95 }}
                 >
-                    Mask ON
-                </motion.button>
-                <motion.button
+                    With mask
+                </button>
+                <button
                     onClick={() => setShowMask(false)}
-                    className="px-4 py-1.5 rounded-lg text-[13px] font-bold"
+                    className="px-4 py-1.5 rounded-lg text-[12px] font-semibold tracking-wide transition-all duration-200"
                     style={{
-                        background: !showMask ? "rgba(244,63,94,0.12)" : "rgba(255,255,255,0.02)",
-                        border: `1.5px solid ${!showMask ? "rgba(244,63,94,0.3)" : "rgba(255,255,255,0.06)"}`,
-                        color: !showMask ? "#f43f5e" : "rgba(255,255,255,0.2)",
+                        background: !showMask ? "rgba(244,63,94,0.15)" : "transparent",
+                        color: !showMask ? "rgba(244,63,94,0.9)" : "rgba(255,255,255,0.3)",
                     }}
-                    whileTap={{ scale: 0.95 }}
                 >
-                    Mask OFF
-                </motion.button>
+                    Without mask
+                </button>
             </div>
 
-            {/* Matrix */}
-            <div className="mx-auto" style={{ maxWidth: 420 }}>
-                {/* Column headers */}
-                <div className="flex items-center">
-                    <div style={{ width: 48 }} />
-                    {TOKENS.map((tok, i) => (
-                        <div key={i} className="flex-1 text-center">
-                            <span className="text-[9px] font-bold" style={{ color: `${COLORS[i]}60` }}>
-                                {tok.slice(0, 3)}
+            {/* ── Character labels (top) ── */}
+            <div className="w-full max-w-[420px] mx-auto">
+                <div className="flex items-end ml-[42px]">
+                    {CHARS.map((ch, i) => (
+                        <div key={i} className="flex-1 text-center pb-1">
+                            <span
+                                className="text-[11px] font-mono font-semibold"
+                                style={{
+                                    color: selectedRow !== null && (showMask ? i <= selectedRow : true)
+                                        ? "rgba(255,255,255,0.7)"
+                                        : "rgba(255,255,255,0.2)",
+                                    transition: "color 0.2s",
+                                }}
+                            >
+                                {displayChar(ch)}
                             </span>
                         </div>
                     ))}
                 </div>
 
-                {/* Rows */}
-                {TOKENS.map((tok, row) => {
-                    const isSelected = row === selectedRow;
-                    return (
-                        <motion.div
-                            key={row}
-                            className="flex items-center cursor-pointer"
-                            style={{
-                                background: isSelected ? "rgba(255,255,255,0.03)" : "transparent",
-                                borderRadius: 4,
-                            }}
-                            onClick={() => setSelectedRow(row)}
-                            whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
-                        >
-                            <div style={{ width: 48 }} className="text-right pr-2">
-                                <span
-                                    className="text-[10px] font-bold"
-                                    style={{ color: isSelected ? COLORS[row] : `${COLORS[row]}40` }}
+                {/* ── Grid ── */}
+                <div className="flex flex-col gap-[2px]">
+                    {CHARS.map((ch, row) => {
+                        const isSelected = row === selectedRow;
+                        return (
+                            <div
+                                key={row}
+                                className="flex items-center gap-0 cursor-pointer"
+                                onClick={() => setSelectedRow(row)}
+                            >
+                                {/* Row label */}
+                                <div
+                                    className="flex items-center justify-end pr-2 shrink-0"
+                                    style={{ width: 42 }}
                                 >
-                                    {tok.slice(0, 3)}
-                                </span>
-                            </div>
-                            {Array.from({ length: N }).map((_, col) => {
-                                const isMasked = showMask && col > row;
-                                const isVisible = !isMasked;
-                                const fakeWeight = isVisible
-                                    ? (1 / (row + 1)) * (1 + Math.sin(row * 3 + col * 7) * 0.3)
-                                    : 0;
-                                const isHighlightedCell = isSelected && isVisible;
+                                    <span
+                                        className="text-[11px] font-mono font-semibold transition-colors duration-200"
+                                        style={{
+                                            color: isSelected
+                                                ? "rgba(34,211,238,1)"
+                                                : "rgba(255,255,255,0.3)",
+                                        }}
+                                    >
+                                        {displayChar(ch)}
+                                    </span>
+                                </div>
 
-                                return (
-                                    <div key={col} className="flex-1 p-0.5">
-                                        <motion.div
-                                            className="w-full aspect-square rounded-sm flex items-center justify-center"
-                                            style={{
-                                                background: isMasked
-                                                    ? "rgba(0,0,0,0.4)"
-                                                    : `rgba(34,211,238,${fakeWeight * 0.5})`,
-                                                border: isHighlightedCell
-                                                    ? "1px solid rgba(34,211,238,0.3)"
-                                                    : isMasked
-                                                        ? "1px solid rgba(255,255,255,0.02)"
-                                                        : "1px solid rgba(255,255,255,0.03)",
-                                            }}
-                                            animate={{
-                                                scale: isMasked && showMask ? 1 : 1,
-                                                opacity: isMasked ? 0.6 : 1,
-                                            }}
-                                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                        >
-                                            {isMasked ? (
-                                                <span className="text-[8px] text-white/10">−∞</span>
-                                            ) : (
-                                                <span
-                                                    className="text-[8px] font-mono"
-                                                    style={{
-                                                        color: fakeWeight > 0.3
-                                                            ? "rgba(255,255,255,0.5)"
-                                                            : "rgba(255,255,255,0.15)",
-                                                    }}
-                                                >
-                                                    {(fakeWeight * 100).toFixed(0)}
-                                                </span>
-                                            )}
-                                        </motion.div>
-                                    </div>
-                                );
-                            })}
-                        </motion.div>
-                    );
-                })}
+                                {/* Cells */}
+                                {Array.from({ length: N }, (_, col) => {
+                                    const isMasked = showMask && col > row;
+                                    const w = allWeights[row][col];
+                                    const isSelectedCell = isSelected;
+
+                                    return (
+                                        <div key={col} className="flex-1 px-[1px]">
+                                            <motion.div
+                                                className="w-full flex items-center justify-center"
+                                                style={{
+                                                    aspectRatio: "1",
+                                                    borderRadius: 4,
+                                                    fontSize: 9,
+                                                    fontFamily: "monospace",
+                                                    fontWeight: 500,
+                                                }}
+                                                animate={{
+                                                    backgroundColor: isMasked
+                                                        ? "rgba(244,63,94,0.12)"
+                                                        : isSelectedCell
+                                                            ? `rgba(34,211,238,${Math.min(w * 1.8 + 0.08, 0.75)})`
+                                                            : `rgba(34,211,238,${Math.min(w * 1.2 + 0.04, 0.45)})`,
+                                                    borderColor: isMasked
+                                                        ? "rgba(244,63,94,0.2)"
+                                                        : isSelectedCell
+                                                            ? `rgba(34,211,238,${Math.min(w * 1.5 + 0.2, 0.8)})`
+                                                            : `rgba(34,211,238,${Math.min(w * 0.5 + 0.05, 0.2)})`,
+                                                    boxShadow: !isMasked && isSelectedCell && w > 0.15
+                                                        ? `0 0 8px rgba(34,211,238,${Math.min(w * 0.6, 0.35)})`
+                                                        : "none",
+                                                    borderWidth: 1,
+                                                    borderStyle: "solid" as const,
+                                                }}
+                                                transition={{ duration: 0.25 }}
+                                            >
+                                                {isMasked ? (
+                                                    <motion.span
+                                                        animate={{
+                                                            color: isSelected
+                                                                ? "rgba(244,63,94,0.9)"
+                                                                : "rgba(244,63,94,0.25)",
+                                                        }}
+                                                        transition={{ duration: 0.2 }}
+                                                    >
+                                                        −∞
+                                                    </motion.span>
+                                                ) : (
+                                                    <motion.span
+                                                        animate={{
+                                                            color: isSelectedCell
+                                                                ? `rgba(255,255,255,${Math.min(w * 2.5 + 0.3, 1.0)})`
+                                                                : `rgba(255,255,255,${Math.min(w * 1.8 + 0.15, 0.7)})`,
+                                                            textShadow: isSelectedCell && w > 0.1
+                                                                ? `0 0 8px rgba(34,211,238,${Math.min(w * 1.2, 0.6)})`
+                                                                : "none",
+                                                        }}
+                                                        transition={{ duration: 0.2 }}
+                                                    >
+                                                        {(w * 100).toFixed(0)}
+                                                    </motion.span>
+                                                )}
+                                            </motion.div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
 
-            {/* Selected row info */}
-            <motion.div
-                className="mt-4 rounded-xl px-4 py-3 text-center"
-                style={{
-                    background: "rgba(34,211,238,0.04)",
-                    border: "1px solid rgba(34,211,238,0.1)",
-                }}
-                key={`${selectedRow}-${showMask}`}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                <p className="text-[13px]">
-                    <span className="font-bold" style={{ color: COLORS[selectedRow] }}>
-                        &quot;{TOKENS[selectedRow]}&quot;
-                    </span>
-                    <span className="text-white/30"> can see: </span>
-                    {TOKENS.slice(0, showMask ? selectedRow + 1 : N).map((t, i) => (
-                        <span key={i}>
-                            <span className="font-semibold" style={{ color: `${COLORS[i]}90` }}>{t}</span>
-                            {i < (showMask ? selectedRow : N - 1) && <span className="text-white/15">, </span>}
+            {/* ── Detail panel ── */}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={`${selectedRow}-${showMask}`}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-full max-w-[440px] rounded-xl px-5 py-3.5"
+                    style={{
+                        background: showMask
+                            ? "rgba(34,211,238,0.03)"
+                            : "rgba(244,63,94,0.03)",
+                        border: `1px solid ${showMask ? "rgba(34,211,238,0.08)" : "rgba(244,63,94,0.08)"}`,
+                    }}
+                >
+                    {/* Position header */}
+                    <p className="text-[13px] mb-2">
+                        <span className="font-semibold" style={{ color: "rgba(34,211,238,1)" }}>
+                            Position {selectedRow + 1}
                         </span>
-                    ))}
-                    {!showMask && (
-                        <span className="text-[11px] ml-2" style={{ color: "rgba(244,63,94,0.5)" }}>
-                            ← sees everything (cheating!)
+                        <span style={{ color: "rgba(255,255,255,0.25)" }}> — </span>
+                        <span className="font-mono font-semibold" style={{ color: "rgba(34,211,238,0.9)" }}>
+                            &ldquo;{displayChar(CHARS[selectedRow])}&rdquo;
                         </span>
+                    </p>
+
+                    {/* Can see */}
+                    <p className="text-[12px] leading-relaxed">
+                        <span style={{ color: "rgba(255,255,255,0.3)" }}>attends to: </span>
+                        {canSee.map((ch, i) => (
+                            <span key={i}>
+                                <span className="font-mono font-semibold" style={{ color: "rgba(34,211,238,0.85)" }}>
+                                    {displayChar(ch)}
+                                </span>
+                                {i < canSee.length - 1 && (
+                                    <span style={{ color: "rgba(255,255,255,0.1)" }}> </span>
+                                )}
+                            </span>
+                        ))}
+                    </p>
+
+                    {/* Cannot see (only with mask) */}
+                    {cannotSee.length > 0 && (
+                        <p className="text-[12px] leading-relaxed mt-1">
+                            <span style={{ color: "rgba(255,255,255,0.2)" }}>blocked: </span>
+                            {cannotSee.map((ch, i) => (
+                                <span key={i}>
+                                    <span className="font-mono" style={{ color: "rgba(244,63,94,0.65)" }}>
+                                        {displayChar(ch)}
+                                    </span>
+                                    {i < cannotSee.length - 1 && (
+                                        <span style={{ color: "rgba(255,255,255,0.06)" }}> </span>
+                                    )}
+                                </span>
+                            ))}
+                            <span className="font-mono ml-2" style={{ color: "rgba(244,63,94,0.5)" }}>
+                                → 0.00
+                            </span>
+                        </p>
                     )}
-                </p>
-            </motion.div>
+
+                    {/* No-mask warning */}
+                    {!showMask && (
+                        <p className="text-[11px] mt-2 font-medium" style={{ color: "rgba(244,63,94,0.7)" }}>
+                            Every position sees every other — including the answer. 100% accuracy by copying, not learning.
+                        </p>
+                    )}
+                </motion.div>
+            </AnimatePresence>
+
+            {/* ── Caption ── */}
+            <p
+                className="text-[12px] text-center max-w-[360px]"
+                style={{ color: "rgba(255,255,255,0.3)" }}
+            >
+                {showMask
+                    ? "Click any row. Each position only looks backward — it must actually predict."
+                    : "Toggle the mask back on to see how we prevent cheating."
+                }
+            </p>
         </div>
     );
 }

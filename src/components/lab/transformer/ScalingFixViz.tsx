@@ -71,7 +71,8 @@ export function ScalingFixViz() {
                 <input
                     type="range" min={1} max={16} step={0.5} value={divisor}
                     onChange={e => setDivisor(Number(e.target.value))}
-                    className="w-full accent-cyan-400"
+                    className="nev-slider w-full"
+                    style={{ "--slider-accent": divisorColor } as React.CSSProperties}
                 />
                 <div className="flex justify-between text-[10px] text-white/15">
                     <span>÷1 (no change)</span>

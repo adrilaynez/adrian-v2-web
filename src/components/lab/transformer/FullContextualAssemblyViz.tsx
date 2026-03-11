@@ -109,6 +109,34 @@ function rgbStr(c: [number, number, number], alpha = 1): string {
     return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${alpha})`;
 }
 
+/* ─── Before/After feature data for click-to-inspect ─── */
+const INSPECT_FEATURES = ["royalty", "action", "object", "quality", "context"];
+
+const BEFORE_FEAT: Record<number, number[]> = {
+    0: [0.05, 0.05, 0.05, 0.10, 0.08],
+    1: [0.85, 0.20, 0.15, 0.12, 0.10],
+    2: [0.10, 0.05, 0.08, 0.05, 0.06],
+    3: [0.12, 0.75, 0.20, 0.15, 0.10],
+    4: [0.05, 0.05, 0.05, 0.10, 0.08],
+    5: [0.20, 0.10, 0.15, 0.90, 0.12],
+    6: [0.65, 0.10, 0.85, 0.25, 0.12],
+    7: [0.20, 0.88, 0.12, 0.10, 0.14],
+    8: [0.05, 0.05, 0.05, 0.10, 0.08],
+    9: [0.15, 0.08, 0.12, 0.78, 0.10],
+    10: [0.80, 0.12, 0.72, 0.18, 0.15],
+    11: [0.12, 0.10, 0.08, 0.72, 0.12],
+};
+
+const AFTER_FEAT: Record<number, number[]> = {
+    1: [0.92, 0.55, 0.40, 0.70, 0.85],
+    3: [0.25, 0.82, 0.45, 0.50, 0.65],
+    5: [0.40, 0.18, 0.30, 0.95, 0.55],
+    6: [0.78, 0.30, 0.90, 0.65, 0.80],
+    7: [0.55, 0.92, 0.35, 0.45, 0.78],
+    10: [0.88, 0.38, 0.80, 0.55, 0.82],
+    11: [0.30, 0.35, 0.20, 0.80, 0.60],
+};
+
 /* Arc threshold */
 const ARC_THRESHOLD = 0.06;
 
@@ -506,22 +534,20 @@ export function FullContextualAssemblyViz() {
                 ) : isDone && active !== null && contributors.length > 0 ? (
                     <motion.div
                         key={`inspect-${active}`}
-                        className="max-w-md mx-auto text-center"
+                        className="max-w-md mx-auto"
                         initial={{ opacity: 0, y: 8, filter: "blur(6px)" }}
                         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                         exit={{ opacity: 0, y: -4, filter: "blur(4px)", transition: { duration: 0.15 } }}
                         transition={{ duration: 0.35 }}
                     >
                         {/* Word name */}
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-white/25 font-semibold mb-2">
+                        <p className="text-center text-[10px] uppercase tracking-[0.15em] text-white/25 font-semibold mb-2">
                             {`\u201C${WORDS[active]}\u201D is now a blend of`}
                         </p>
 
                         {/* Composition breakdown with colored dots */}
                         <div className="flex items-center justify-center gap-x-3 gap-y-1.5 flex-wrap mb-3">
                             {contributors.map(({ w, i, rgb }, rank) => {
-
-
                                 const maxW = contributors[0]?.w || 1;
                                 const rel = maxW > 0 ? w / maxW : 0;
                                 const dotSize = Math.round(4 + rel * 4);
@@ -555,45 +581,84 @@ export function FullContextualAssemblyViz() {
                             })}
                         </div>
 
-                        {/* Self-attention */}
-                        <p className="text-[10px] text-white/15 font-mono mb-3">
-                            self: {Math.round(ATTENTION[active][active] * 100)}%
-                        </p>
+                        {/* Before / After feature bars */}
+                        {(() => {
+                            const before = BEFORE_FEAT[active] ?? [0.2, 0.2, 0.2, 0.2, 0.2];
+                            const after = AFTER_FEAT[active] ?? before.map(v => Math.min(1, v + 0.25));
+                            const strongest = contributors[0];
+                            const displayRgbVal = BLENDED_RGB[active];
 
-                        {/* Mini color blend visualization */}
-                        <div className="flex justify-center items-center gap-1 mb-3">
-                            <div className="flex -space-x-0.5">
-                                {contributors.slice(0, 4).map(({ i, w, rgb }) => (
-                                    <div
-                                        key={i}
-                                        className="rounded-full border border-white/5"
-                                        style={{
-                                            width: Math.round(12 + w * 30),
-                                            height: 6,
-                                            background: rgbStr(rgb, 0.6 + w),
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                            <span className="text-white/15 text-[10px] mx-1.5">{"\u2192"}</span>
-                            <div
-                                className="rounded-full"
-                                style={{
-                                    width: 28,
-                                    height: 6,
-                                    background: rgbStr(BLENDED_RGB[active], 0.85),
-                                    boxShadow: `0 0 8px ${rgbStr(BLENDED_RGB[active], 0.3)}`,
-                                }}
-                            />
-                        </div>
+                            return (
+                                <motion.div
+                                    className="max-w-xs mx-auto mt-1 mb-3 space-y-3"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    transition={{ delay: 0.2, duration: 0.35 }}
+                                >
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Before column */}
+                                        <div className="space-y-1">
+                                            <p className="text-[8px] uppercase tracking-widest font-semibold text-white/15 text-center">Before</p>
+                                            {INSPECT_FEATURES.map((feat, fi) => (
+                                                <div key={fi} className="flex items-center gap-1.5">
+                                                    <span className="text-[8px] text-white/18 w-10 text-right truncate shrink-0">{feat}</span>
+                                                    <div className="flex-1 h-[4px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                                                        <div className="h-full rounded-full" style={{ width: `${before[fi] * 100}%`, background: "rgba(255,255,255,0.18)" }} />
+                                                    </div>
+                                                    <span className="text-[8px] font-mono text-white/15 w-5 text-right tabular-nums">{Math.round(before[fi] * 100)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {/* After column */}
+                                        <div className="space-y-1">
+                                            <p className="text-[8px] uppercase tracking-widest font-semibold text-center" style={{ color: rgbStr(displayRgbVal, 0.35) }}>After</p>
+                                            {INSPECT_FEATURES.map((feat, fi) => {
+                                                const changed = Math.abs(after[fi] - before[fi]) > 0.08;
+                                                return (
+                                                    <div key={fi} className="flex items-center gap-1.5">
+                                                        <span className="text-[8px] text-white/18 w-10 text-right truncate shrink-0">{feat}</span>
+                                                        <div className="flex-1 h-[4px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                                                            <motion.div
+                                                                className="h-full rounded-full"
+                                                                initial={{ width: `${before[fi] * 100}%` }}
+                                                                animate={{ width: `${after[fi] * 100}%` }}
+                                                                transition={{ type: "spring", stiffness: 80, damping: 14, delay: fi * 0.06 }}
+                                                                style={{
+                                                                    background: changed
+                                                                        ? `linear-gradient(90deg, ${rgbStr(displayRgbVal, 0.35)}, ${rgbStr(displayRgbVal, 0.65)})`
+                                                                        : rgbStr(displayRgbVal, 0.3),
+                                                                    boxShadow: changed ? `0 0 6px ${rgbStr(displayRgbVal, 0.2)}` : "none",
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-[8px] font-mono tabular-nums w-5 text-right" style={{ color: changed ? rgbStr(displayRgbVal, 0.6) : "rgba(255,255,255,0.15)" }}>
+                                                            {Math.round(after[fi] * 100)}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {strongest && (
+                                        <p className="text-[10px] text-center text-white/20">
+                                            Strongest influence: <span className="font-medium" style={{ color: rgbStr(strongest.rgb, 0.6) }}>{WORDS[strongest.i]}</span>
+                                            <span className="font-mono text-white/15 ml-1">{Math.round(strongest.w * 100)}%</span>
+                                        </p>
+                                    )}
+                                </motion.div>
+                            );
+                        })()}
 
                         {/* Reset */}
-                        <button
-                            onClick={reset}
-                            className="text-[11px] text-white/15 hover:text-white/30 transition-colors cursor-pointer mt-1"
-                        >
-                            {"\u21BB Reset"}
-                        </button>
+                        <div className="text-center">
+                            <button
+                                onClick={reset}
+                                className="text-[11px] text-white/15 hover:text-white/30 transition-colors cursor-pointer"
+                            >
+                                {"\u21BB Reset"}
+                            </button>
+                        </div>
                     </motion.div>
                 ) : isDone ? (
                     <motion.div

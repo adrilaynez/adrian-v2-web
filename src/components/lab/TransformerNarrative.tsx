@@ -3,7 +3,7 @@
 import React, { lazy, Suspense } from "react";
 
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowDown, BookOpen, Brain, Eye, Layers, Play, Sparkles, Target, Zap } from "lucide-react";
+import { AlertTriangle, ArrowDown, BookOpen, Brain, Layers, Play, Sparkles, Target, Zap } from "lucide-react";
 
 import { ContinueToast } from "@/components/lab/ContinueToast";
 import { KeyTakeaway } from "@/components/lab/KeyTakeaway";
@@ -25,11 +25,12 @@ import {
 } from "./narrative-primitives";
 
 /* ─── Lazy-loaded visualizers: §01 ─── */
+const WordToEmbeddingViz = lazy(() => import("@/components/lab/transformer/WordToEmbeddingViz").then((m) => ({ default: m.WordToEmbeddingViz })));
 const PronounResolutionViz = lazy(() => import("@/components/lab/transformer/PronounResolutionViz").then((m) => ({ default: m.PronounResolutionViz })));
-const IsolatedTokensViz = lazy(() => import("@/components/lab/transformer/IsolatedTokensViz").then((m) => ({ default: m.IsolatedTokensViz })));
 const DrawConnectionsViz = lazy(() => import("@/components/lab/transformer/DrawConnectionsViz").then((m) => ({ default: m.DrawConnectionsViz })));
-const ContextShiftsViz = lazy(() => import("@/components/lab/transformer/ContextShiftsViz").then((m) => ({ default: m.ContextShiftsViz })));
 const WishlistCallbackViz = lazy(() => import("@/components/lab/transformer/WishlistCallbackViz").then((m) => ({ default: m.WishlistCallbackViz })));
+const FrozenVsContextualViz = lazy(() => import("@/components/lab/transformer/FrozenVsContextualViz").then((m) => ({ default: m.FrozenVsContextualViz })));
+const ContextEnrichmentViz = lazy(() => import("@/components/lab/transformer/ContextEnrichmentViz").then((m) => ({ default: m.ContextEnrichmentViz })));
 
 /* ─── Lazy-loaded visualizers: §02 ─── */
 const TelephoneGameViz = lazy(() => import("@/components/lab/transformer/TelephoneGameViz").then((m) => ({ default: m.TelephoneGameViz })));
@@ -39,7 +40,6 @@ const RNNChainViz = lazy(() => import("@/components/lab/transformer/RNNChainViz"
 
 /* ─── Lazy-loaded visualizers: §03 ─── */
 const SpotlightViz = lazy(() => import("@/components/lab/transformer/SpotlightViz").then((m) => ({ default: m.SpotlightViz })));
-const ContextChangesViz = lazy(() => import("@/components/lab/transformer/ContextChangesViz").then((m) => ({ default: m.ContextChangesViz })));
 const GuessPatternViz = lazy(() => import("@/components/lab/transformer/GuessPatternViz").then((m) => ({ default: m.GuessPatternViz })));
 const StaticVsDynamicViz = lazy(() => import("@/components/lab/transformer/StaticVsDynamicViz").then((m) => ({ default: m.StaticVsDynamicViz })));
 const AttentionHeatmapViz = lazy(() => import("@/components/lab/transformer/AttentionHeatmapViz").then((m) => ({ default: m.AttentionHeatmapViz })));
@@ -52,14 +52,18 @@ const DotProductCalculatorViz = lazy(() => import("@/components/lab/transformer/
 const PairwiseScoringViz = lazy(() => import("@/components/lab/transformer/PairwiseScoringViz").then((m) => ({ default: m.PairwiseScoringViz })));
 const SelfSimilarityViz = lazy(() => import("@/components/lab/transformer/SelfSimilarityViz").then((m) => ({ default: m.SelfSimilarityViz })));
 const DotProductQuiz = lazy(() => import("@/components/lab/transformer/DotProductQuiz").then((m) => ({ default: m.DotProductQuiz })));
+const EmbeddingAttentionFailureViz = lazy(() => import("@/components/lab/transformer/EmbeddingAttentionFailureViz").then((m) => ({ default: m.EmbeddingAttentionFailureViz })));
 
 /* ─── Lazy-loaded visualizers: §04b-c ─── */
 const QKSplitViz = lazy(() => import("@/components/lab/transformer/QKSplitViz").then((m) => ({ default: m.QKSplitViz })));
+const QKMatrixViz = lazy(() => import("@/components/lab/transformer/QKMatrixViz").then((m) => ({ default: m.QKMatrixViz })));
 const QueryKeyRelationsViz = lazy(() => import("@/components/lab/transformer/QueryKeyRelationsViz").then((m) => ({ default: m.QueryKeyRelationsViz })));
 const QuerySearchViz = lazy(() => import("@/components/lab/transformer/QuerySearchViz").then((m) => ({ default: m.QuerySearchViz })));
 const WhyQKMattersViz = lazy(() => import("@/components/lab/transformer/WhyQKMattersViz").then((m) => ({ default: m.WhyQKMattersViz })));
 const WeightsOfWhatViz = lazy(() => import("@/components/lab/transformer/WeightsOfWhatViz").then((m) => ({ default: m.WeightsOfWhatViz })));
 const ValueCompletesViz = lazy(() => import("@/components/lab/transformer/ValueCompletesViz").then((m) => ({ default: m.ValueCompletesViz })));
+const BeforeAfterAttentionViz = lazy(() => import("@/components/lab/transformer/BeforeAfterAttentionViz").then((m) => ({ default: m.BeforeAfterAttentionViz })));
+
 
 
 /* ─── Lazy-loaded visualizers: §04d ─── */
@@ -70,6 +74,7 @@ const ContextAssemblyFilmViz = lazy(() => import("@/components/lab/transformer/C
 const FullContextualAssemblyViz = lazy(() => import("@/components/lab/transformer/FullContextualAssemblyViz").then((m) => ({ default: m.FullContextualAssemblyViz })));
 
 /* ─── Lazy-loaded visualizers: §05 ─── */
+const WhichWordMattersViz = lazy(() => import("@/components/lab/transformer/WhichWordMattersViz").then((m) => ({ default: m.WhichWordMattersViz })));
 const OneHeadDilemmaViz = lazy(() => import("@/components/lab/transformer/OneHeadDilemmaViz").then((m) => ({ default: m.OneHeadDilemmaViz })));
 const MultiHeadIdeaViz = lazy(() => import("@/components/lab/transformer/MultiHeadIdeaViz").then((m) => ({ default: m.MultiHeadIdeaViz })));
 const MultiLensViewViz = lazy(() => import("@/components/lab/transformer/MultiLensViewViz").then((m) => ({ default: m.MultiLensViewViz })));
@@ -87,28 +92,54 @@ const AddEmbeddingsViz = lazy(() => import("@/components/lab/transformer/AddEmbe
 const PositionInActionViz = lazy(() => import("@/components/lab/transformer/PositionInActionViz").then((m) => ({ default: m.PositionInActionViz })));
 
 /* ─── Lazy-loaded visualizers: §08 ─── */
+const UntrainedOutputViz = lazy(() => import("@/components/lab/transformer/UntrainedOutputViz").then((m) => ({ default: m.UntrainedOutputViz })));
+const ParallelPredictionViz = lazy(() => import("@/components/lab/transformer/ParallelPredictionViz").then((m) => ({ default: m.ParallelPredictionViz })));
+const TrainingTimelapseViz = lazy(() => import("@/components/lab/transformer/TrainingTimelapseViz").then((m) => ({ default: m.TrainingTimelapseViz })));
+const ModelBattleArena = lazy(() => import("@/components/lab/transformer/ModelBattleArena").then((m) => ({ default: m.ModelBattleArena })));
+const NeuronScalingViz = lazy(() => import("@/components/lab/transformer/NeuronScalingViz").then((m) => ({ default: m.NeuronScalingViz })));
+const CausalMaskViz = lazy(() => import("@/components/lab/transformer/CausalMaskViz").then((m) => ({ default: m.CausalMaskViz })));
+
+/* ─── Lazy-loaded visualizers: §09 ─── */
+const DepthBreakthroughViz = lazy(() => import("@/components/lab/transformer/DepthBreakthroughViz").then((m) => ({ default: m.DepthBreakthroughViz })));
+
+/* ─── Lazy-loaded visualizers: §07 (absorbed from old §08) ─── */
 const DepthVsQualityViz = lazy(() => import("@/components/lab/transformer/DepthVsQualityViz").then((m) => ({ default: m.DepthVsQualityViz })));
 const LayerEvolutionViz = lazy(() => import("@/components/lab/transformer/LayerEvolutionViz").then((m) => ({ default: m.LayerEvolutionViz })));
 const ArchitectureTowerViz = lazy(() => import("@/components/lab/transformer/ArchitectureTowerViz").then((m) => ({ default: m.ArchitectureTowerViz })));
-
-/* ─── Lazy-loaded visualizers: §09 ─── */
-const CheatingProblemViz = lazy(() => import("@/components/lab/transformer/CheatingProblemViz").then((m) => ({ default: m.CheatingProblemViz })));
-const CausalMaskViz = lazy(() => import("@/components/lab/transformer/CausalMaskViz").then((m) => ({ default: m.CausalMaskViz })));
-const GrowingMasksViz = lazy(() => import("@/components/lab/transformer/GrowingMasksViz").then((m) => ({ default: m.GrowingMasksViz })));
-const TrainingEfficiencyViz = lazy(() => import("@/components/lab/transformer/TrainingEfficiencyViz").then((m) => ({ default: m.TrainingEfficiencyViz })));
-const GrowingContextViz = lazy(() => import("@/components/lab/transformer/GrowingContextViz").then((m) => ({ default: m.GrowingContextViz })));
-const TrainingDashboardViz = lazy(() => import("@/components/lab/transformer/TrainingDashboardViz").then((m) => ({ default: m.TrainingDashboardViz })));
+const LinearSoftmaxViz = lazy(() => import("@/components/lab/transformer/LinearSoftmaxViz").then((m) => ({ default: m.LinearSoftmaxViz })));
 
 /* ─── Lazy-loaded visualizers: §07 ─── */
 const CommunicationVsProcessingViz = lazy(() => import("@/components/lab/transformer/CommunicationVsProcessingViz").then((m) => ({ default: m.CommunicationVsProcessingViz })));
 const FFNCallbackViz = lazy(() => import("@/components/lab/transformer/FFNCallbackViz").then((m) => ({ default: m.FFNCallbackViz })));
+const FFNDeepDiveViz = lazy(() => import("@/components/lab/transformer/FFNDeepDiveViz").then((m) => ({ default: m.FFNDeepDiveViz })));
 const HighwayReturnsViz = lazy(() => import("@/components/lab/transformer/HighwayReturnsViz").then((m) => ({ default: m.HighwayReturnsViz })));
 const LayerNormViz = lazy(() => import("@/components/lab/transformer/LayerNormViz").then((m) => ({ default: m.LayerNormViz })));
+const ValueDriftViz = lazy(() => import("@/components/lab/transformer/ValueDriftViz").then((m) => ({ default: m.ValueDriftViz })));
+const BatchVsLayerNormViz = lazy(() => import("@/components/lab/transformer/BatchVsLayerNormViz").then((m) => ({ default: m.BatchVsLayerNormViz })));
 const BlockBuilderViz = lazy(() => import("@/components/lab/transformer/BlockBuilderViz").then((m) => ({ default: m.BlockBuilderViz })));
+const BlockComponentExplorerViz = lazy(() => import("@/components/lab/transformer/BlockComponentExplorerViz").then((m) => ({ default: m.BlockComponentExplorerViz })));
+const QKVProjectionViz = lazy(() => import("@/components/lab/transformer/QKVProjectionViz").then((m) => ({ default: m.QKVProjectionViz })));
+const AttentionScoreViz = lazy(() => import("@/components/lab/transformer/AttentionScoreViz").then((m) => ({ default: m.AttentionScoreViz })));
 const TransformerBlockExplorerViz = lazy(() => import("@/components/lab/transformer/TransformerBlockExplorerViz").then((m) => ({ default: m.TransformerBlockExplorerViz })));
 const AttentionAloneFailsViz = lazy(() => import("@/components/lab/transformer/AttentionAloneFailsViz").then((m) => ({ default: m.AttentionAloneFailsViz })));
-const BeforeAfterBlockViz = lazy(() => import("@/components/lab/transformer/BeforeAfterBlockViz").then((m) => ({ default: m.BeforeAfterBlockViz })));
 const BlockBlueprintViz = lazy(() => import("@/components/lab/transformer/BlockBlueprintViz").then((m) => ({ default: m.BlockBlueprintViz })));
+
+/* ─── Lazy-loaded visualizers: VIZ 9-15 (new) ─── */
+const LayerLensViz = lazy(() => import("@/components/lab/transformer/LayerLensViz").then((m) => ({ default: m.LayerLensViz })));
+const DepthGenerationViz = lazy(() => import("@/components/lab/transformer/DepthGenerationViz").then((m) => ({ default: m.DepthGenerationViz })));
+const OverfittingDualCurveViz = lazy(() => import("@/components/lab/transformer/OverfittingDualCurveViz").then((m) => ({ default: m.OverfittingDualCurveViz })));
+const CharGenerationPlayground = lazy(() => import("@/components/lab/transformer/CharGenerationPlayground").then((m) => ({ default: m.CharGenerationPlayground })));
+const MemorizationRevealViz = lazy(() => import("@/components/lab/transformer/MemorizationRevealViz").then((m) => ({ default: m.MemorizationRevealViz })));
+const ContextWindowViz = lazy(() => import("@/components/lab/transformer/ContextWindowViz").then((m) => ({ default: m.ContextWindowViz })));
+const CharVsTokenViz = lazy(() => import("@/components/lab/transformer/CharVsTokenViz").then((m) => ({ default: m.CharVsTokenViz })));
+const EvolutionTimelineViz = lazy(() => import("@/components/lab/transformer/EvolutionTimelineViz").then((m) => ({ default: m.EvolutionTimelineViz })));
+
+/* ─── Lazy-loaded visualizers: §10 ─── */
+const ArchitectureIdentityViz = lazy(() => import("@/components/lab/transformer/ArchitectureIdentityViz").then((m) => ({ default: m.ArchitectureIdentityViz })));
+const CompletionVsAssistantViz = lazy(() => import("@/components/lab/transformer/CompletionVsAssistantViz").then((m) => ({ default: m.CompletionVsAssistantViz })));
+const ThreeMysteriesViz = lazy(() => import("@/components/lab/transformer/ThreeMysteriesViz").then((m) => ({ default: m.ThreeMysteriesViz })));
+const ConceptRecallViz = lazy(() => import("@/components/lab/transformer/ConceptRecallViz").then((m) => ({ default: m.ConceptRecallViz })));
+const ShareJourneyViz = lazy(() => import("@/components/lab/transformer/ShareJourneyViz").then((m) => ({ default: m.ShareJourneyViz })));
 
 /* ─── Accent-bound wrappers ─── */
 const NA: NarrativeAccent = "cyan";
@@ -202,6 +233,22 @@ const SectionSkeleton = () => (
     <div className="h-64 animate-pulse bg-white/5 rounded-xl" />
 );
 
+/* ─── Coming soon / redesign wrappers ─── */
+const ComingSoonViz = ({ label }: { label: string }) => (
+    <div className="rounded-2xl border-2 border-dashed border-cyan-400/15 p-8 sm:p-10 text-center">
+        <p className="text-[11px] font-semibold text-cyan-400/30 uppercase tracking-[0.15em] mb-1">Coming Soon</p>
+        <p className="text-[14px] text-white/35 font-medium">{label}</p>
+    </div>
+);
+const RedesignWrapper = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div className="relative rounded-2xl border-2 border-dashed border-amber-400/15 p-2">
+        <div className="absolute -top-3 left-4 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-400/50" style={{ background: "var(--lab-bg, #0a0a0f)" }}>
+            Redesign: {label}
+        </div>
+        {children}
+    </div>
+);
+
 /* ─── FigureWrapper (cyan-accented) ─── */
 function FigureWrapper({
     label,
@@ -257,10 +304,10 @@ export function TransformerNarrative() {
                     "transformer-04": "The Attention Mechanism",
                     "transformer-05": "Seeing Multiple Things at Once",
                     "transformer-06": "Where Am I?",
-                    "transformer-07": "The Transformer Block",
-                    "transformer-08": "The Full Architecture",
-                    "transformer-09": "Teaching It To Write",
-                    "transformer-10": "The Monster That Can See Everything",
+                    "transformer-07": "The Full Architecture",
+                    "transformer-08": "Teaching It to Write",
+                    "transformer-09": "Scaling It Up",
+                    "transformer-10": "You Already Know",
                 }}
             />
             <SectionProgressBar
@@ -271,10 +318,10 @@ export function TransformerNarrative() {
                     { id: "transformer-04", label: "04", name: "Attention" },
                     { id: "transformer-05", label: "05", name: "Multi-Head" },
                     { id: "transformer-06", label: "06", name: "Position" },
-                    { id: "transformer-07", label: "07", name: "Block" },
-                    { id: "transformer-08", label: "08", name: "Architecture" },
-                    { id: "transformer-09", label: "09", name: "Training" },
-                    { id: "transformer-10", label: "10", name: "Everything" },
+                    { id: "transformer-07", label: "07", name: "Architecture" },
+                    { id: "transformer-08", label: "08", name: "Training" },
+                    { id: "transformer-09", label: "09", name: "Scaling" },
+                    { id: "transformer-10", label: "10", name: "You Know" },
                 ]}
                 accent="cyan"
             />
@@ -304,7 +351,7 @@ export function TransformerNarrative() {
                     </p>
 
                     <p className="text-[11px] font-mono text-[var(--lab-text-subtle)] mb-8">
-                        ~45 min read · 10 sections · 60 interactive visualizers
+                        ~50 min read · 10 sections · 63 interactive visualizers
                     </p>
 
                     <div className="flex justify-center mb-14">
@@ -330,27 +377,147 @@ export function TransformerNarrative() {
                     <Heading className="bg-gradient-to-r from-cyan-300 via-white to-cyan-400 bg-clip-text text-transparent">The Blind Spot</Heading>
                 </SectionAnchor>
 
-                {/* ── Opening hook ── */}
+                {/* ─── Beat 1: The Puzzle ─── */}
                 <Lead>
-                    We built something powerful. A neural network with eyes that learned to see
-                    patterns in characters, a brain that learned to think in hidden layers, and
-                    stability tricks that kept it all from collapsing. But there&apos;s something
-                    deeply wrong with it &mdash; something that no amount of extra layers or training
-                    data can fix.
+                    Read this word:
                 </Lead>
 
+                <FadeInView className="my-8">
+                    <p className="text-center text-4xl font-semibold text-white/90">tower</p>
+                </FadeInView>
+
                 <P>
-                    Imagine a system that reads five words and predicts the sixth. It processes each
-                    word through layers of learned transformations. It has embeddings that encode
-                    meaning, hidden layers that find patterns, and a softmax output that produces
-                    probabilities. Impressive, right?
+                    What does it mean? You probably pictured something tall. A building, maybe.
+                    But why not a chess piece? Or a computer sitting under a desk?
+                    Read these four sentences:
+                </P>
+
+                <PullQuote>
+                    &ldquo;The Eiffel <strong>tower</strong> gleamed in the Paris sunset.&rdquo;<br />
+                    &ldquo;She stacked another block on the <strong>tower</strong>.&rdquo;<br />
+                    &ldquo;The server <strong>tower</strong> hummed quietly in the corner.&rdquo;<br />
+                    &ldquo;The chess <strong>tower</strong> slid across the board.&rdquo;
+                </PullQuote>
+
+                <P>
+                    Same five letters. Four completely different objects. A Parisian landmark. A
+                    child&apos;s toy. A humming computer. A chess piece sliding across a board.
+                    You resolved each one instantly &mdash; no effort, no confusion. Your brain
+                    read the surrounding words and <em>knew</em>.
+                </P>
+
+                {/* ─── Beat 2: The Realization ─── */}
+                <NarrativeDivider />
+
+                <P>
+                    How did you do that?
                 </P>
 
                 <P>
-                    Now read this sentence:
+                    The answer seems obvious once you think about it: <em>the surrounding words
+                        changed what &ldquo;tower&rdquo; means</em>. &ldquo;Eiffel&rdquo; pulled it
+                    toward landmarks. &ldquo;Stacked&rdquo; and &ldquo;block&rdquo; pulled it
+                    toward toys. Context didn&apos;t just help &mdash; it{" "}
+                    <em>rewrote the meaning entirely</em>.
                 </P>
 
-                {/* ═══ Pronoun Resolution micro-viz (no box) ═══ */}
+                <P>
+                    That single fact &mdash;{" "}
+                    <GradientText>meaning is not fixed, it is built from context</GradientText>{" "}
+                    &mdash; is the most important idea in this entire chapter. And it is precisely
+                    the thing our model cannot do.
+                </P>
+
+                <Callout icon={AlertTriangle} accent="amber" title="Quick note: words, not characters">
+                    <p>
+                        Until now, our model worked with individual characters. From here on
+                        we&apos;ll think in <strong>words</strong> &mdash; the concepts are identical,
+                        but words make the patterns much easier to see. The model works the same with characters,
+                        sp we are gping to call them tokens
+                    </p>
+                </Callout>
+
+                {/* ─── Beat 3: The Foundation ─── */}
+                <NarrativeDivider />
+
+                <P>
+                    Before we see the problem, let&apos;s understand what &ldquo;tower&rdquo; looks
+                    like to the model. Remember embeddings from the MLP chapter? They turn each word
+                    into a list of features &mdash; numbers that capture what the word <em>means</em>.
+                    Is it large? Is it man-made? Is it tall? Each number measures one characteristic,
+                    and the full list is what we call a <Highlight>vector</Highlight>.
+                </P>
+
+                <P>
+                    If two words are similar, they&apos;ll share similar features &mdash; and
+                    therefore similar vectors. We can picture each vector as a point in{" "}
+                    <em>meaning-space</em>: similar words end up close together, different words
+                    end up far apart. Watch &ldquo;tower&rdquo; transform from letters into its
+                    position in that space:
+                </P>
+
+                {/* ═══ WordToEmbeddingViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <WordToEmbeddingViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    That glowing dot is &ldquo;tower&rdquo;&apos;s entire identity inside the model.
+                    Its position captures everything the model has learned about the word &mdash;
+                    and notice how &ldquo;castle&rdquo; and &ldquo;skyscraper&rdquo; cluster nearby
+                    (similar features), while &ldquo;toy&rdquo; and &ldquo;child&rdquo; sit far away
+                    (very different features).
+                </P>
+
+                <P>
+                    There&apos;s just one problem.
+                </P>
+
+                {/* ─── Beat 4: The Wound ─── */}
+
+                <P>
+                    That dot &mdash; that point in space &mdash; is the same every time. It
+                    doesn&apos;t matter if the sentence says &ldquo;Eiffel tower&rdquo; or
+                    &ldquo;tower of blocks&rdquo; or &ldquo;server tower.&rdquo; The model gives
+                    &ldquo;tower&rdquo; one fixed address and never changes it.
+                </P>
+
+                <P>
+                    See for yourself:
+                </P>
+
+                {/* ═══ FrozenVsContextualViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <FrozenVsContextualViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    The dot doesn&apos;t move.{" "}
+                    <Highlight color="amber">Four different meanings, one frozen point.</Highlight>{" "}
+                    The model literally cannot tell these apart &mdash; they are mathematically
+                    identical.
+                </P>
+
+                <P>
+                    That&apos;s the blind spot. Every word gets one permanent address in
+                    meaning-space. A word that means four different things gets crammed into a
+                    single location, and the richness of context &mdash; the thing that makes
+                    language <em>work</em> &mdash; is thrown away.
+                </P>
+
+                {/* ─── Beat 5: The Deepening ─── */}
+                <NarrativeDivider />
+
+                <P>
+                    And it gets worse. The frozen problem doesn&apos;t just affect words with
+                    multiple definitions. Read this sentence carefully:
+                </P>
+
+                {/* ═══ PronounResolutionViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <PronounResolutionViz />
@@ -358,187 +525,76 @@ export function TransformerNarrative() {
                 </FadeInView>
 
                 <P>
-                    Our model can&apos;t do that. Not even close. And the reason is devastating.
+                    You connected &ldquo;it&rdquo; back to &ldquo;trophy&rdquo; across six
+                    words &mdash; using meaning, grammar, and common sense.{" "}
+                    <Highlight color="amber">Our model has no mechanism to do this.</Highlight>{" "}
+                    The word &ldquo;it&rdquo; gets one frozen embedding. It can&apos;t look back
+                    at &ldquo;trophy.&rdquo; It can&apos;t look anywhere. Every word is processed
+                    in its own isolated slot, blind to everything around it.
                 </P>
 
+                {/* ─── Beat 6: The Discovery ─── */}
                 <NarrativeDivider />
 
-                {/* ── Words-vs-characters bridge ── */}
-                <Callout icon={AlertTriangle} accent="amber" title="A quick note about tokens">
-                    <p>
-                        Until now, our monster has been working with individual characters &mdash; letters
-                        and symbols. It reads &ldquo;t-h-e&rdquo; as three separate tokens. But to
-                        understand the problem we&apos;re about to tackle &mdash; relationships between
-                        ideas &mdash; we need to zoom out a level.
-                    </p>
-                    <p className="mt-2">
-                        For the rest of this chapter, we&apos;ll think in terms of <strong>words</strong> instead
-                        of individual characters. The concepts work the same way at both
-                        levels &mdash; but words make the patterns much easier to see.
-                    </p>
-                </Callout>
-
-                {/* ── The isolation problem ── */}
                 <P>
-                    Here&apos;s the flaw. Our MLP sees all the words in its input window, but it
-                    treats them as <Highlight color="amber">fixed, static slots</Highlight>. It can
-                    memorize patterns like &ldquo;if position 3 is X and position 5 is Y, predict
-                    Z&rdquo; &mdash; but it has no way to understand <em>why</em> those positions
-                    matter or how they relate to each other.
+                    Here&apos;s the surprising part. You already know how to do this. Read this
+                    sentence, and draw the connections you naturally see between the words:
                 </P>
 
-                <P>
-                    It&apos;s like reading a sentence with walls between every word. You can see
-                    each word perfectly &mdash; but you can&apos;t see how they relate to each other.
-                    &ldquo;Trophy&rdquo; and &ldquo;it&rdquo; might as well be in different sentences.
-                    The model has <Highlight color="amber">no mechanism to connect them</Highlight>.
-                </P>
-
-                <P>
-                    This isn&apos;t a small problem. It&apos;s <em>the</em> problem. No matter how
-                    many layers we stack, no matter how large the embeddings grow, the model is
-                    fundamentally blind to <GradientText>relationships between words</GradientText>.
-                </P>
-
-                {/* ═══ V01 — The Isolated Tokens (no box) ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <IsolatedTokensViz />
-                    </Suspense>
-                </FadeInView>
-
-                {/* ── Dynamic meaning ── */}
-                <P>
-                    And it gets worse. Language isn&apos;t just about connecting words &mdash;
-                    it&apos;s about how meaning itself is <Highlight>fundamentally dynamic</Highlight>.
-                    The same word can mean completely different things depending on what surrounds it.
-                </P>
-
-                {/* ═══ Context Shifts (no box) ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <ContextShiftsViz />
-                    </Suspense>
-                </FadeInView>
-
-                <P>
-                    The model can&apos;t do this. It sees &ldquo;bank&rdquo; and always produces
-                    the same representation &mdash; regardless of whether rivers or money surround it.
-                    It has learned a fixed, frozen snapshot of each word, with no way to adjust based
-                    on context. <strong>That&apos;s the blind spot.</strong>
-                </P>
-
-                <NarrativeDivider />
-
-                {/* ── The human contrast ── */}
-                <P>
-                    But <em>you</em> see the connections instantly. Read this:
-                </P>
-
-                <PullQuote>
-                    The cat sat on the warm mat.
-                </PullQuote>
-
-                <P>
-                    Your brain immediately linked <strong className="text-cyan-300">cat</strong> <StyledArrow /> <strong className="text-cyan-300">sat</strong> <StyledArrow /> <strong className="text-cyan-300">mat</strong>. You felt
-                    that &ldquo;warm&rdquo; describes the mat, that &ldquo;on&rdquo; connects sitting
-                    to a surface, that the whole scene paints a picture. You didn&apos;t process
-                    each word in isolation &mdash; you saw the <GradientText from="from-cyan-300" to="to-emerald-300">web of relationships</GradientText> between
-                    them.
-                </P>
-
-                <P>
-                    What if you could draw those connections yourself?
-                </P>
-
-                <NarrativeDivider />
-
-                {/* ═══ V02 — Draw the Connections (no box) ═══ */}
+                {/* ═══ DrawConnectionsViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <DrawConnectionsViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* ── THE REVEAL ── */}
                 <P>
-                    Look at what you just did.
+                    Those weighted lines you drew &mdash; thicker for words that matter more,
+                    thinner for words that matter less &mdash; are{" "}
+                    <em className="text-white/75 not-italic font-medium">exactly</em> the mechanism
+                    that powers every modern language model. GPT. Claude. Gemini. All of them.
                 </P>
 
                 <P>
-                    You drew lines of <span className="text-cyan-300/70">varying thickness</span> between related words. You instinctively
-                    knew that some connections are strong &mdash; <strong className="text-amber-300/80">cat</strong> and <strong className="text-amber-300/80">sat</strong> are
-                    tightly linked &mdash; and others are weak. You gave more <span className="text-white/70">weight</span> to the words that
-                    mattered and less to the ones that didn&apos;t.
+                    For every word in the input, they figure out which other words matter, how
+                    much, and then use that information to{" "}
+                    <Highlight>rewrite each word&apos;s meaning</Highlight>. The output of
+                    attention is not a score &mdash; it&apos;s a new version of the word.
                 </P>
 
                 <P>
-                    What you built, right there with your mouse?
+                    You did the scoring with intuition. The model needs to learn to do it with
+                    math. And that&apos;s what the rest of this chapter is about.
                 </P>
 
-                {/* #5: THE REVEAL — attention word lands with impact */}
-                <div className="my-10 md:my-12 text-center">
-                    <motion.p
-                        className="text-[15px] md:text-base text-[var(--lab-text-muted)] leading-relaxed mb-3"
-                        initial={{ opacity: 0, y: 8 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-60px" }}
-                        transition={{ duration: 0.4 }}
-                    >
-                        Scientists call it
-                    </motion.p>
-                    <motion.p
-                        className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-amber-300 via-amber-200 to-amber-300 bg-clip-text text-transparent"
-                        initial={{ opacity: 0, scale: 0.7, y: 12 }}
-                        whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-60px" }}
-                        transition={{ delay: 0.3, duration: 0.6, type: "spring", stiffness: 120 }}
-                    >
-                        Attention
-                    </motion.p>
-                </div>
-
-                <P>
-                    That&apos;s not a metaphor. The lines you drew &mdash; <span className="text-cyan-300/60">weighted connections</span> between
-                    words, varying in strength depending on context &mdash; are <em className="text-white/75 not-italic font-medium">exactly</em> the
-                    mechanism that powers every modern language model. <span className="text-white/60">GPT. Claude. Gemini.</span> All
-                    of them. They all do precisely what you just did: for every word in the input,
-                    figure out which other words matter and <span className="text-amber-300/60">how much</span>.
-                </P>
-
-                <P>
-                    The difference? You did it with <span className="text-white/70">intuition</span>. The model needs to learn how to do
-                    it with <span className="text-cyan-300/60">math</span>. And that&apos;s what this chapter is about.
-                </P>
-
+                {/* ─── Beat 8: The Bridge ─── */}
                 <NarrativeDivider />
 
-                {/* ── The roadmap ── */}
                 <P>
-                    So what do we need to build? Over the next sections, we&apos;ll solve this
-                    piece by piece:
+                    So what do we need to build? Over the next sections, we&apos;ll construct this
+                    mechanism piece by piece:
                 </P>
 
-                {/* ═══ V04 — Architecture Wishlist (no box) ═══ */}
+                {/* ═══ WishlistCallbackViz ═══ */}
                 <FadeInView className="my-8 md:my-10">
                     <Suspense fallback={<SectionSkeleton />}>
                         <WishlistCallbackViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* ── Key takeaway ── */}
                 <KeyTakeaway accent="cyan">
-                    Our MLP processes each position independently &mdash; words are isolated.
-                    Humans naturally draw weighted connections between related words.
-                    That ability is called <strong>attention</strong>, and it&apos;s exactly what
-                    we need to teach the model.
+                    Our MLP gives every word one frozen meaning &mdash; the same embedding
+                    regardless of context. Real language requires words to reshape their meaning
+                    based on what surrounds them. The mechanism that makes this possible is
+                    called <strong>attention</strong>: it lets each word look at the rest of the
+                    sentence and build a new, context-sensitive version of itself.
                 </KeyTakeaway>
 
-                {/* ── Monster status ── */}
                 <MonsterStatus>
-                    👾 I have eyes. I have a brain. But I&apos;m staring at each word through a
-                    keyhole &mdash; I can&apos;t see the sentence. I want to look around. I want
-                    to see everything at once.
+                    👾 I have eyes. I have a brain. But every word I see is frozen &mdash;
+                    &ldquo;tower&rdquo; always means the same thing to me, no matter what sentence
+                    it&apos;s in. I can&apos;t adjust. I can&apos;t look around. I need a way to
+                    rewrite what words mean based on context. I want to see everything at once.
                 </MonsterStatus>
             </Section>
 
@@ -563,46 +619,45 @@ export function TransformerNarrative() {
                     <span>You can skip this if you&apos;re familiar with RNNs</span>
                 </FadeInView>
 
+                {/* ── Beat 1: The Intuitive Idea ── */}
                 <Lead>
-                    Before the solution that changed everything, researchers tried a different
-                    approach. It was intuitive. It was elegant. And for a decade, it dominated
-                    the field.
+                    Before attention, researchers tried a different approach. It was intuitive,
+                    elegant, and for a decade it dominated the field. But it couldn&apos;t deliver
+                    what language actually needs.
                 </Lead>
 
                 <P>
-                    The idea was simple: what if the model reads like we do? Left to right,
-                    one word at a time, carrying everything it has learned so far in its memory.
-                    Each token receives a summary of all previous tokens, adds its own information,
-                    and passes the updated summary to the next.
+                    The idea: what if the model reads like we do? Left to right, one word at a
+                    time, carrying everything it has learned so far in its memory. Each token
+                    receives a summary of all previous tokens, adds its own information, and passes
+                    the updated summary forward.
                 </P>
 
                 <P>
-                    Researchers called it the <Highlight>Recurrent Neural Network</Highlight>.
-                    And on paper, it solved the isolation problem beautifully &mdash; tokens
-                    could finally communicate through this chain of memory.
+                    They called it the <Highlight>Recurrent Neural Network</Highlight>. On paper,
+                    it solved the isolation problem &mdash; tokens could finally communicate through
+                    a chain of memory.
                 </P>
 
-                {/* ═══ RNNChainViz — how RNN processes tokens ═══ */}
+                {/* ═══ RNNChainViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <RNNChainViz />
                     </Suspense>
                 </FadeInView>
 
+                {/* ── Beat 2: The Flaws ── */}
                 <NarrativeDivider />
 
                 <P>
-                    But think about what happens to the first word&apos;s information as it
-                    travels through the chain. Word 1&apos;s meaning gets compressed into
-                    word 2&apos;s memory. Then words 1 <em>and</em> 2 get compressed into
-                    word 3. By word 50, the memory of word 1 is almost completely gone.
+                    But think about what happens to the first word&apos;s information as it travels
+                    through the chain. Word 1&apos;s meaning gets compressed into word 2&apos;s
+                    memory. Then words 1 and 2 get compressed into word 3. By word 50, the memory
+                    of word 1 is almost completely gone. It&apos;s like a game of telephone &mdash;
+                    the message degrades with every step.
                 </P>
 
-                <P>
-                    It&apos;s like a game of telephone. The message degrades with every step.
-                </P>
-
-                {/* ═══ V05 — TelephoneGameViz ═══ */}
+                {/* ═══ TelephoneGameViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <TelephoneGameViz />
@@ -610,86 +665,73 @@ export function TransformerNarrative() {
                 </FadeInView>
 
                 <P>
-                    Researchers saw this problem and added a clever fix: <Highlight color="amber">memory gates</Highlight>.
-                    Tiny neural networks inside each step that decide what to remember
-                    and what to forget. They called it the <strong>LSTM</strong> &mdash; Long Short-Term Memory.
+                    Researchers added a clever fix: <Highlight color="amber">memory gates</Highlight>{" "}
+                    &mdash; tiny neural networks inside each step that decide what to remember and
+                    what to forget. They called it the <strong>LSTM</strong> (Long Short-Term
+                    Memory). It helped. The memory lasted longer. But it couldn&apos;t solve the
+                    fundamental issue.
                 </P>
 
-                <P>
-                    It helped. The memory lasted longer. But it didn&apos;t solve
-                    the fundamental issue.
-                </P>
-
-                {/* ═══ V06 — LSTMBandageViz ═══ */}
+                {/* ═══ LSTMBandageViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <LSTMBandageViz />
                     </Suspense>
                 </FadeInView>
 
-                <NarrativeDivider />
-
                 <P>
-                    And there was an even deeper problem &mdash; one that no amount of clever
-                    gating could fix. The RNN <em>must</em> process tokens in order. Token 5
-                    waits for token 4. Token 4 waits for token 3. You cannot parallelize this.
-                    On modern GPUs designed for massive parallelism, the sequential bottleneck
-                    was <Highlight color="rose">painfully slow</Highlight>.
+                    And there was a deeper problem &mdash; one that no gating could fix. The RNN{" "}
+                    <em>must</em> process tokens in order. Token 5 waits for token 4. Token 4 waits
+                    for token 3. On modern GPUs designed for massive parallelism, this sequential
+                    bottleneck was <Highlight color="rose">painfully slow</Highlight>.
                 </P>
 
-                {/* ═══ V07 — SequentialVsParallelViz ═══ */}
+                {/* ═══ SequentialVsParallelViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <SequentialVsParallelViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* "Learn more" link */}
-                <FadeInView className="flex justify-center my-6">
-                    <a
-                        href="/lab/rnn"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold
-                            border border-cyan-400/25 text-cyan-300/70 hover:text-cyan-200 hover:border-cyan-400/40
-                            hover:shadow-[0_0_20px_-4px_rgba(34,211,238,0.15)] transition-all duration-200"
-                        style={{ background: "linear-gradient(135deg, rgba(34,211,238,0.06), rgba(34,211,238,0.02))" }}
-                    >
-                        <BookOpen className="w-4 h-4" />
-                        Dive deeper into RNNs
-                    </a>
-                </FadeInView>
+                {/* ── Beat 3: Exit quickly ── */}
+                <P>
+                    Remember the real goal: we want each word to change meaning based on context.
+                    RNNs tried to solve this by passing a memory forward, but that memory degrades
+                    over distance and forces sequential processing. We need something fundamentally
+                    different &mdash; a mechanism that lets every word see every other word, all at
+                    once, and use that information to rewrite itself.
+                </P>
 
                 <KeyTakeaway accent="cyan">
-                    RNNs solved token communication but introduced two fatal flaws:
-                    information degrades over long sequences (the telephone game), and
-                    sequential processing makes them painfully slow. We need something
-                    fundamentally different.
+                    RNNs solved token communication but introduced two fatal flaws: information
+                    degrades over long sequences, and sequential processing makes them painfully
+                    slow. The real goal &mdash; context-dependent meaning &mdash; demands a
+                    different architecture entirely.
                 </KeyTakeaway>
 
                 <MonsterStatus>
-                    👾 I tried reading one word at a time, passing notes forward. But by the
-                    end of a long sentence, I&apos;ve forgotten how it started. And I&apos;m
-                    so slow &mdash; processing one word at a time while the GPU sits idle.
-                    There must be a better way.
+                    👾 I tried reading one word at a time, passing notes forward. By the end of a
+                    long sentence, I&apos;ve forgotten how it started. And I&apos;m so slow &mdash;
+                    one word at a time while the GPU sits idle. There must be a better way.
                 </MonsterStatus>
 
             </Section>
 
             <SectionBreak />
             <MonsterInterlude>
-                What if, instead of processing tokens one by one, carrying a fragile memory...
-                every token could see every other token, all at once?
+                What if, instead of processing tokens one by one with a fragile memory, every
+                token could see every other token &mdash; all at once? And what if those
+                connections could be different for every sentence?
             </MonsterInterlude>
 
             {/* ═══════════════════════════════════════════════════
                §03 — WHAT IF TOKENS COULD TALK?
-               THE MOST IMPORTANT SECTION — discovery-driven,
-               slow pacing, the learner arrives at attention themselves.
                ═══════════════════════════════════════════════════ */}
             <Section id="transformer-03">
                 <SectionLabel number="03" label="What If Tokens Could Talk?" />
                 <SectionAnchor id="transformer-03"><Heading>What If Tokens Could Talk?</Heading></SectionAnchor>
 
-                {/* ── 1. The question hangs ── */}
+                {/* ── Beat 1: The Big Question ── */}
                 <FadeInView className="my-10 md:my-16">
                     <motion.p
                         className="text-center text-xl sm:text-2xl md:text-3xl font-bold leading-relaxed max-w-2xl mx-auto bg-gradient-to-r from-cyan-300 via-teal-200 to-cyan-300 bg-clip-text text-transparent"
@@ -705,34 +747,58 @@ export function TransformerNarrative() {
 
                 <NarrativeDivider />
 
-                {/* ── 2. The human analogy ── */}
                 <P>
                     When you read a sentence, you don&apos;t process each word in isolation.
                     Your brain builds connections instantly, effortlessly, in parallel.
                 </P>
 
-                <P>
-                    Consider this sentence: <em>&quot;The king who wore the golden crown ruled the vast kingdom wisely.&quot;</em>
-                </P>
+                <PullQuote>
+                    &ldquo;The blue plush creature sat on the shelf.&rdquo;
+                </PullQuote>
 
                 <P>
-                    Your eyes jumped: <Highlight>king</Highlight> <StyledArrow />
-                    <Highlight color="amber">crown</Highlight> <StyledArrow />
+                    What is the &ldquo;creature&rdquo; in this sentence? Without any effort,
+                    &ldquo;blue&rdquo; and &ldquo;plush&rdquo; reached across to
+                    &ldquo;creature&rdquo; and rewrote its meaning. It&apos;s no longer a generic
+                    living thing &mdash; it&apos;s a <em>soft blue stuffed toy</em>. The surrounding
+                    words didn&apos;t just provide context &mdash; they{" "}
+                    <em>changed what the word means</em>. Click any word to see what enriches it:
+                </P>
+
+                {/* ═══ ContextEnrichmentViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ContextEnrichmentViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    Every word gets enriched &mdash; but some more than others. Now let&apos;s see
+                    this same idea with a longer, richer sentence:
+                </P>
+
+                <PullQuote>
+                    &ldquo;The king who wore the golden crown ruled the vast kingdom wisely.&rdquo;
+                </PullQuote>
+
+                <P>
+                    Your eyes jumped: <Highlight>king</Highlight> <StyledArrow />{" "}
+                    <Highlight color="amber">crown</Highlight> <StyledArrow />{" "}
                     <Highlight color="emerald">ruled</Highlight>. You saw the entire sentence
                     and <em>chose</em> what matters. You didn&apos;t read left-to-right carrying a
                     fragile memory. You looked at everything at once.
                 </P>
 
+                {/* ── Beat 2: The Spotlight ── */}
                 <NarrativeDivider />
 
-                {/* ── 3. Introduce the spotlight ── */}
                 <P>
                     Imagine each word has a <Highlight>spotlight</Highlight>. When you activate a word,
                     its spotlight shines on the other words it cares about &mdash; brighter for stronger
                     connections, dimmer for weaker ones. Every word has its own unique spotlight pattern.
                 </P>
 
-                {/* ═══ V08 — SpotlightViz ═══ */}
+                {/* ═══ SpotlightViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <SpotlightViz />
@@ -741,91 +807,78 @@ export function TransformerNarrative() {
 
                 <P>
                     Click different words. The spotlight pattern changes completely each time.
-                    <em> &quot;The&quot;</em> barely shines on anything. But <em>&quot;king&quot;</em>?
-                    It illuminates <em>&quot;crown&quot;</em> and <em>&quot;ruled&quot;</em> across
+                    &ldquo;The&rdquo; barely shines on anything. But &ldquo;king&rdquo;?
+                    It illuminates &ldquo;crown&rdquo; and &ldquo;ruled&rdquo; across
                     the entire sentence.
                 </P>
 
-                <NarrativeDivider />
-
-                {/* ── 5. Context changes the spotlight ── */}
                 <P>
-                    Now here&apos;s where it gets remarkable. The word <em>&quot;bank&quot;</em> shines
-                    its spotlight on <Highlight color="emerald">&quot;river&quot;</Highlight> in one sentence
-                    &mdash; and on <Highlight color="amber">&quot;money&quot;</Highlight> in another.
-                    Same word. Completely different connections.
+                    Each spotlight pattern is a set of <Highlight color="amber">attention weights</Highlight>{" "}
+                    &mdash; numbers that say how much each word should listen to every other word.
+                    They are the recipe for building context-aware meaning.
                 </P>
 
-                {/* ═══ V09 — ContextChangesViz ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <ContextChangesViz />
-                    </Suspense>
+                {/* ═══ GuessPatternViz — DEMOTED to collapsible ═══ */}
+                <FadeInView className="my-8 md:my-10">
+                    <details className="rounded-xl border border-white/8 bg-white/3 overflow-hidden">
+                        <summary className="px-4 py-3 cursor-pointer text-sm font-semibold text-white/50 hover:text-white/70 transition-colors select-none list-none flex items-center gap-2">
+                            <span className="text-cyan-400/60">▶</span>
+                            Challenge: Can you predict the attention pattern?
+                        </summary>
+                        <div className="p-4">
+                            <Suspense fallback={<SectionSkeleton />}>
+                                <GuessPatternViz />
+                            </Suspense>
+                        </div>
+                    </details>
                 </FadeInView>
 
+                {/* ── Beat 5: Static vs Dynamic ── */}
                 <NarrativeDivider />
 
-                {/* ── 7. Your intuition IS the answer ── */}
                 <P>
-                    Here&apos;s the most surprising part: <em>you</em> can predict which words
-                    should attend to which. Your linguistic intuition already encodes these patterns.
-                    Can you guess the spotlight pattern before seeing it?
-                </P>
-
-                {/* ═══ V10 — GuessPatternViz ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <GuessPatternViz />
-                    </Suspense>
-                </FadeInView>
-
-                <P>
-                    Your predictions matched? That&apos;s because attention encodes the same
-                    relationships your brain already sees. The mechanism doesn&apos;t invent
-                    new patterns &mdash; it <em>learns</em> the ones you already know.
-                </P>
-
-                <NarrativeDivider />
-
-                {/* ── 9. The key insight: dynamic vs static ── */}
-                <P>
-                    Remember the MLP from the previous chapter? Its weights are
-                    <Highlight color="amber">carved in stone</Highlight> during training.
-                    Position 3 always connects to position 1 with the same strength,
+                    Now here&apos;s what makes this fundamentally different from the MLP.
+                    The MLP&apos;s weights are{" "}
+                    <Highlight color="amber">carved in stone</Highlight> during training &mdash;
+                    position 3 always connects to position 1 with the same strength,
                     no matter what the input says.
                 </P>
 
                 <P>
-                    Attention weights are completely different. They are
-                    computed <Highlight>fresh for every input</Highlight>.
+                    Attention weights are the opposite. They are computed{" "}
+                    <Highlight>fresh for every input</Highlight>.
                     A new sentence means new connections, new strengths, new patterns.
                     The wiring rewires itself for every single sentence.
                 </P>
 
                 <Callout icon={Zap}>
                     <strong className="text-white/80">Static (MLP):</strong>{" "}
-                    <span className="text-white/50">frozen wiring — same connections regardless of input.</span>
+                    <span className="text-white/50">frozen wiring &mdash; same connections regardless of input. Same output embedding for the same word, always.</span>
                     <br />
                     <strong className="text-white/80">Dynamic (Attention):</strong>{" "}
-                    <span className="text-white/50">rewires for every sentence — connections depend on meaning.</span>
+                    <span className="text-white/50">rewires for every sentence &mdash; connections depend on meaning. Different output embedding depending on context.</span>
                 </Callout>
 
-                {/* ═══ V11 — StaticVsDynamicViz ═══ */}
+                {/* ═══ StaticVsDynamicViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <StaticVsDynamicViz />
                     </Suspense>
                 </FadeInView>
 
-                <NarrativeDivider />
-
-                {/* ── 11. The full picture ── */}
                 <P>
-                    Now see the complete picture &mdash; every word&apos;s attention to every
-                    other word, all at once.
+                    And when the wiring changes, <em>meaning</em> changes with it.
+                    &ldquo;Bank&rdquo; next to &ldquo;river&rdquo; connects to nature words.
+                    &ldquo;Bank&rdquo; next to &ldquo;money&rdquo; connects to finance words.
+                    Same word, completely different connections, completely different meaning.
                 </P>
 
-                {/* ═══ V11b — AttentionWebViz (full-attention constellation) ═══ */}
+                <P>
+                    Now see the complete picture &mdash; every word&apos;s attention to every
+                    other word, all at once:
+                </P>
+
+                {/* ═══ AttentionWebViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <AttentionWebViz />
@@ -839,35 +892,70 @@ export function TransformerNarrative() {
                     connection strength.
                 </P>
 
-                {/* ═══ V12 — AttentionHeatmapViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <AttentionHeatmapViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* ── 13. MonsterStatus ── */}
-                <MonsterStatus>
-                    👾 For the first time, I can LOOK AROUND. I can see every other token.
-                    I can feel which ones matter. I&apos;m not processing blindly anymore &mdash;
-                    I&apos;m seeing the whole sentence at once. But... how do I actually decide who matters?
-                </MonsterStatus>
+                <NarrativeDivider />
 
-                {/* ── 14. KeyTakeaway ── */}
+                <P>
+                    But knowing <em>which words matter</em> is only half the story. That&apos;s
+                    just the recipe &mdash; a set of percentages. The real goal is bigger:{" "}
+                    <Highlight>rewrite each word&apos;s embedding</Highlight> so its meaning
+                    reflects the words around it. Use the recipe to blend information from every
+                    relevant word into a new representation.
+                </P>
+
+                <P>
+                    &ldquo;Bank&rdquo; next to &ldquo;river&rdquo; should pick up nature.
+                    &ldquo;Bank&rdquo; next to &ldquo;money&rdquo; should pick up finance.{" "}
+                    <em>The same word, different meaning, depending on context.</em> That was our
+                    goal from the very first paragraph of this chapter. Watch it happen &mdash;
+                    one token&apos;s journey from isolation to context:
+                </P>
+
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ContextAssemblyFilmViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    That was one word&apos;s journey. But in a transformer, this happens to{" "}
+                    <em>every</em> word simultaneously. Watch the entire sentence transform at once:
+                </P>
+
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <FullContextualAssemblyViz />
+                    </Suspense>
+                </FadeInView>
+
                 <KeyTakeaway accent="cyan">
-                    Attention lets each token dynamically decide which other tokens are relevant &mdash;
-                    not through fixed wiring, but through patterns computed fresh for every input.
-                    This is the core idea behind every modern language model.
+                    Attention is not just about finding which words are important. It&apos;s about{" "}
+                    <strong>using that knowledge to rewrite each word&apos;s embedding</strong> &mdash;
+                    blending context into meaning so that each word becomes a function of everything
+                    around it. The attention weights are the recipe. The rewritten embeddings are the meal.
+                    Next, we&apos;ll unpack exactly <em>how</em> this mechanism works under the hood.
                 </KeyTakeaway>
+
+                <MonsterStatus>
+                    👾 I can see what matters and I can see the result &mdash; words that absorb their
+                    context and become something new. But how does the math actually work?
+                    How does a word figure out what to search for? That&apos;s what I need to learn next.
+                </MonsterStatus>
 
             </Section>
 
-            {/* ── 15. Bridge to §04 ── */}
+            {/* ── Bridge to §04 ── */}
             <SectionBreak />
             <MonsterInterlude>
                 You&apos;ve discovered the idea of attention: tokens looking at each other with
                 varying intensity. But how does a token actually KNOW which others are important?
-                It starts with a surprisingly simple question.
+                And more importantly &mdash; how does it use that knowledge to build a new version
+                of itself? It starts with a surprisingly simple question: how similar are two words?
             </MonsterInterlude>
 
             {/* ═══════════════════════════════════════════════════
@@ -876,33 +964,30 @@ export function TransformerNarrative() {
             <Section id="transformer-04">
                 <SectionLabel number="04" label="The Attention Mechanism" />
                 <SectionAnchor id="transformer-04"><Heading>The Attention Mechanism</Heading></SectionAnchor>
+
+                {/* ══════════════════════════════════════════════════════
+                   §04a — MEASURING SIMILARITY
+                   ══════════════════════════════════════════════════════ */}
+
                 <Lead>
                     We know tokens should talk to each other. But <em>how</em> does a token actually
-                    figure out which others are important? It starts with a surprisingly simple question.
+                    figure out which others are important? It starts with a surprisingly simple question:
+                    how similar are two words?
                 </Lead>
 
-                {/* ── §04a: Measuring Similarity ── */}
-
-                {/* ── 1. Connection to embeddings ── */}
                 <P>
-                    Remember <Highlight color="amber">embeddings</Highlight> from the MLP chapter?
-                    They turn each word into a <em>list of features</em> &mdash; numbers that capture
-                    what the word means. Is it royal? Is it an action? Is it a person?
-                    That list of features is what we call a <Highlight>vector</Highlight>.
+                    In Section 1, we saw that every word becomes a{" "}
+                    <Highlight>vector</Highlight> &mdash; a list of features that captures its meaning.
+                    That vector is a point in meaning-space. But a point from the origin is also
+                    an <em>arrow</em> &mdash; and arrows have something points don&apos;t:{" "}
+                    <Highlight color="amber">direction</Highlight>.
                 </P>
 
                 <P>
-                    If two words are similar, they&apos;ll have similar features &mdash; and therefore
-                    similar vectors. We can picture each vector as an <em>arrow in meaning-space</em>:
-                    similar words point in similar directions.
-                </P>
-
-                <P>
-                    But here&apos;s the catch. Think about the word <span className="text-amber-300/70">&ldquo;king&rdquo;</span> &mdash;
-                    it could mean a chess piece, a royal ruler, a surname (Martin Luther King),
-                    or even a playing card. The MLP gave every word a <em>single</em> embedding,
-                    the same <span className="text-cyan-300/50">regardless of context</span>.
-                    That&apos;s exactly the problem we&apos;re about to solve.
+                    Two arrows pointing the same way → the words are similar.
+                    Perpendicular → unrelated.
+                    Opposite directions → they mean opposite things.
+                    Watch how each word&apos;s vector becomes an arrow:
                 </P>
 
                 {/* ═══ EmbeddingToArrowViz ═══ */}
@@ -914,25 +999,15 @@ export function TransformerNarrative() {
 
                 <NarrativeDivider />
 
-                {/* ── 2. The question ── */}
                 <P>
-                    So each word is a list of features. Similar words have similar lists.
-                    But <em>how do we measure</em> how similar two lists are? We need a single
-                    number that tells us: &quot;these two words are very alike&quot; or &quot;these two
-                    words have nothing in common.&quot;
+                    So direction tells us similarity. But we need a <em>number</em> &mdash; something
+                    the model can actually compute. There&apos;s a beautifully simple operation for this:
+                    multiply each pair of matching features and add the results. Same direction gives
+                    a big positive number; opposite gives a big negative number; perpendicular gives zero.
                 </P>
 
                 <P>
-                    Think back to the neural network chapter. When we had <em>two single numbers</em>,
-                    we discovered that multiplying them gives us a
-                    <Highlight color="amber">weight</Highlight> &mdash; a way to control influence.
-                    Now we have two <em>lists</em> of numbers. What if we multiply matching features
-                    and add them all up?
-                </P>
-
-                <P>
-                    Try it yourself. Slide the features on the right and watch the arrows
-                    on the left move &mdash; or drag the arrows directly and watch the numbers change:
+                    Try it &mdash; drag the arrows and watch the score change:
                 </P>
 
                 {/* ═══ DotProductCalculatorViz ═══ */}
@@ -953,32 +1028,20 @@ export function TransformerNarrative() {
                     Same direction → big number. Perpendicular → zero. Opposite → negative.
                 </PullQuote>
 
-                <NarrativeDivider />
-
-                {/* ── 4. Naming + excitement ── */}
                 <P>
                     This multiply-and-sum operation has a name: the{" "}
-                    <Highlight color="amber">dot product</Highlight>. Mathematically, it&apos;s just
-                    multiply-and-add. But what it <em>does</em> is extraordinary &mdash; it measures
-                    how much two things point in the same direction.
-                </P>
-
-                <P>
-                    Think about what that means. We turned words into lists of numbers.
-                    Now we have a way to <em>measure</em> how related any two words are,
-                    with a single number. High score? They&apos;re related. Near zero?
-                    They have nothing in common. <strong className="text-white/50">We just gave
-                        the model a relevance detector.</strong>
+                    <Highlight color="amber">dot product</Highlight>. What it <em>does</em> is
+                    extraordinary &mdash; it measures how much two things point in the same direction.
+                    We turned words into lists of numbers. Now we have a way to measure how related
+                    any two words are, with a single number.
                 </P>
 
                 <NarrativeDivider />
 
-                {/* ── 5. Pairwise scoring ── */}
                 <P>
-                    Now here&apos;s where it gets exciting. Take every word in a sentence and
-                    compute the dot product with <em>every other word</em>. The result?
-                    A complete map of relationships &mdash; every word compared to every
-                    other word, all at once:
+                    Now here&apos;s where it gets exciting. Take every word in a sentence and compute
+                    the dot product with <em>every other word</em>. The result? A complete map of
+                    relationships &mdash; every word compared to every other word, all at once:
                 </P>
 
                 {/* ═══ PairwiseScoringViz ═══ */}
@@ -990,7 +1053,6 @@ export function TransformerNarrative() {
 
                 <NarrativeDivider />
 
-                {/* ── 6. Self-similarity trap ── */}
                 <P>
                     Wait. Something&apos;s wrong. Look at the{" "}
                     <Highlight color="amber">diagonal</Highlight> of that table &mdash; the cells
@@ -998,16 +1060,17 @@ export function TransformerNarrative() {
                 </P>
 
                 <P>
-                    Every word&apos;s highest score is with... <em>itself</em>. Of course it is.
-                    A vector compared with itself always matches perfectly. But that means every
-                    word pays the most attention to <em>itself</em>, ignoring all the other words
-                    around it. That&apos;s exactly the problem we were trying to solve!
+                    Every word&apos;s highest score is with... <em>itself</em>. Of course. A vector
+                    compared with itself always matches perfectly. But that means every word pays the
+                    most attention to <em>itself</em>, ignoring all the other words around it.
+                    That&apos;s exactly the problem we were trying to solve!
                 </P>
 
                 <Callout accent="amber" icon={AlertTriangle}>
-                    <strong className="text-white/70">The self-attention trap:</strong>{" "}
+                    <strong className="text-white/70">The self-similarity trap:</strong>{" "}
                     <span className="text-white/50">
-                        Using raw embeddings, every token pays the most attention to itself. 🤦
+                        Using raw embeddings, every token pays the most attention to itself. The model
+                        would just reinforce what it already knows instead of learning from context.
                     </span>
                 </Callout>
 
@@ -1019,64 +1082,71 @@ export function TransformerNarrative() {
                 </FadeInView>
 
                 <P>
-                    Before we move on, let&apos;s lock in the intuition. Can you tell
-                    whether two arrows will give a positive or negative dot product
-                    just by looking at them? Try the quiz:
+                    But the self-similarity trap is only half the story. There&apos;s a deeper problem
+                    with using raw embeddings for attention. Let&apos;s see what each word actually
+                    finds when it searches for its closest matches:
                 </P>
 
-                {/* ═══ DotProductQuiz ═══ */}
+                {/* ═══ EmbeddingAttentionFailureViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
-                        <DotProductQuiz />
+                        <EmbeddingAttentionFailureViz />
                     </Suspense>
                 </FadeInView>
 
-                <NarrativeDivider />
-
-                {/* ── 7. Bridge to §04b ── */}
                 <P>
-                    So the dot product is brilliant for measuring relevance &mdash;
-                    but using raw embeddings leads to a dead end. We need a twist.
-                    What if each word could take on <Highlight>different roles</Highlight> &mdash;
-                    one version for <em>asking questions</em>, and a different version for
-                    <em> advertising answers</em>?
+                    See the pattern? <Highlight color="amber">Embeddings find twins, not partners.</Highlight>{" "}
+                    &ldquo;King&rdquo; finds other nouns &mdash; &ldquo;crown,&rdquo; &ldquo;kingdom&rdquo;
+                    &mdash; because they share similar features. But &ldquo;king&rdquo; doesn&apos;t{" "}
+                    <em>need</em> another noun. It needs the verb that tells you what the king{" "}
+                    <em>did</em> (&ldquo;ruled&rdquo;) and the object that defines his status
+                    (&ldquo;crown&rdquo; for what he <em>wore</em>, not just as a similar word).
+                </P>
+
+                <P>
+                    An adjective like &ldquo;golden&rdquo; finds &ldquo;vast&rdquo; &mdash; another
+                    adjective. But what &ldquo;golden&rdquo; actually needs is the noun it describes:
+                    &ldquo;crown.&rdquo; A verb like &ldquo;ruled&rdquo; finds &ldquo;wore&rdquo;
+                    &mdash; another verb. But it should find its subject (&ldquo;king&rdquo;) and its
+                    object (&ldquo;kingdom&rdquo;).
+                </P>
+
+                <P>
+                    <GradientText>Similarity is not relevance.</GradientText>{" "}
+                    A word doesn&apos;t search for copies of itself &mdash; it searches for{" "}
+                    <em>complements</em>. The pieces that complete its meaning.
                 </P>
 
                 {/* ══════════════════════════════════════════════════════
                    §04b — TWO ROLES: QUERY AND KEY
                    ══════════════════════════════════════════════════════ */}
 
-                {/* ── 0. THE GOAL ── */}
-                <Callout icon={Target}>
-                    <strong className="text-white/70">Our goal:</strong>{" "}
-                    <span className="text-white/50">
-                        Make each word&apos;s meaning depend on the words around it.
-                        &quot;King&quot; next to &quot;crown&quot; should feel different from &quot;king&quot; next to &quot;chess.&quot;
-                        By the end of this section, we&apos;ll get there.
-                    </span>
-                </Callout>
+                <NarrativeDivider />
 
-                {/* ── 1. The lenses metaphor ── */}
                 <P>
-                    Imagine putting on special glasses that change how you see each word.
-                    One pair &mdash; the <Highlight color="cyan">Query lens</Highlight> &mdash;
-                    highlights what the word is <em>searching for</em>. Another pair &mdash;
-                    the <Highlight color="emerald">Key lens</Highlight> &mdash; highlights what
-                    the word <em>advertises</em> to others.
+                    So let&apos;s pause. What does &ldquo;king&rdquo; actually{" "}
+                    <em>need</em> from the sentence? Actions, descriptions, objects
+                    &mdash; things that <em>complement</em> its meaning. What if each word
+                    could broadcast a kind of arrow &mdash;{" "}
+                    <Highlight color="cyan">&ldquo;here&apos;s what I&apos;m looking for&rdquo;</Highlight>?
+                    King&apos;s arrow would point toward verbs and descriptions.
+                    Ruled&apos;s would point toward subjects and objects.
                 </P>
 
                 <P>
-                    &quot;King&quot; has high royalty in its embedding. But through the Query lens,
-                    royalty fades and <em>action</em> lights up &mdash; king is looking for verbs.
-                    Through the Key lens, royalty stays bright &mdash; king <em>offers</em> royalty
-                    to whoever is looking for a noble subject.
+                    And the other side? Each word also has something to{" "}
+                    <em>offer</em>. King offers royalty. Crown offers regality.
+                    What if each word also broadcast a second arrow &mdash;{" "}
+                    <Highlight color="emerald">&ldquo;here&apos;s what I have to give&rdquo;</Highlight>?
+                    Compare these two arrows and matching becomes simple: same direction → high score,
+                    different directions → low score.
                 </P>
 
                 <P>
-                    The model learns these two lenses during training. Each one re-mixes
-                    the embedding features in a different way, automatically discovering
-                    what matters for asking vs. advertising. Click through the words below
-                    to see how the same embedding produces two completely different views:
+                    These arrows have names. The &ldquo;what I need&rdquo; arrow is the{" "}
+                    <Highlight color="cyan">Query</Highlight>. The &ldquo;what I offer&rdquo; arrow
+                    is the <Highlight color="emerald">Key</Highlight>. Each word gets both &mdash;
+                    created by passing its embedding through two different learned matrices:
                 </P>
 
                 {/* ═══ QKSplitViz ═══ */}
@@ -1086,14 +1156,43 @@ export function TransformerNarrative() {
                     </Suspense>
                 </FadeInView>
 
+                <P>
+                    &ldquo;King&rdquo; through the Query lens: royalty fades,{" "}
+                    <em>action</em> lights up &mdash; king is looking for verbs. Through
+                    the Key lens: royalty stays bright &mdash; king <em>offers</em> its royalty to
+                    whoever is searching for a noble subject.
+                </P>
+
+                <P>
+                    But how do we <em>get</em> these Queries and Keys? We multiply each word&apos;s
+                    embedding by a <Highlight>learned matrix</Highlight>. The model discovers
+                    the exact numbers in this matrix during training &mdash; learning precisely
+                    how to transform each embedding into the right perspective. Try it
+                    yourself &mdash; click any cell and drag its slider:
+                </P>
+
+                {/* ═══ QKMatrixViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <QKMatrixViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    We&apos;re using a tiny 2×2 matrix here to make it visual. In real models,
+                    embeddings have <Highlight>hundreds</Highlight> of dimensions (GPT uses 768)
+                    and queries have 64&ndash;128 dimensions. The matrix is much larger, but the
+                    principle is identical &mdash; and the model learns every number during training.
+                </P>
+
                 <NarrativeDivider />
 
-                {/* ── 3. This fixes self-similarity! ── */}
                 <P>
                     Remember the self-similarity trap? With raw embeddings, king &middot; king = highest
-                    score. But now king&apos;s Query emphasizes &quot;action&quot; while its Key emphasizes
-                    &quot;royalty&quot; &mdash; <em>they point in different directions</em>. &quot;Ruled&quot; (whose Key
-                    screams &quot;action!&quot;) now scores <em>higher</em> than king itself!
+                    score. But now king&apos;s Query emphasizes &ldquo;action&rdquo; while its Key
+                    emphasizes &ldquo;royalty&rdquo; &mdash; <em>they point in different directions</em>.
+                    &ldquo;Ruled&rdquo; (whose Key screams &ldquo;action!&rdquo;) now scores{" "}
+                    <em>higher</em> than king itself!
                 </P>
 
                 <P>
@@ -1110,11 +1209,10 @@ export function TransformerNarrative() {
 
                 <NarrativeDivider />
 
-                {/* ── 4. Q meets K — we can measure importance! ── */}
                 <P>
                     Now let&apos;s see what happens when one word&apos;s Query meets <em>every</em> Key
-                    in the sentence. Pick a word &mdash; see its Query arrow, then compare it
-                    against every Key. The closer they point, the higher the score:
+                    in the sentence. Pick a word &mdash; see its Query arrow, then compare it against
+                    every Key. The closer they point, the higher the score:
                 </P>
 
                 {/* ═══ QuerySearchViz ⭐ FLAGSHIP ═══ */}
@@ -1131,92 +1229,60 @@ export function TransformerNarrative() {
                 </P>
 
                 <P>
-                    Remember those mysterious glowing lines from earlier? The ones that seemed
-                    like magic? Let&apos;s look at them again &mdash; but now with our new glasses.
-                    This time, you&apos;ll see the arrows behind every connection:
+                    Those raw scores get passed through{" "}
+                    <Highlight>softmax</Highlight> (the same function from previous chapters) to
+                    become percentages: crown 30%, ruled 18%, golden 15%, king itself just 6%.
+                    We have a recipe. But{" "}
+                    <Highlight color="amber">30% of WHAT exactly?</Highlight>
                 </P>
 
-                {/* ═══ QueryKeyRelationsViz (extended exploration) ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <QueryKeyRelationsViz />
-                    </Suspense>
-                </FadeInView>
+                {/* ══════════════════════════════════════════════════════
+                   §04c — THE MISSING PIECE: VALUE
+                   (EMOTIONAL PEAK)
+                   ══════════════════════════════════════════════════════ */}
 
-                <P>
-                    We have scores! But they&apos;re raw numbers. We need percentages &mdash;
-                    how much does each word matter <em>relative to the others</em>?
-                    <Highlight>Softmax</Highlight> (the same function from previous chapters)
-                    converts scores into a clean distribution that sums to 100%.
-                </P>
-
-                <P>
-                    <strong className="text-white/70">We did it!</strong> We can now measure exactly
-                    how much each word matters to every other word. Crown gets 30%, golden 25%,
-                    wore 20%... We cracked the first piece of the puzzle!
-                </P>
-
-                <P>
-                    But notice something: <em>king also attends to itself</em> (about 6%).
-                    This is called <Highlight>self-attention</Highlight> &mdash; a word always
-                    keeps some of its own meaning. Usually it&apos;s a small percentage, because
-                    the surrounding words carry the context that matters most.
-                </P>
-
-                <NarrativeDivider />
-
-                {/* ── 5. What do we DO with these percentages? ── */}
-                <P>
-                    So we know <em>who matters</em> and <em>by how much</em>. Now what?
-                    We want to <Highlight color="amber">blend information</Highlight> from all words
-                    into a new representation for king. Take 30% of crown&apos;s meaning, 25% of
-                    golden&apos;s, 20% of wore&apos;s... But <Highlight color="amber">30% of
-                        WHAT exactly?</Highlight>
-                </P>
-
-                <P>
-                    Crown&apos;s embedding? We already used that for Query and Key &mdash; those
-                    were specialized for <em>searching</em>, not for sharing information.
-                    The percentages tell us WHO matters. But we don&apos;t have the WHAT.
-                </P>
-
-                <Callout accent="amber" icon={AlertTriangle}>
-                    <strong className="text-white/70">The gap:</strong>{" "}
-                    <span className="text-white/50">
-                        We know WHO matters and BY HOW MUCH. But we don&apos;t have the actual content to blend.
-                    </span>
-                </Callout>
-
-                {/* ═══ V19 — WeightsOfWhatViz ═══ */}
+                {/* ═══ WeightsOfWhatViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <WeightsOfWhatViz />
                     </Suspense>
                 </FadeInView>
 
-                <NarrativeDivider />
-
-                {/* ══════════════════════════════════════════════════════
-                   §04c — THE MISSING PIECE: VALUE
-                   ══════════════════════════════════════════════════════ */}
-
-                {/* ── 1. V is discovered ── */}
                 <P>
-                    What if each word provided a <Highlight color="amber">third version</Highlight> of
-                    itself &mdash; not for asking, not for advertising, but for <em>sharing its actual
-                        information</em>?
+                    We need something to blend. But what? Could we just use the
+                    raw <em>embeddings</em>? Crown&apos;s embedding, ruled&apos;s
+                    embedding, golden&apos;s embedding&hellip;
                 </P>
 
                 <P>
-                    Meet the <Highlight color="amber">Value</Highlight> vector. When king gives
-                    crown 30% attention, that 30% is taken from crown&apos;s <em>Value</em> &mdash;
-                    the content it wants to share. Another matrix (W<sub>V</sub>) creates this
-                    third representation, optimized for carrying useful information.
+                    Not quite. The embedding carries <em>everything</em> a word knows
+                    about itself &mdash; but not everything is relevant. When &ldquo;crown&rdquo;
+                    contributes to &ldquo;king,&rdquo; we want its royalty signal, not its
+                    shape or color. The raw embedding is too noisy.
                 </P>
 
-                {/* ── Three representations: one embedding → Q, K, V ── */}
+                <P>
+                    Okay, what about using the Query or Key? We already built those.
+                    But no &mdash; the Query is tuned for <em>searching</em>, the Key
+                    for <em>advertising</em>. Neither is designed to carry shareable content.
+                </P>
+
+                <P>
+                    So&hellip; what if we used <Highlight color="amber">the same trick
+                        one more time</Highlight>? A third learned matrix. Same idea as Q and K,
+                    but this time the matrix learns to extract the information each word
+                    should <em>share</em> when it gets picked.
+                </P>
+
+                <P>
+                    This is the <Highlight color="amber">Value</Highlight> (W<sub>V</sub>).
+                    Each word passes its embedding through this third matrix, and out comes
+                    a vector optimized for sharing &mdash; the actual content that gets
+                    blended into another word&apos;s representation.
+                </P>
+
+                {/* Three-card Q/K/V diagram */}
                 <div className="max-w-lg mx-auto my-8 sm:my-10">
-                    {/* Source: the embedding */}
                     <div className="flex justify-center mb-0">
                         <div
                             className="px-4 py-1.5 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold"
@@ -1229,19 +1295,15 @@ export function TransformerNarrative() {
                             One embedding
                         </div>
                     </div>
-
-                    {/* SVG connector: one source → three branches */}
                     <div className="flex justify-center">
                         <svg width="300" height="28" viewBox="0 0 300 28" fill="none" className="overflow-visible">
-                            <line x1="150" y1="0" x2="150" y2="10" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-                            <path d="M 150 10 Q 150 20, 50 26" stroke="rgba(34,211,238,0.12)" strokeWidth="1" fill="none" strokeLinecap="round" />
-                            <path d="M 150 10 Q 150 18, 150 26" stroke="rgba(52,211,153,0.12)" strokeWidth="1" fill="none" strokeLinecap="round" />
-                            <path d="M 150 10 Q 150 20, 250 26" stroke="rgba(251,191,36,0.12)" strokeWidth="1" fill="none" strokeLinecap="round" />
-                            <circle cx="150" cy="10" r="1.5" fill="rgba(255,255,255,0.08)" />
+                            <line x1="150" y1="0" x2="150" y2="10" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                            <path d="M 150 10 Q 150 20, 50 26" stroke="rgba(34,211,238,0.35)" strokeWidth="1" fill="none" strokeLinecap="round" />
+                            <path d="M 150 10 Q 150 18, 150 26" stroke="rgba(52,211,153,0.35)" strokeWidth="1" fill="none" strokeLinecap="round" />
+                            <path d="M 150 10 Q 150 20, 250 26" stroke="rgba(251,191,36,0.35)" strokeWidth="1" fill="none" strokeLinecap="round" />
+                            <circle cx="150" cy="10" r="1.5" fill="rgba(255,255,255,0.2)" />
                         </svg>
                     </div>
-
-                    {/* Three cards */}
                     <div className="grid grid-cols-3 gap-2 sm:gap-3">
                         {[
                             { label: "Query", icon: "🔍", subtitle: "What am I looking for?", color: "34,211,238" },
@@ -1252,19 +1314,19 @@ export function TransformerNarrative() {
                                 key={item.label}
                                 className="rounded-xl px-2.5 sm:px-3 py-3 text-center"
                                 style={{
-                                    background: `linear-gradient(145deg, rgba(${item.color},0.05), transparent 80%)`,
-                                    border: `1px solid rgba(${item.color},0.08)`,
+                                    background: `linear-gradient(145deg, rgba(${item.color},0.12), rgba(${item.color},0.03) 80%)`,
+                                    border: `1px solid rgba(${item.color},0.2)`,
                                 }}
                             >
                                 <p
                                     className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-semibold mb-0.5"
-                                    style={{ color: `rgba(${item.color},0.5)` }}
+                                    style={{ color: `rgba(${item.color},0.85)` }}
                                 >
                                     {item.icon} {item.label}
                                 </p>
                                 <p
                                     className="text-[10px] sm:text-[11px] italic leading-snug"
-                                    style={{ color: `rgba(${item.color},0.25)` }}
+                                    style={{ color: `rgba(${item.color},0.55)` }}
                                 >
                                     &quot;{item.subtitle}&quot;
                                 </p>
@@ -1273,13 +1335,12 @@ export function TransformerNarrative() {
                     </div>
                 </div>
 
-                {/* ── 2. How it works: weighted sum ── */}
                 <P>
                     Here&apos;s what we do: take each word&apos;s Value, multiply it by the attention
                     percentage, and <Highlight>add them all up</Highlight>. 30% of crown&apos;s Value +
-                    25% of golden&apos;s + 20% of wore&apos;s + 6% of king&apos;s own Value + ...
-                    The result? A brand new vector that represents &quot;king&quot; <em>in this specific
-                        context</em>.
+                    18% of ruled&apos;s + 15% of golden&apos;s + 6% of king&apos;s own Value...
+                    The result? A brand new vector that represents &ldquo;king&rdquo;{" "}
+                    <em>in this specific context</em>.
                 </P>
 
                 <P>
@@ -1287,7 +1348,7 @@ export function TransformerNarrative() {
                     Step through the process:
                 </P>
 
-                {/* ═══ V20 — ValueCompletesViz ═══ */}
+                {/* ═══ ValueCompletesViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <ValueCompletesViz />
@@ -1296,62 +1357,48 @@ export function TransformerNarrative() {
 
                 <NarrativeDivider />
 
-                {/* ── 3. THE PAYOFF: each word depends on all others ── */}
                 <P>
-                    <strong className="text-white/70">This is the moment.</strong> Before attention,
-                    every word was an island &mdash; same embedding no matter what surrounded it.
-                    &quot;King&quot; always meant the same thing. Now, after one pass of attention, each
-                    word&apos;s representation is a <Highlight>blend of all the words around it</Highlight>,
-                    weighted by how much they matter.
+                    Let&apos;s see the concrete change. Below, you can compare king&apos;s feature
+                    values <em>before</em> attention touched it and <em>after</em> context was
+                    blended in:
                 </P>
 
-                <P>
-                    &quot;King&quot; next to &quot;crown&quot; picks up royalty.
-                    &quot;King&quot; next to &quot;chess&quot; would pick up strategy.
-                    <em>The same word, different meaning, depending on context.</em> That was our goal.
-                    Watch it happen &mdash; one token&apos;s journey from isolation to context:
-                </P>
-
-                {/* ═══ V26 — ContextAssemblyFilmViz ⭐ — single-word journey ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
-                        <ContextAssemblyFilmViz />
+                        <BeforeAfterAttentionViz />
                     </Suspense>
                 </FadeInView>
 
                 <P>
-                    That was one word&apos;s journey. But in a transformer, this happens to
-                    <em> every </em> word simultaneously. Watch the entire sentence transform at once:
+                    See the numbers change? That&apos;s not abstract &mdash; that&apos;s the actual
+                    transformation. Features that matter for this context got amplified. Features that
+                    don&apos;t got suppressed. The embedding literally became a different mathematical
+                    object.
                 </P>
-
-                {/* ═══ V26b — FullContextualAssemblyViz ⭐ (the living sentence) ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <FullContextualAssemblyViz />
-                    </Suspense>
-                </FadeInView>
 
                 <Callout icon={Sparkles}>
-                    <strong className="text-white/70">We did it!</strong>{" "}
+                    <strong className="text-white/70">The full picture:</strong>{" "}
                     <span className="text-white/50">
-                        Each word&apos;s meaning now depends on every other word. Context shapes representation.
-                        This is the core idea behind attention &mdash; and the foundation of every modern language model.
+                        Query and Key find who matters. Value carries the information. Attention
+                        weights blend it all together. The result: each word&apos;s embedding is
+                        rewritten to reflect its context. This is the core of every modern language model.
                     </span>
                 </Callout>
 
                 <MonsterStatus>
-                    👾 I can ask questions. I can find answers. I can blend information.
-                    For the first time, each word I see has a meaning that depends on everything around it.
-                    I don&apos;t just read words &mdash; I understand them <em>in context</em>.
+                    👾 I can ask questions. I can find answers. I can blend information. For the first
+                    time, each word I see has a meaning that depends on everything around it.
+                    &ldquo;Bank&rdquo; next to &ldquo;river&rdquo; feels different from
+                    &ldquo;bank&rdquo; next to &ldquo;money.&rdquo; I don&apos;t just read words
+                    &mdash; I understand them <em>in context</em>.
                 </MonsterStatus>
-
-                <NarrativeDivider />
 
                 {/* ══════════════════════════════════════════════════════
                    §04d — SCALING, SOFTMAX, AND THE FULL PIPELINE
                    ══════════════════════════════════════════════════════ */}
 
-                {/* ── 1. The explosion problem ── */}
+                <NarrativeDivider />
+
                 <P>
                     Our Q·K scores work beautifully with 3 features. But real models don&apos;t use
                     3 &mdash; they use <em>hundreds</em>. GPT uses vectors with 768 dimensions.
@@ -1359,79 +1406,91 @@ export function TransformerNarrative() {
                 </P>
 
                 <P>
-                    A dot product is a <Highlight>sum of products across all dimensions</Highlight>.
-                    With 3 dimensions, you add 3 numbers. With 768, you add 768 numbers. More terms
-                    in the sum = bigger total. The scores become <em>enormous</em> &mdash; and remember
-                    softmax saturation from the MLP chapter? Huge numbers go in, 99.99% comes out on
-                    one word, 0.01% on everything else. The model stops blending and starts <em>ignoring</em>.
+                    A dot product is a sum of products across all dimensions. With 3 dimensions, you
+                    add 3 numbers. With 768, you add 768 numbers. More terms = bigger total. The scores
+                    become <em>enormous</em> &mdash; and enormous scores make softmax collapse. One word
+                    gets 99.99%, everything else gets nearly zero. The model stops blending and starts{" "}
+                    <em>ignoring</em>.
                 </P>
 
-                {/* ═══ V21 — NumbersExplodeViz ═══ */}
+                {/* ═══ NumbersExplodeViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <NumbersExplodeViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* ── 2. The fix: divide by √dimensions ── */}
                 <P>
-                    We need to calm those numbers down. What if we divided all scores by
-                    some number before feeding them to softmax? But <Highlight>which number?</Highlight>{" "}
-                    Try it yourself &mdash; find the divisor that makes the distribution healthy:
+                    We need to calm those numbers down. What if we divided all scores by some number
+                    before feeding them to softmax? But <Highlight>which number?</Highlight> Try it
+                    yourself &mdash; find the divisor that makes the distribution healthy:
                 </P>
 
-                {/* ═══ V22 — ScalingFixViz ═══ */}
+                {/* ═══ ScalingFixViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <ScalingFixViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* ── 4. The full pipeline ── */}
                 <P>
-                    Let&apos;s put it all together. The complete attention pipeline:
-                    Q·K → scale by √d → softmax → multiply by V → sum to output.
-                    Five steps, each one simple, together they&apos;re extraordinary.
+                    The answer: divide by √d &mdash; the square root of the number of dimensions.
+                    With 768 dimensions, that&apos;s √768 ≈ 27.7. This keeps scores in a range where
+                    softmax can produce a healthy blend instead of a winner-take-all collapse.
                 </P>
 
-                {/* ═══ V24 — FullScoringPipelineViz ⭐ ═══ */}
+                <P>
+                    Let&apos;s put it all together. The complete attention pipeline: Q·K → scale by
+                    √d → softmax → multiply by V → sum to output. Five steps, each one simple,
+                    together they&apos;re extraordinary:
+                </P>
+
+                {/* ═══ FullScoringPipelineViz ⭐ ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <FullScoringPipelineViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* ── 5. Attention = soft retrieval ── */}
                 <P>
-                    Think of attention as a <Highlight>soft database lookup</Highlight>.
-                    A hard lookup picks exactly one item by index. Attention picks a <em>weighted
-                        blend</em> of everything, based on relevance. No information is lost &mdash;
-                    every word contributes, proportional to how much it matters.
+                    Think of attention as a <Highlight>soft database lookup</Highlight>. A hard lookup
+                    picks exactly one item. Attention picks a <em>weighted blend</em> of everything,
+                    based on relevance. No information is lost &mdash; every word contributes,
+                    proportional to how much it matters.
                 </P>
 
-                {/* ── 6. The formula reveal ── */}
                 <P>
-                    Each word becomes a function of <em>all</em> other words. That single idea
-                    powers GPT, Claude, Gemini, and every modern language model. Here&apos;s
-                    the formula &mdash; every symbol now has a face:
+                    Each word becomes a function of <em>all</em> other words. That single idea powers
+                    GPT, Claude, Gemini, and every modern language model. Here&apos;s the formula
+                    &mdash; and every symbol now has a face:
                 </P>
 
                 <FormulaBlock
                     formula="Attention(Q, K, V) = softmax(QK^T / √dim) · V"
-                    caption="You built this piece by piece. Every symbol now makes sense. √dim = square root of the number of dimensions."
+                    caption="You built this piece by piece. Every symbol makes sense. Q = what am I looking for? K = what do I offer? V = what do I share? √dim = keeping the numbers calm."
                 />
 
+                <P>
+                    The output of attention is not a score &mdash; it&apos;s a new version of the
+                    word. One formula. The most important formula in modern AI. And you understand
+                    every piece.
+                </P>
+
                 <MonsterStatus>
-                    👾 Five steps. Q·K for similarity. Scale to keep numbers calm. Softmax for percentages.
-                    Multiply by V for content. Sum for the final answer.
-                    One formula. The most important formula in modern AI. And I understand every piece.
+                    👾 Five steps. Q·K for similarity. Scale to keep numbers calm. Softmax for
+                    percentages. Multiply by V for content. Sum for the final answer. One formula.
+                    For the first time, every word I see has a meaning that depends on everything
+                    around it. I&apos;m not just pattern matching anymore &mdash; I&apos;m
+                    understanding context.
                 </MonsterStatus>
+
             </Section>
 
             <SectionBreak />
             <MonsterInterlude>
-                One attention head captures one pattern. But language has MANY simultaneous patterns.
-                Syntax, semantics, reference, structure — all at once.
+                I can pay attention now. But something feels off. When I try to focus on grammar,
+                I lose track of meaning. When I chase meaning, I lose grammar. It&apos;s like trying
+                to read a book and watch TV at the same time&hellip;
             </MonsterInterlude>
 
             {/* ═══════════════════════════════════════════════════
@@ -1441,56 +1500,27 @@ export function TransformerNarrative() {
                 <SectionLabel number="05" label="Seeing Multiple Things at Once" />
                 <SectionAnchor id="transformer-05"><Heading>Seeing Multiple Things at Once</Heading></SectionAnchor>
                 <Lead>
-                    A single attention head captures one type of relationship. But language is richer than that.
-                    What if we gave the model <Highlight>multiple sets of eyes</Highlight>?
+                    Before we go further, try a quick experiment. I&apos;ll show you a sentence
+                    and ask a simple question. There&apos;s no trick &mdash; just answer honestly.
                 </Lead>
 
-                {/* ── 1. Setup: feel the limitation ── */}
-                <P>
-                    Read this sentence carefully: <em>&quot;The professor who published the paper in Nature last
-                        year won the Nobel prize.&quot;</em> Think about all the relationships &quot;professor&quot;
-                    has with other words:
-                </P>
-
-                {/* Relationship cards */}
-                <div className="max-w-lg mx-auto my-6 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {[
-                        { from: "professor", to: "published", type: "subject → verb", dist: "1 word apart", color: "#22d3ee" },
-                        { from: "professor", to: "won", type: "subject → verb", dist: "8 words apart", color: "#22d3ee" },
-                        { from: "professor", to: "Nature", type: "subject → location", dist: "6 words apart", color: "#fbbf24" },
-                        { from: "professor", to: "prize", type: "subject → object", dist: "11 words apart", color: "#fbbf24" },
-                    ].map((rel, i) => (
-                        <div
-                            key={i}
-                            className="px-4 py-2.5"
-                            style={{
-                                borderLeft: `2px solid ${rel.color}50`,
-                            }}
-                        >
-                            <p className="text-sm font-semibold" style={{ color: rel.color }}>
-                                {rel.from} → {rel.to}
-                            </p>
-                            <p className="text-xs text-white/25 mt-0.5">{rel.type} ({rel.dist})</p>
-                        </div>
-                    ))}
-                </div>
+                {/* ── 1. The game: feel the ambiguity ── */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <WhichWordMattersViz />
+                    </Suspense>
+                </FadeInView>
 
                 <P>
-                    Notice something: all these relationships are <em>equally important</em> for understanding
-                    the sentence. Every word gathers information from the words around it, blending everything
-                    together — making all representations <Highlight>richer but more similar</Highlight>,
-                    because they share the same context.
+                    Three rounds. Three sentences. And every time, your answer was valid &mdash;
+                    but so was a completely different one. Grammar, meaning, location, action:
+                    they all matter <em>at the same time</em>.
                 </P>
 
                 <P>
-                    One word can <em>look for</em> many things at once. A verb, a description, a location,
-                    an object. Remember how &quot;king&quot; could mean a chess piece, a ruler, or a company?
-                    The Query needs to search for <em>different things simultaneously</em>. But with a single
-                    set of Q, K, V weights, you get <Highlight color="amber">one compromise</Highlight>.
-                </P>
-
-                <P>
-                    Try it yourself. Can you make one set of attention weights capture everything?
+                    Now think about what our attention mechanism does. It produces{" "}
+                    <Highlight color="amber">one set of weights</Highlight>. One ranking. One compromise.
+                    Boosting one relationship means dimming the others. Try it:
                 </P>
 
                 {/* ═══ V27 — OneHeadDilemmaViz ═══ */}
@@ -1501,25 +1531,20 @@ export function TransformerNarrative() {
                 </FadeInView>
 
                 <P>
-                    See the problem? One set of weights = one compromise. Boosting one relationship
-                    kills the others. A single attention head can only capture <em>one pattern</em> at a time.
+                    See? One set of weights can only capture <em>one pattern</em>. It&apos;s the
+                    same frustration you felt in the game &mdash; forced to pick one answer when
+                    several were equally valid.
                 </P>
 
                 <NarrativeDivider />
 
                 {/* ── 2. The discovery ── */}
                 <P>
-                    Remember: each word is an embedding &mdash; a set of <em>features</em>. Some features
-                    describe <strong>syntax</strong> (is it a verb? a noun?), others describe
-                    <strong> meaning</strong> (royalty, action, location), and others describe
-                    <strong> form</strong> (singular, past tense, capitalized). All packed into one vector.
-                </P>
-
-                <P>
-                    What if, instead of one attention system trying to handle everything, we ran
-                    <Highlight color="cyan"> multiple attention systems in parallel</Highlight>? Each with
-                    its own Q, K, and V matrices. Each free to learn to focus on <em>different features</em> of
-                    the embedding:
+                    What if the model didn&apos;t have to choose? What if, instead of one
+                    attention system trying to handle everything, we ran{" "}
+                    <Highlight color="cyan">multiple attention systems in parallel</Highlight>?
+                    Each with its own Q, K, and V matrices. Each free to specialize in a
+                    different type of relationship:
                 </P>
 
                 {/* ═══ V27b — MultiHeadIdeaViz ═══ */}
@@ -1631,152 +1656,199 @@ export function TransformerNarrative() {
                 <SectionLabel number="06" label="Where Am I?" />
                 <SectionAnchor id="transformer-06"><Heading>Where Am I?</Heading></SectionAnchor>
 
-                {/* ── 1. THE DISASTER — attention is order-blind ── */}
+                {/* ── Beat 1: The Puzzle ── */}
                 <Lead>
-                    Read these two sentences: &quot;The dog bit the man&quot; and &quot;The man bit the dog.&quot;
-                    Completely different stories, right? Now run them through our attention mechanism.
-                    The result is <Highlight>identical</Highlight>. Same weights. Same output. Attention
-                    has absolutely no idea which word came first.
+                    Read these two sentences:
                 </Lead>
 
+                <PullQuote>
+                    &ldquo;The dog <strong>bit</strong> the man.&rdquo;<br />
+                    &ldquo;The man <strong>bit</strong> the dog.&rdquo;
+                </PullQuote>
+
                 <P>
-                    Think about why. Attention computes a dot product between every pair of words.
-                    If you shuffle the input, the exact same dot products happen &mdash; just in
-                    a different order. Attention treats the sentence like a <em>bag of words</em>,
-                    not a sequence. Order doesn&apos;t exist.
+                    Same words. Completely different meaning. One is a news story. The other
+                    is a headline.
                 </P>
 
                 <P>
-                    But order is <em>everything</em> in language. &quot;Dog bit man&quot; is a news story.
-                    &quot;Man bit dog&quot; is a headline. We need to fix this &mdash; urgently.
+                    Now imagine our attention mechanism reading them. It computes Q&middot;K
+                    for every pair of words, runs softmax, blends Values. Go ahead &mdash;
+                    look at the attention weights for both sentences:
                 </P>
 
-                {/* ═══ V32 — ShuffleDisasterViz ═══ */}
+                {/* ── Beat 2: The Surprise ── */}
+                {/* ═══ ShuffleDisasterViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <ShuffleDisasterViz />
                     </Suspense>
                 </FadeInView>
 
+                <P>
+                    Strangely&hellip; the model produces the <Highlight>exact same result</Highlight>.
+                    Same attention weights. Same output. Two completely different stories, and the
+                    model can&apos;t tell them apart.
+                </P>
+
+                {/* ── Beat 3: Why This Happens ── */}
                 <NarrativeDivider />
 
-                {/* ── 2. FIRST ATTEMPT — just number them? ── */}
                 <P>
-                    Okay, let&apos;s fix it. The simplest idea: give each position a number.
-                    Position 1 gets the number 1. Position 2 gets 2. Position 3 gets 3.
-                    Just <Highlight>add that number</Highlight> to the embedding. Now the model
-                    knows where each word sits. Problem solved?
+                    Why? Because attention compares every word with every other word using
+                    dot products. But a dot product doesn&apos;t care about <em>order</em>.
+                    &ldquo;dog&rdquo; &middot; &ldquo;bit&rdquo; gives the same score whether
+                    &ldquo;dog&rdquo; came first or last. Shuffle the input however you want &mdash;
+                    every single dot product stays the same.
                 </P>
 
                 <P>
-                    Not quite. Think about what happens with a long text &mdash; 500 words.
-                    Position 500 gets +500 added to its embedding. The actual <em>meaning</em> of the
-                    word (maybe values around 0.3, -0.7, 1.2) gets completely drowned out by
-                    a giant number. Position overwhelms meaning.
+                    Attention treats the sentence like a{" "}
+                    <Highlight color="amber">bag of words</Highlight>. Not a sequence.
+                    Order doesn&apos;t exist.
+                </P>
+
+                {/* ── Beat 4: First Idea ── */}
+                <NarrativeDivider />
+
+                <P>
+                    Your first instinct might be: <em>just number the positions</em>.
+                    Position 1 gets the number 1, position 2 gets 2, position 3 gets 3.
+                    Add that number to the embedding. Done. The model now knows where
+                    each word sits.
                 </P>
 
                 <P>
-                    Fine &mdash; what about <em>small</em> numbers? Position 1 = 0.001, position 2 = 0.002,
-                    position 3 = 0.003... Now the signal is so weak the model can barely tell
-                    positions apart. Too loud or too quiet &mdash; neither works.
+                    Sounds reasonable. Let&apos;s see what happens.
                 </P>
 
-                {/* ═══ V33 — SimpleNumbersViz ═══ */}
+                {/* ── Beat 5: Why That Fails ── */}
+                <P>
+                    A word embedding has values around <Highlight color="cyan">-1 to 1</Highlight>.
+                    Subtle numbers that encode meaning: 0.3 for &ldquo;animal,&rdquo; -0.7
+                    for &ldquo;abstract,&rdquo; 1.2 for &ldquo;living.&rdquo; Now add the
+                    position number. Position 500? That&apos;s{" "}
+                    <Highlight color="amber">+500</Highlight>. The model sees 500.3 and
+                    thinks <em>&ldquo;that&apos;s basically just 500.&rdquo;</em> It forgot
+                    what the word even means.
+                </P>
+
+                {/* ═══ SimpleNumbersViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <SimpleNumbersViz />
                     </Suspense>
                 </FadeInView>
 
+                {/* ── Beat 6: Deeper Problem ── */}
                 <NarrativeDivider />
 
-                {/* ── 3. DEEPER PROBLEM — one number isn't enough ── */}
                 <P>
-                    But there&apos;s a deeper problem. Even if we found the perfect scale,
-                    a single number can&apos;t carry enough information. Our embeddings have
-                    dozens or hundreds of dimensions. We&apos;d be cramming all position
-                    information into <em>one</em> dimension. That&apos;s like trying to describe
-                    your exact location on Earth with a single number &mdash; you need at least
-                    two (latitude and longitude).
+                    But there&apos;s an even deeper problem. Even if we found the perfect scale,
+                    we&apos;d be cramming all position information into <em>one number</em>.
                 </P>
 
                 <P>
-                    What if each position had its own <Highlight>pattern of values</Highlight> &mdash;
-                    not a single number, but a whole list? A unique fingerprint for
-                    every position, spread across many numbers?
+                    Think about it this way. Imagine describing your exact location on Earth
+                    with a single number. You can&apos;t. You need at least <em>two</em> &mdash;
+                    latitude and longitude. One number tells you north/south. The other tells
+                    you east/west. Together they pinpoint you. Alone, neither is enough.
                 </P>
 
+                <P>
+                    Position is the same. We need a <Highlight>rich description</Highlight>,
+                    not a single value. A list of numbers. A <em>pattern</em>.
+                </P>
+
+                {/* ── Beat 7: The Insight ── */}
                 <NarrativeDivider />
 
-                {/* ── 4. WHAT IF — embeddings for positions? ── */}
                 <P>
-                    Wait. We already solved a problem like this. Remember embeddings?
-                    Each word got its own <Highlight>list of features</Highlight> &mdash;
-                    a bunch of numbers that describe it. &quot;Dog&quot; might be
-                    [0.9, -0.3, 0.7, 0.1] &mdash; high on &quot;animal,&quot; low on &quot;human,&quot;
-                    and so on. A list of numbers like this is called a <em>vector</em>,
-                    but it&apos;s really just a list of characteristics.
+                    Wait.
                 </P>
 
                 <P>
-                    What if we did the <Highlight color="amber">same thing for positions</Highlight>?
-                    Position 1 gets its own list of numbers. Position 2 gets a different list.
-                    Position 3, another. Just like word embeddings, but instead of describing
-                    <em> what</em> a word means, these describe <em>where</em> it sits.
-                    We could even let the model learn these lists during training!
+                    We already solved a problem exactly like this.
                 </P>
 
                 <P>
-                    This actually works &mdash; and some models do exactly this (GPT-2, for example).
-                    But it has a limitation: you have to decide the maximum number of positions
-                    <em> in advance</em>. If you trained with 512 positions, position 513 has no
-                    embedding. The model simply can&apos;t handle texts longer than what it saw in training.
+                    <em>Word embeddings.</em>
                 </P>
 
-                <Callout icon={Brain} title="Two approaches to position">
-                    <p>
-                        <strong className="text-white/60">Learned embeddings:</strong>{" "}
-                        <span className="text-white/40">
-                            Train a unique list of numbers for each position. Simple and effective,
-                            but fixed maximum length.
-                        </span>
-                    </p>
-                    <p>
-                        <strong className="text-white/60">Fixed patterns:</strong>{" "}
-                        <span className="text-white/40">
-                            Use a mathematical formula that works for ANY position.
-                            No maximum length. But can the model use it?
-                        </span>
-                    </p>
-                </Callout>
+                <P>
+                    Each word got its own list of features &mdash; a vector of numbers that
+                    describes it. &ldquo;Dog&rdquo; might be [0.9, -0.3, 0.7, 0.1] &mdash;
+                    high on &ldquo;animal,&rdquo; low on &ldquo;human.&rdquo; Not one number.
+                    A whole <Highlight>fingerprint</Highlight>.
+                </P>
 
-                {/* ═══ V33b — LearnedPositionEmbeddingsViz ═══ */}
+                {/* ── Beat 8: Positions as Embeddings ── */}
+                <P>
+                    What if we did the{" "}
+                    <Highlight color="amber">same thing for positions</Highlight>? Position 1
+                    gets its own list of numbers. Position 2 gets a different list. Position 3,
+                    another. Just like word embeddings, but instead of describing <em>what</em> a
+                    word means, these describe <em>where</em> it sits.
+                </P>
+
+                <P>
+                    This is exactly what we do. We create a{" "}
+                    <Highlight>position embedding table</Highlight> &mdash; one vector per
+                    position, each the same size as the word embeddings. The model learns
+                    these during training, just like it learns word meanings. GPT-2,
+                    for example, does exactly this.
+                </P>
+
+                <P>
+                    Explore the table below. Each position has its own unique pattern of
+                    numbers &mdash; a learned fingerprint for <em>where</em> a word sits.
+                    Click two positions to compare them side by side.
+                </P>
+
+                {/* ═══ LearnedPositionEmbeddingsViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <LearnedPositionEmbeddingsViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* ── 5. THE CLEVER IDEA — waves! ── */}
+                {/* ── Beat 9: The limitation ── */}
                 <P>
-                    The original Transformer paper chose the second approach. And the idea
-                    is beautiful. Instead of learning position lists of features, they used
-                    <Highlight color="amber"> waves</Highlight>.
+                    Simple and effective. But with a catch: you have to decide the maximum
+                    sequence length <em>before</em> training. If you trained with 512 positions,
+                    position 513 has no embedding. The model simply hasn&apos;t learned one.
                 </P>
 
                 <P>
-                    Imagine a clock with multiple hands spinning at different speeds. One hand
-                    completes a full rotation every 2 positions (very fast). Another every 4
-                    positions. Another every 8. Another every 16. And so on, slower and slower.
+                    For most practical purposes this works fine &mdash; just pick a large
+                    enough maximum. But in 2017, when the original Transformer paper
+                    (&ldquo;Attention Is All You Need&rdquo;) was published, the authors
+                    proposed something more elegant. A solution based purely
+                    on <Highlight color="amber">mathematics</Highlight> &mdash; one that
+                    works for <em>any</em> position, no matter how large, without having
+                    to learn anything at all.
+                </P>
+
+                {/* ── Beat 10: The Beautiful Trick — Waves ── */}
+                <NarrativeDivider />
+
+                <P>
+                    <Highlight color="amber">Waves</Highlight>.
                 </P>
 
                 <P>
-                    At any given position, you read off where each hand is pointing.
-                    That combination of readings is <em>unique</em> for every position. Think of it
-                    like a <Highlight>fingerprint made of waves</Highlight>.
+                    Imagine a clock with many hands, each spinning at a different speed.
+                    One hand completes a full rotation every 2 positions (very fast). Another
+                    every 4. Another every 8. Another every 16. Slower and slower.
                 </P>
 
-                {/* ═══ V34 — WaveFingerprintViz ⭐ ═══ */}
+                <P>
+                    At any given position, read off where each hand is pointing. That combination
+                    of readings is <em>unique</em> for every position. A{" "}
+                    <Highlight>fingerprint made of waves</Highlight>.
+                </P>
+
+                {/* ═══ WaveFingerprintViz ⭐ ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <WaveFingerprintViz />
@@ -1785,52 +1857,42 @@ export function TransformerNarrative() {
 
                 <P>
                     Each wave has a job. The <Highlight color="cyan">fast wave</Highlight> changes
-                    with every single position &mdash; it tells you <em>exactly</em> where you are,
-                    like knowing your seat number in a row. The <Highlight color="amber">medium
-                        wave</Highlight> changes every few positions &mdash; it tells you which
-                    <em> paragraph</em> you&apos;re in. The <Highlight color="amber">slow wave</Highlight> barely
-                    moves &mdash; it tells you which <em>section</em> of the text you&apos;re reading,
-                    near the beginning or near the end.
+                    with every position &mdash; your exact seat number. The{" "}
+                    <Highlight color="amber">medium wave</Highlight> changes every few positions
+                    &mdash; which paragraph you&apos;re in. The{" "}
+                    <Highlight color="amber">slow wave</Highlight> barely moves &mdash; which
+                    section of the text, near the beginning or the end.
                 </P>
 
                 <P>
-                    Together, they encode both <Highlight>fine detail</Highlight> (position 5 vs 6)
-                    and <Highlight>big picture</Highlight> (beginning vs middle vs end).
-                    It&apos;s like an address: the fast waves are your street number, the medium
-                    waves are your neighborhood, the slow waves are your city.
+                    Together: <Highlight>fine detail</Highlight> (position 5 vs 6) and{" "}
+                    <Highlight>big picture</Highlight> (beginning vs middle vs end). Like an
+                    address &mdash; fast waves are your street number, medium waves your
+                    neighborhood, slow waves your city.
                 </P>
 
+                {/* ── Beat 11: Why Waves Work ── */}
                 <NarrativeDivider />
 
-                {/* ── 6. WHY WAVES WORK — nearby = similar ── */}
                 <P>
-                    Here&apos;s why waves are so clever. Two positions that are <em>close together</em> (like
-                    position 10 and position 11) have very <Highlight color="cyan">similar</Highlight> wave
-                    readings. Two positions that are far apart (like position 10 and position 200) have
-                    completely different readings.
+                    Here&apos;s why waves are so clever. Two positions that are <em>close
+                        together</em> (like 10 and 11) have very{" "}
+                    <Highlight color="cyan">similar</Highlight> wave readings. Two positions
+                    far apart (like 10 and 200) have completely different readings. Nearby
+                    words naturally get similar encodings &mdash; which is exactly what
+                    language needs.
                 </P>
 
-                <P>
-                    This is exactly what we want! In language, nearby words usually have stronger relationships
-                    than distant words. The position encoding naturally captures this &mdash; the model can
-                    easily learn that &quot;3 positions apart&quot; means something different from &quot;100
-                    positions apart.&quot;
-                </P>
-
-                {/* ═══ V35 — PositionalSimilarityViz ═══ */}
+                {/* ═══ PositionalSimilarityViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <PositionalSimilarityViz />
                     </Suspense>
                 </FadeInView>
 
-                <NarrativeDivider />
-
-                {/* ── 7. THE FORMULA — sine and cosine ── */}
                 <P>
-                    The math behind these waves uses sine and cosine &mdash; the same functions
-                    that describe how a point moves around a circle. Each number in the
-                    position list uses a wave at a different frequency:
+                    The math uses sine and cosine &mdash; each dimension gets a wave at a
+                    different frequency:
                 </P>
 
                 <FormulaBlock
@@ -1839,18 +1901,17 @@ export function TransformerNarrative() {
                 />
 
                 <P>
-                    Don&apos;t worry about the formula &mdash; what matters is the idea.
-                    Each position gets a <em>unique pattern</em> &mdash; a unique list of numbers
-                    spread across all its features. And the pattern is generated by a formula,
-                    so it works for <Highlight>any position number</Highlight> &mdash; no maximum length.
+                    Don&apos;t worry about the formula. What matters is the idea: each position
+                    gets a <em>unique pattern</em> generated by a formula that works for{" "}
+                    <Highlight>any position number</Highlight>. No maximum length.
                 </P>
 
+                {/* ── Beat 12: Putting It Together ── */}
                 <NarrativeDivider />
 
-                {/* ── 8. PUTTING IT TOGETHER — add position to meaning ── */}
                 <P>
-                    The final step is beautifully simple. Take the word embedding (what the word
-                    <em> means</em>) and the positional encoding (where the word <em>sits</em>).
+                    The final step is beautifully simple. Take the word embedding (what the
+                    word <em>means</em>). Take the positional encoding (where it <em>sits</em>).{" "}
                     <Highlight color="amber">Add them together</Highlight>. That&apos;s it.
                 </P>
 
@@ -1860,20 +1921,20 @@ export function TransformerNarrative() {
                 />
 
                 <P>
-                    After this addition, &quot;dog&quot; at position 1 has a slightly different
-                    list of numbers than &quot;dog&quot; at position 5. The attention mechanism can
-                    now tell them apart. &quot;Dog bit man&quot; and &quot;man bit dog&quot; finally
+                    After this addition, &ldquo;dog&rdquo; at position 1 has a slightly different
+                    vector than &ldquo;dog&rdquo; at position 5. The attention mechanism can
+                    finally tell them apart. &ldquo;Dog bit man&rdquo; and &ldquo;man bit dog&rdquo;
                     produce <em>different</em> attention patterns. Order is restored.
                 </P>
 
-                {/* ═══ V36 — AddEmbeddingsViz ═══ */}
+                {/* ═══ AddEmbeddingsViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <AddEmbeddingsViz />
                     </Suspense>
                 </FadeInView>
 
-                {/* ═══ V37 — PositionInActionViz ═══ */}
+                {/* ═══ PositionInActionViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <PositionInActionViz />
@@ -1881,30 +1942,10 @@ export function TransformerNarrative() {
                 </FadeInView>
 
                 <MonsterStatus>
-                    👾 I can finally feel WHERE things are. Position 1 feels different from position 100.
-                    The same word in different places carries different meaning. Order is part of me now.
+                    👾 I can finally feel WHERE things are. Position 1 feels different from
+                    position 100. The same word in different places carries different meaning.
+                    Order is part of me now.
                 </MonsterStatus>
-
-                <NarrativeDivider />
-
-                {/* ── 9. MODERN APPROACHES ── */}
-                <P>
-                    So which approach do modern models actually use? The original Transformer
-                    (2017) used the wave-based formula. But most models today &mdash; GPT-4,
-                    LLaMA, Claude &mdash; use <Highlight>learned position embeddings</Highlight>,
-                    because with enough training data, the model can figure out the best
-                    position representations on its own. The maximum length issue is solved
-                    by simply training on very long texts (thousands of tokens).
-                </P>
-
-                <P>
-                    Some cutting-edge models use <Highlight color="amber">RoPE</Highlight> (Rotary
-                    Position Embeddings) &mdash; a clever hybrid that rotates the query and key
-                    vectors based on position, combining the best of both worlds: it works
-                    for any length <em>and</em> the model can learn from it naturally.
-                    But the core idea remains the same: <em>give the model a way to know
-                        where each word sits</em>.
-                </P>
 
                 <KeyTakeaway accent="cyan">
                     Attention is order-blind &mdash; it treats input as a set, not a sequence.
@@ -1921,47 +1962,78 @@ export function TransformerNarrative() {
             </MonsterInterlude>
 
             {/* ═══════════════════════════════════════════════════
-               §07 — THE TRANSFORMER BLOCK
+               §07 — THE FULL ARCHITECTURE
                ═══════════════════════════════════════════════════ */}
             <Section id="transformer-07">
-                <SectionLabel number="07" label="The Transformer Block" />
-                <SectionAnchor id="transformer-07"><Heading>The Transformer Block</Heading></SectionAnchor>
+                <SectionLabel number="07" label="The Full Architecture" />
+                <SectionAnchor id="transformer-07"><Heading>The Full Architecture</Heading></SectionAnchor>
                 <Lead>
                     You&apos;ve built attention &mdash; the ability to listen.
-                    Now it&apos;s time to assemble the <Highlight>complete thinking machine</Highlight>.
+                    But is listening <Highlight>enough</Highlight>?
                 </Lead>
 
                 {/* ══════════════════════════════════════════════
-                   BEAT 1 — THE TWO HALVES (hook + problem)
+                   BEAT 1 — THE PUZZLE (attention alone fails)
                    ══════════════════════════════════════════════ */}
 
                 <P>
-                    Think about how <em>you</em> learn something new in a conversation.
-                    First, you <Highlight>listen</Highlight> &mdash; you gather information
-                    from what others are saying. Then you <Highlight color="amber">think</Highlight> &mdash;
-                    you process what you heard, connect it to what you already know, and form
-                    your own understanding.
+                    Try a quick experiment. Read this and complete it instantly:
+                </P>
+
+                <PullQuote>Michael Jordan plays ???</PullQuote>
+
+                <P>
+                    You thought <Highlight>basketball</Highlight>. Immediately. No
+                    hesitation. Your brain gathered the relevant context &mdash;
+                    &ldquo;Michael Jordan&rdquo; and &ldquo;plays&rdquo; &mdash;
+                    and then <em>reasoned</em> from it to produce an answer.
+                    Two separate steps: gathering, then thinking.
                 </P>
 
                 <P>
-                    Every intelligent process has these two parts. Listening and thinking.
-                    Communication and processing. And the Transformer does both &mdash; but with
-                    two completely different mechanisms.
+                    Now let&apos;s see what attention alone does with that same sentence.
                 </P>
+
+                {/* ═══ V38b — AttentionAloneFailsViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <AttentionAloneFailsViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    Attention did its job perfectly: it gathered context. The
+                    embedding for &ldquo;plays&rdquo; now carries traces of
+                    &ldquo;Michael&rdquo; and &ldquo;Jordan.&rdquo; But
+                    that&apos;s <em>all</em> it did. The result is a{" "}
+                    <Highlight>blend</Highlight> of the original embeddings &mdash;
+                    it points toward where &ldquo;Michael Jordan&rdquo; lives in
+                    vector space, but it hasn&apos;t made the <em>leap</em> to{" "}
+                    <Highlight color="amber">basketball</Highlight>. Attention
+                    listened perfectly, but it doesn&apos;t know how to{" "}
+                    <em>think</em>.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 2 — THE GAP (listening ≠ understanding)
+                   ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
                 <P>
-                    Attention is the <Highlight>listening</Highlight> phase. Each token looks at
-                    every other token, gathers relevant information, and updates itself.
-                    It&apos;s social &mdash; tokens talking to each other, sharing context.
+                    Think about how <em>you</em> learn in a conversation.
+                    First, you <Highlight>listen</Highlight> &mdash; you gather information
+                    from what others are saying. Then you{" "}
+                    <Highlight color="amber">think</Highlight> &mdash;
+                    you process what you heard, connect it to what you already know,
+                    and form your own understanding.
                 </P>
 
                 <P>
-                    But after listening, each token needs to <em>think</em> about what it heard.
-                    Process the information. Transform it into deeper understanding. This is a
-                    <Highlight color="amber"> private</Highlight> operation &mdash; each token works
-                    alone, digesting what it gathered.
+                    Attention is the listening phase. Embeddings go in, enriched embeddings
+                    come out &mdash; <em>same shape, same type</em>, just with context mixed in.
+                    But we need a second phase to actually <Highlight color="amber">process</Highlight> what
+                    was gathered.
                 </P>
 
                 {/* ═══ V38 — CommunicationVsProcessingViz ═══ */}
@@ -1971,43 +2043,48 @@ export function TransformerNarrative() {
                     </Suspense>
                 </FadeInView>
 
-                <P>
-                    But here&apos;s the crucial question: is listening enough? If tokens can
-                    gather information from each other, is the job done? Let&apos;s see what
-                    happens when attention works <em>alone</em>, without any further processing.
-                </P>
-
-                {/* ═══ V38b — AttentionAloneFailsViz ⭐⭐ ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <AttentionAloneFailsViz />
-                    </Suspense>
-                </FadeInView>
-
                 {/* ══════════════════════════════════════════════
-                   BEAT 2 — FFN CALLBACK (recognition + reveal)
+                   BEAT 3 — THE RECOGNITION (FFN = MLP callback)
                    ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
                 <P>
                     So what does the &quot;thinking&quot; part look like? Each token
-                    takes its enriched vector (now full of context from attention) and runs
-                    it through a function that transforms it &mdash; expanding it into a larger
-                    space, applying an activation, then compressing back down.
+                    takes its enriched vector (now full of context from attention) and
+                    runs it through a function: expand into a larger space, apply an
+                    activation, then compress back down.
                 </P>
 
                 <P>
-                    Wait. That sounds familiar. Input <StyledArrow /> expand <StyledArrow /> activation <StyledArrow /> compress.
-                    That&apos;s <em>exactly</em> the feedforward network you built
-                    in the MLP chapter! Two layers with a non-linearity in between.
+                    Wait. Input <StyledArrow /> expand <StyledArrow /> activation{" "}
+                    <StyledArrow /> compress. That&apos;s <em>exactly</em> the
+                    feedforward network you built in the MLP chapter! Two layers
+                    with a non-linearity in between.
                 </P>
 
-                <Callout accent="amber" icon={Zap} title="🔗 You Built This!">
-                    The feedforward network inside each Transformer layer is the same MLP
+                <Callout accent="amber" icon={Zap} title="You Built This!">
+                    The feedforward network inside each Transformer block is the same MLP
                     architecture from the previous chapter. Attention handles communication
                     between tokens. The FFN handles private processing within each token.
                 </Callout>
+
+                <P>
+                    And here&apos;s the exciting part. Remember the MLP from the
+                    previous chapter? It was powerful but <em>blind</em> &mdash;
+                    it could only see a tiny fixed window of tokens. Its problem
+                    was never the architecture. It was the{" "}
+                    <Highlight color="amber">lack of context</Highlight>.
+                </P>
+
+                <P>
+                    Now look at what we&apos;ve done. Attention gathers context from
+                    the <em>entire</em> sequence. Every token can see every other token.
+                    And <em>then</em> we feed that rich, context-aware
+                    embedding into the same MLP architecture. The brain that was
+                    starving for information now has{" "}
+                    <Highlight>everything it needs</Highlight>.
+                </P>
 
                 {/* ═══ V39 — FFNCallbackViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
@@ -2017,40 +2094,102 @@ export function TransformerNarrative() {
                 </FadeInView>
 
                 <P>
-                    Think of the FFN as each token&apos;s <Highlight color="amber">private notebook</Highlight>.
-                    After listening to the conversation (attention), each token sits alone and
-                    processes what it heard. The attention decided <em>what</em> to look at.
+                    Think of the FFN as each token&apos;s{" "}
+                    <Highlight color="amber">private notebook</Highlight>.
+                    After listening to the conversation (attention), each token sits alone
+                    and processes what it heard. Attention decided <em>what</em> to look at.
                     The FFN processes <em>what it found</em>.
                 </P>
 
                 {/* ══════════════════════════════════════════════
-                   BEAT 3 — STABILITY (problem + callback)
+                   BEAT 4 — FFN DEEP DIVE
                    ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
                 <P>
-                    We have two powerful operations: attention (listen) and FFN (think).
-                    But if we just chain them one after another, we hit a problem you&apos;ve
-                    seen before &mdash; the signal degrades. Gradients vanish. The deeper
-                    the network, the harder it is to train.
+                    But what is the FFN actually <em>doing</em>?
+                    Think back to our example. Attention blended
+                    &ldquo;Michael Jordan&rdquo; into &ldquo;plays.&rdquo; The
+                    resulting embedding now <em>points toward</em> Michael Jordan
+                    in vector space. But &ldquo;basketball&rdquo; lives somewhere
+                    completely different. Getting there requires a{" "}
+                    <Highlight color="amber">transformation</Highlight> &mdash;
+                    not just blending, but genuine computation.
                 </P>
 
                 <P>
-                    Remember the <Highlight>gradient highway</Highlight> from
-                    the MLP chapter? When we stacked layers, gradients disappeared. The solution
-                    was residual connections &mdash; adding the input back to the output, creating
-                    a shortcut for information (and gradients) to flow through.
+                    That&apos;s the FFN&apos;s job. It takes the blended embedding
+                    and asks hundreds of learned questions simultaneously:
+                    &ldquo;Is this a person?&rdquo; &ldquo;Is this related to
+                    sports?&rdquo; &ldquo;Is this an action in a competitive
+                    context?&rdquo; Most answers are &ldquo;no&rdquo; &mdash;
+                    those get silenced. The few that fire &mdash;{" "}
+                    <Highlight>person + sports + competition</Highlight> &mdash;
+                    combine to push the embedding toward{" "}
+                    <Highlight color="amber">basketball</Highlight>.
                 </P>
 
                 <P>
-                    The Transformer uses the <em>exact same trick</em>. After attention,
-                    add the original input back. After the FFN, add the input back again.
-                    Two residual connections &mdash; two highways &mdash; keeping the signal alive.
-                    Toggle below to see what happens <em>without</em> them.
+                    The input was a blend. The output is an{" "}
+                    <em>understanding</em>. Same shape, same size &mdash; but
+                    now pointing somewhere entirely new. Somewhere attention
+                    alone could never reach.
                 </P>
 
-                {/* ═══ V40 — HighwayReturnsViz (with/without toggle) ═══ */}
+                {/* ═══ FFNDeepDiveViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <FFNDeepDiveViz />
+                    </Suspense>
+                </FadeInView>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 5 — THE FRAGILITY (value drift)
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    We now have both pieces: <Highlight>attention</Highlight> to listen
+                    and <Highlight color="amber">FFN</Highlight> to think.
+                    Let&apos;s stack them and see what happens. Run the data through
+                    attention, then FFN, then attention again&hellip;
+                </P>
+
+                <P>
+                    Watch the values below as you increase the number of operations.
+                    Something goes wrong.
+                </P>
+
+                {/* ═══ ValueDriftViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ValueDriftViz />
+                    </Suspense>
+                </FadeInView>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 6 — THE SHORTCUTS (residual connections)
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    The values exploded. Each operation amplifies small differences,
+                    and the original information gets buried under layers of changes.
+                    We need a way to <em>preserve</em> the original signal.
+                </P>
+
+                <P>
+                    What if, after each operation, we simply{" "}
+                    <Highlight>added the original input back</Highlight> to the output?
+                    A direct shortcut &mdash; the output becomes &ldquo;what changed&rdquo;
+                    <em>plus</em> &ldquo;what was already there.&rdquo; The Transformer
+                    uses this trick twice: once after attention, once after the FFN.
+                </P>
+
+                {/* ═══ V40 — HighwayReturnsViz ═══ */}
                 <FadeInView className="my-10 md:my-14">
                     <Suspense fallback={<SectionSkeleton />}>
                         <HighwayReturnsViz />
@@ -2058,24 +2197,22 @@ export function TransformerNarrative() {
                 </FadeInView>
 
                 {/* ══════════════════════════════════════════════
-                   BEAT 4 — LAYER NORMALIZATION
+                   BEAT 7 — THE STABILIZER (layer normalization)
                    ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
                 <P>
-                    There&apos;s one more piece. As values flow through attention and FFN,
-                    some numbers grow very large while others shrink to near zero.
-                    This makes training unstable &mdash; like trying to balance on a tightrope
-                    while the wind keeps changing speed.
+                    The second fix: <Highlight color="amber">Layer Normalization</Highlight>.
+                    Before each major operation, the model corrects every token&apos;s
+                    values &mdash; pulling outliers back in line, centering everything
+                    around zero, and squeezing the range to a healthy size.
+                    It&apos;s like taking a deep breath before each step.
                 </P>
 
                 <P>
-                    The fix: <Highlight color="amber">Layer Normalization</Highlight>.
-                    Before each major operation, we normalize every token&apos;s values &mdash;
-                    centering them and scaling them to a consistent range. It&apos;s like
-                    taking a deep breath before each step. The values stay calm, the gradients
-                    stay healthy, and training stays stable.
+                    The result: values stay calm, gradients stay healthy, and training
+                    stays stable &mdash; no matter how many operations you stack.
                 </P>
 
                 {/* ═══ V41 — LayerNormViz ═══ */}
@@ -2085,69 +2222,79 @@ export function TransformerNarrative() {
                     </Suspense>
                 </FadeInView>
 
+                {/* MLP link + BatchNorm vs LayerNorm collapsible */}
+                <P>
+                    We covered normalization techniques in depth in the{" "}
+                    <a href="/lab/mlp#mlp-06" className="text-cyan-400 underline underline-offset-2 hover:text-cyan-300 transition-colors">
+                        MLP chapter &sect;06
+                    </a>. If you read that, you might be wondering: how does
+                    LayerNorm differ from BatchNorm?
+                </P>
+
+                <FadeInView className="my-6">
+                    <details className="group max-w-lg mx-auto rounded-xl border border-white/8 bg-white/[0.02] overflow-hidden">
+                        <summary className="flex items-center justify-between px-5 py-3 cursor-pointer text-[14px] font-semibold text-cyan-400/60 hover:text-cyan-400/80 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
+                            <span>BatchNorm vs LayerNorm &mdash; what changed?</span>
+                            <span className="text-[12px] text-white/20 group-open:rotate-180 transition-transform">{"\u25BC"}</span>
+                        </summary>
+                        <div className="border-t border-white/5">
+                            <Suspense fallback={<SectionSkeleton />}>
+                                <BatchVsLayerNormViz />
+                            </Suspense>
+                        </div>
+                    </details>
+                </FadeInView>
+
                 {/* ══════════════════════════════════════════════
-                   BEAT 5 — ASSEMBLY CHECKLIST
+                   BEAT 8 — ASSEMBLY
                    ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
                 <P>
-                    Let&apos;s take stock. You now have every piece of the Transformer block:
+                    Every piece is in place. Let&apos;s take stock:
                 </P>
 
-                <div className="my-6 max-w-md mx-auto space-y-3">
+                <div className="my-6 max-w-md mx-auto grid grid-cols-2 gap-2.5">
                     {[
-                        { label: "Self-Attention", desc: "tokens listen to each other", color: "#22d3ee" },
-                        { label: "Feed-Forward Network", desc: "each token thinks privately", color: "#fbbf24" },
-                        { label: "Residual Connections", desc: "highway for gradients", color: "#22d3ee" },
-                        { label: "Layer Normalization", desc: "keep values stable", color: "#fbbf24" },
-                    ].map((item) => (
+                        { label: "Self-Attention", desc: "Tokens listen to each other", icon: "\uD83D\uDC42", color: "#22d3ee", rgb: "34,211,238" },
+                        { label: "Feed-Forward", desc: "Each token thinks privately", icon: "\uD83E\uDDE0", color: "#fbbf24", rgb: "251,191,36" },
+                        { label: "Residual Add", desc: "Preserve original signal", icon: "\u2795", color: "#22d3ee", rgb: "34,211,238" },
+                        { label: "Layer Norm", desc: "Keep values stable", icon: "\u2696\uFE0F", color: "#fbbf24", rgb: "251,191,36" },
+                    ].map((item, i) => (
                         <motion.div
                             key={item.label}
-                            className="pl-3 py-1"
-                            style={{ borderLeft: `2px solid ${item.color}40` }}
-                            initial={{ opacity: 0, x: -8 }}
-                            whileInView={{ opacity: 1, x: 0 }}
+                            className="rounded-xl px-3.5 py-3 flex flex-col gap-1"
+                            style={{
+                                background: `rgba(${item.rgb}, 0.04)`,
+                                border: `1px solid rgba(${item.rgb}, 0.12)`,
+                            }}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ type: "spring", stiffness: 120, damping: 14 }}
+                            transition={{ delay: i * 0.08, type: "spring", stiffness: 120, damping: 14 }}
                         >
-                            <span className="text-[14px] font-semibold" style={{ color: item.color }}>{item.label}</span>
-                            <span className="text-[14px] text-white/30"> &mdash; {item.desc}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[16px]">{item.icon}</span>
+                                <span className="text-[13px] font-bold" style={{ color: item.color }}>{item.label}</span>
+                            </div>
+                            <span className="text-[12px] text-white/30 leading-snug">{item.desc}</span>
                         </motion.div>
                     ))}
                 </div>
 
                 <P>
-                    These four components &mdash; arranged in the right order &mdash;
-                    form one <Highlight>Transformer block</Highlight>. But the order matters.
-                </P>
-
-                {/* ══════════════════════════════════════════════
-                   BEAT 5b — ORDER MATTERS (Improvement #4)
-                   ══════════════════════════════════════════════ */}
-
-                <P>
-                    Why normalize <em>first</em>? Because attention compares values &mdash;
-                    if some are huge and others tiny, the comparison is unfair. Normalization
-                    levels the playing field before each operation.
+                    These four components, arranged in the right order, form one{" "}
+                    <Highlight>Transformer block</Highlight>. The recipe:{" "}
+                    <Highlight>normalize, attend, add; normalize, FFN, add</Highlight>.
                 </P>
 
                 <P>
-                    Why add the original back <em>after</em> attention? Because attention
-                    might lose important information while focusing on relationships. The
-                    residual connection ensures nothing valuable gets thrown away.
+                    Why this order? Normalization before each operation levels the
+                    playing field &mdash; attention and FFN both get clean, balanced input.
+                    The residual add after each operation preserves the original,
+                    so nothing valuable is thrown away. Now put that knowledge to the test.
                 </P>
-
-                <P>
-                    Why normalize <em>again</em> before the FFN? Same reason &mdash; keep
-                    the inputs balanced for processing. Each operation gets clean, stable input.
-                    The recipe: <Highlight>normalize, attend, add; normalize, FFN, add</Highlight>.
-                    Now put that knowledge to the test.
-                </P>
-
-                {/* ══════════════════════════════════════════════
-                   BEAT 6 — HANDS-ON ASSEMBLY
-                   ══════════════════════════════════════════════ */}
 
                 {/* ═══ V42 — BlockBuilderViz ⭐⭐ ═══ */}
                 <FadeInView className="my-10 md:my-14">
@@ -2156,57 +2303,45 @@ export function TransformerNarrative() {
                     </Suspense>
                 </FadeInView>
 
+                <NarrativeDivider />
+
+                <P>
+                    Want to go deeper? <Highlight>Explore the block</Highlight> component
+                    by component. Click any piece to zoom in and see exactly what
+                    happens inside.
+                </P>
+
+                {/* ═══ BlockComponentExplorerViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <BlockComponentExplorerViz />
+                    </Suspense>
+                </FadeInView>
+
                 {/* ══════════════════════════════════════════════
-                   BEAT 7 — FLAGSHIP: EXPLORE THE BLOCK
+                   BEAT 9 — HOW BIG IS A BLOCK?
                    ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
-                <P>
-                    Want to go deeper? <Highlight>Explore the block</Highlight> component by component.
-                    Click any piece to zoom in and see exactly what happens inside.
-                </P>
-
-                {/* ═══ FLAGSHIP — TransformerBlockExplorerViz ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <TransformerBlockExplorerViz />
-                    </Suspense>
-                </FadeInView>
-
-                <NarrativeDivider />
-
-                <P>
-                    Let&apos;s zoom out and see the <em>net effect</em> of one complete block.
-                    What do tokens look like before entering vs. after emerging?
-                </P>
-
-                {/* ═══ V44 — BeforeAfterBlockViz ⭐⭐ ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <BeforeAfterBlockViz />
-                    </Suspense>
-                </FadeInView>
-
-                <P>
-                    Before we move on, here&apos;s your <Highlight>reference card</Highlight>.
-                    Click any component to see what it does and where it was covered.
-                </P>
-
-                {/* ═══ V45 — BlockBlueprintViz ═══ */}
-                <FadeInView className="my-10 md:my-14">
-                    <Suspense fallback={<SectionSkeleton />}>
-                        <BlockBlueprintViz />
-                    </Suspense>
-                </FadeInView>
+                <Callout icon={Brain} accent="amber" title="How big is a single block?">
+                    <p>
+                        With a typical dimension of d=768, each Transformer block
+                        contains about <strong className="text-white/70">7 million parameters</strong>:
+                        the Q, K, V projection matrices for attention (~2.4M), the output
+                        projection (~0.6M), and the FFN&apos;s two weight matrices (~3.5M).
+                        Compare that to our entire MLP from the previous chapter, which
+                        had ~300K parameters. A single block is <strong className="text-white/70">20&times;</strong> larger &mdash;
+                        the cost of understanding context.
+                    </p>
+                </Callout>
 
                 {/* ══════════════════════════════════════════════
-                   BEAT 10 — MONSTER ASSEMBLY (Improvement #5)
+                   BEAT 10 — MONSTER ASSEMBLY
                    ══════════════════════════════════════════════ */}
 
                 <FadeInView className="my-12 md:my-16">
                     <div className="flex flex-col items-center gap-4">
-                        {/* Assembly animation: 4 icons fly in and lock together */}
                         <div className="flex items-center justify-center gap-2">
                             {[
                                 { icon: "⚖️", color: "#a78bfa", delay: 0, from: { x: -60, y: -30 } },
@@ -2237,7 +2372,6 @@ export function TransformerNarrative() {
                             ))}
                         </div>
 
-                        {/* Glow pulse after assembly */}
                         <motion.div
                             className="w-64 h-1 rounded-full"
                             style={{
@@ -2249,7 +2383,6 @@ export function TransformerNarrative() {
                             transition={{ delay: 0.7, type: "spring", stiffness: 100, damping: 14 }}
                         />
 
-                        {/* Monster text */}
                         <motion.p
                             className="text-center text-lg md:text-xl font-bold bg-gradient-to-r from-cyan-400 via-amber-300 to-emerald-400 bg-clip-text text-transparent"
                             initial={{ opacity: 0, y: 10 }}
@@ -2263,275 +2396,1196 @@ export function TransformerNarrative() {
                         </motion.p>
                     </div>
                 </FadeInView>
-            </Section>
 
-            <SectionBreak />
-            <MonsterInterlude>
-                One block is powerful. But what happens when we stack many blocks?
-                Each layer refines the representation further.
-            </MonsterInterlude>
-
-            {/* ═══════════════════════════════════════════════════
-               §08 — THE FULL ARCHITECTURE
-               ═══════════════════════════════════════════════════ */}
-            <Section id="transformer-08">
-                <SectionLabel number="08" label="The Full Architecture" />
-                <SectionAnchor id="transformer-08"><Heading>The Full Architecture</Heading></SectionAnchor>
-
-                {/* ── Beat 1: The problem — one block isn't enough ── */}
-                <Lead>
-                    One Transformer block is powerful. It can listen, think, and stabilize.
-                    But is one pass through attention and a feed-forward network <Highlight>really enough</Highlight> to understand language?
-                </Lead>
-
-                <P>
-                    Think about it. In a single block, each token gets <em>one chance</em> to look
-                    at the other tokens. One round of questions. One round of thinking. That&apos;s like
-                    reading a sentence once and claiming you understand everything about it.
-                </P>
-
-                <P>
-                    Language is layered. First you need to figure out which words are
-                    next to each other (<Highlight color="amber">syntax</Highlight>).
-                    Then you need to figure out which words <em>relate</em> to each
-                    other (<Highlight color="violet">semantics</Highlight>).
-                    Then you need to understand what the whole sentence <em>means</em> (<Highlight color="emerald">context</Highlight>).
-                    One block can&apos;t do all three.
-                </P>
+                {/* ══════════════════════════════════════════════
+                   BEAT 11 — ONE BLOCK ISN'T ENOUGH
+                   (absorbed from old §08 beat 2)
+                   ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
-                {/* ── Beat 2: Discovery — what if we stack? ── */}
                 <P>
-                    But wait &mdash; we&apos;ve seen this trick before. When the MLP had one hidden layer
-                    and couldn&apos;t learn complex patterns, what did we do? <Highlight>We added more layers.</Highlight> Each
-                    layer built on the previous one, extracting increasingly abstract features.
+                    One block is powerful. It can listen, think, and stabilize.
+                    But is one pass through attention and FFN{" "}
+                    <Highlight>really enough</Highlight> to understand language?
                 </P>
 
                 <P>
-                    What if we do the same thing here? Take the output of one Transformer block
-                    and feed it directly into another one. The second block gets to ask <em>new questions</em> about
-                    representations that are already context-aware. The third block refines even further.
+                    Think about it. In a single block, each token gets{" "}
+                    <em>one chance</em> to look at the other tokens. One round of
+                    listening. One round of thinking. That&apos;s like reading a sentence
+                    once and claiming you understand everything about it.
+                </P>
+
+                <P>
+                    Language is layered. First you figure out which words are
+                    next to each other ({" "}
+                    <Highlight color="amber">syntax</Highlight>).
+                    Then which words <em>relate</em> to each other ({" "}
+                    <Highlight color="amber">semantics</Highlight>).
+                    Then what the whole sentence <em>means</em> ({" "}
+                    <Highlight>context</Highlight>).
+                    One block can&apos;t do all three.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 12 — THE STACKING INSIGHT
+                   (absorbed from old §08 beat 3)
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    But wait &mdash; we&apos;ve seen this trick before. When the MLP
+                    had one hidden layer and couldn&apos;t learn complex patterns,
+                    what did we do?{" "}
+                    <Highlight>We added more layers.</Highlight> Each layer built on
+                    the previous one, extracting increasingly abstract features.
+                </P>
+
+                <P>
+                    What if we do the same thing here? Take the output of one
+                    Transformer block and feed it into another. The second block
+                    asks <em>new questions</em> about representations that are
+                    already context-aware. The third refines even further.
                 </P>
 
                 <Callout icon={Layers} title="The insight">
                     Stack identical Transformer blocks. Block 1 captures local patterns.
                     Block 3 captures syntax. Block 6 captures abstract meaning.
-                    Same architecture, repeated — creating deeper and deeper understanding.
+                    Same architecture, repeated &mdash; creating deeper and deeper understanding.
                 </Callout>
 
-                {/* ═══ V46 — Layer Evolution ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><LayerEvolutionViz /></Suspense></FadeInView>
+                {/* ═══ LayerEvolutionViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <LayerEvolutionViz />
+                    </Suspense>
+                </FadeInView>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 13 — THE LINEAR HEAD + SOFTMAX
+                   (new content)
+                   ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
-                {/* ── Beat 3: The full picture ── */}
                 <P>
-                    Now let&apos;s zoom out and see the complete architecture. From raw text to predictions,
-                    here&apos;s every piece working together:
+                    The stacked blocks produce refined embeddings &mdash; rich vectors
+                    that encode meaning, context, and position. But we need{" "}
+                    <Highlight>predictions</Highlight> &mdash; probabilities over every
+                    character in our vocabulary. Two final steps bridge the gap.
                 </P>
 
                 <P>
-                    <Highlight>Inputs</Highlight> <StyledArrow />
-                    <Highlight color="rose">Embedding</Highlight> (words → vectors) <StyledArrow />
-                    <Highlight color="amber">+ Positional Encoding</Highlight> (add position info) <StyledArrow />
-                    <Highlight color="violet">Transformer Block × N</Highlight> (attention + FFN, repeated) <StyledArrow />
-                    <Highlight color="emerald">Linear Head</Highlight> (vectors → vocabulary scores) <StyledArrow />
-                    <Highlight>Softmax</Highlight> (scores → probabilities) <StyledArrow />
-                    <strong className="text-white/80">Output: next-word prediction</strong>
+                    <strong>Step 1 &mdash; The Linear Head.</strong> A single matrix
+                    multiplication projects each embedding (dimension d) into a vector
+                    of <em>raw scores</em> &mdash; one score per character in the
+                    vocabulary. Think of it as the{" "}
+                    <Highlight color="amber">inverse of embedding</Highlight>: embedding
+                    turns a character into a vector; the linear head turns a vector back
+                    into character scores.
                 </P>
 
                 <P>
-                    The embedding turns each word into a vector of numbers &mdash; its &quot;meaning.&quot;
-                    The positional encoding adds &quot;where am I in the sentence?&quot;
-                    Then the stacked blocks refine these representations, layer after layer.
-                    Finally, the <Highlight color="violet">Linear Head</Highlight> does the <em>opposite</em> of
-                    the embedding: it takes each vector and produces a score for every word in the vocabulary.
-                    Softmax turns those scores into probabilities. The highest probability wins.
+                    <strong>Step 2 &mdash; Softmax.</strong> Raw scores can be any
+                    number &mdash; positive, negative, huge, tiny. Softmax squashes them
+                    into a proper probability distribution: every value between 0 and 1,
+                    all summing to exactly 1. The highest score dominates; the lowest
+                    scores vanish to near-zero. The model{" "}
+                    <Highlight color="amber">chooses</Highlight> by sampling from this
+                    distribution.
                 </P>
 
-                {/* ═══ V47 — Architecture Tower ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><ArchitectureTowerViz /></Suspense></FadeInView>
+                {/* ═══ LinearSoftmaxViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <LinearSoftmaxViz />
+                    </Suspense>
+                </FadeInView>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 14 — THE FULL ARCHITECTURE
+                   (absorbed from old §08 beat 5)
+                   ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
-                {/* ── Beat 4: Does depth help? ── */}
                 <P>
-                    But does stacking more blocks actually help? Or does it just waste computation?
+                    Now let&apos;s zoom out and see the complete architecture. From
+                    raw text to predictions, here&apos;s every piece working together:
                 </P>
 
                 <P>
-                    Real models tell the story. GPT-2 (2019) used <strong className="text-white/60">12 blocks</strong> and
-                    could write decent paragraphs. GPT-3 (2020) used <strong className="text-white/60">96 blocks</strong> and
-                    could write entire essays. More depth means more rounds of refinement,
-                    more chances to capture subtle patterns in language.
+                    <Highlight>Inputs</Highlight> <StyledArrow />{" "}
+                    <Highlight color="amber">Embedding</Highlight> (words → vectors) <StyledArrow />{" "}
+                    <Highlight>+ Positional Encoding</Highlight> <StyledArrow />{" "}
+                    <Highlight color="amber">Transformer Block × N</Highlight> (repeated) <StyledArrow />{" "}
+                    <Highlight>Linear Head</Highlight> (vectors → scores) <StyledArrow />{" "}
+                    <Highlight>Softmax</Highlight> (scores → probabilities) <StyledArrow />{" "}
+                    <strong className="text-white/80">Output</strong>
                 </P>
 
-                {/* ═══ V48 — Depth vs Quality ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><DepthVsQualityViz /></Suspense></FadeInView>
+                <P>
+                    The embedding turns each word into a vector. Positional encoding
+                    adds &quot;where am I?&quot; Then the stacked blocks refine these
+                    representations, layer after layer. Finally, the{" "}
+                    <Highlight color="amber">Linear Head</Highlight> does the{" "}
+                    <em>inverse</em> of embedding: it takes each vector and produces
+                    a score for every word in the vocabulary. Softmax turns those
+                    scores into probabilities.
+                </P>
+
+                {/* ═══ TransformerBlockExplorerViz — FLAGSHIP ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <TransformerBlockExplorerViz />
+                    </Suspense>
+                </FadeInView>
+
+                <Callout icon={Layers} accent="amber" title="Modern scale — pure curiosity">
+                    <p>
+                        GPT-2 (2019):{" "}
+                        <strong className="text-white/60">12 blocks</strong>, 117M
+                        parameters, dimension 768. Each block adds ~7M params.{" "}
+                        GPT-3 (2020):{" "}
+                        <strong className="text-white/60">96 blocks</strong>, 175B
+                        parameters, dimension 12,288 &mdash; at that scale each block
+                        is ~1.8B parameters.
+                        The architecture you just learned is the same one powering
+                        these systems. Only the numbers change.
+                    </p>
+                </Callout>
+
+                <MonsterStatus gradient="cyan-amber">
+                    👾 I am complete. Attention to hear. FFN to think. Residuals to remember.
+                    Normalization to stay calm. Stacked blocks for depth. A linear head to
+                    speak. Softmax to choose. I am a Transformer.
+                </MonsterStatus>
+
+                <KeyTakeaway accent="cyan">
+                    The full Transformer: embed tokens, add positions, pass through N
+                    identical blocks (each with attention + FFN + residuals + normalization),
+                    then project to vocabulary scores with a linear head, and convert to
+                    probabilities with softmax. The same architecture, repeated and stacked,
+                    powers every modern language model.
+                </KeyTakeaway>
+            </Section>
+
+            <SectionBreak />
+            <MonsterInterlude>
+                I am assembled. Every piece in place. Attention to hear. FFN to think.
+                Residuals to remember. Normalization to stay calm. But I&apos;ve never read
+                a single word. I&apos;m a perfect machine that knows nothing. Time to change that.
+            </MonsterInterlude>
+
+            {/* ═══════════════════════════════════════════════════
+               §08 — TEACHING IT TO WRITE
+               ═══════════════════════════════════════════════════ */}
+            <Section id="transformer-08">
+                <SectionLabel number="08" label="Teaching It to Write" />
+                <SectionAnchor id="transformer-08"><Heading>Teaching It to Write</Heading></SectionAnchor>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 1 — THE EMPTY MONSTER
+                   ══════════════════════════════════════════════ */}
+
+                <Lead>
+                    You built something extraordinary. A machine that can listen to every
+                    character at once, think about what it heard, preserve its memory, and
+                    stay stable through it all. But right now, this machine has never seen
+                    a single piece of text. It knows{" "}
+                    <Highlight color="amber">nothing</Highlight>.
+                </Lead>
 
                 <P>
-                    The number of blocks is one of the most important design choices.
-                    More blocks = more parameters = more compute needed.
-                    But the payoff is enormous: each additional block lets the model
-                    understand language at a <Highlight color="emerald">deeper level</Highlight>.
+                    What does an untrained Transformer produce? The weights are
+                    randomly initialized &mdash; every number drawn from a normal
+                    distribution, completely unaware of language, grammar, or meaning.
+                    Let&apos;s find out what that looks like.
+                </P>
+
+                {/* ═══ UntrainedOutputViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <UntrainedOutputViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    Pure noise. The architecture is flawless &mdash; but the weights are
+                    random. A beautiful machine with nothing to say.{" "}
+                    <Highlight>Let&apos;s fix that.</Highlight>
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 2 — THE TRAINING TASK
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    The training task is deceptively simple: given a sequence of
+                    characters, predict the next one at every position.
+                    That&apos;s it. No labels, no categories &mdash; just{" "}
+                    <Highlight>what comes next?</Highlight>
+                </P>
+
+                <P>
+                    But here&apos;s the trick that makes Transformers train so fast.
+                    Remember the MLP? Feed it 8 characters, get{" "}
+                    <Highlight color="amber">one prediction</Highlight> back.
+                    Move the window forward one character, feed it again, get another
+                    prediction. One at a time.
+                </P>
+
+                <P>
+                    The Transformer processes the{" "}
+                    <em>entire sequence at once</em>. Every position simultaneously
+                    predicts what comes next. Feed it 256 characters and you get{" "}
+                    <Highlight>256 predictions in a single forward pass</Highlight>.
+                    Each one becomes a training signal. Each one nudges the weights
+                    a little closer to understanding language.
+                </P>
+
+                {/* ═══ ParallelPredictionViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ParallelPredictionViz />
+                    </Suspense>
+                </FadeInView>
+
+                <Callout icon={Sparkles} title="The training superpower">
+                    One forward pass, 256 predictions. This is why Transformers
+                    learn faster than anything before them &mdash; every position in
+                    the sequence teaches the model something at every step.
+                </Callout>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 3 — THE MASK
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    But there&apos;s a catch. If position 5 is trying to predict
+                    character 6, it <em>must not see</em> character 6. That would
+                    be cheating &mdash; like reading the answer key during an exam.
+                    You get 100% accuracy but learn{" "}
+                    <Highlight color="amber">nothing</Highlight>.
+                </P>
+
+                <P>
+                    The solution is a <Highlight>mask</Highlight>: each position
+                    can only attend to itself and everything <em>before</em> it.
+                    The future is invisible. The model is forced to actually predict.
+                </P>
+
+                {/* ═══ CausalMaskViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <CausalMaskViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    The triangle of visibility grows row by row &mdash; token 1
+                    sees only itself, token 8 sees all eight. At every position,
+                    the model practices predicting the future from the past.
+                </P>
+
+                {/* ── Technical detail panel (expanded) ── */}
+                <FadeInView className="my-6">
+                    <details className="group max-w-2xl mx-auto rounded-xl border border-white/8 bg-white/[0.02] overflow-hidden">
+                        <summary className="flex items-center justify-between px-5 py-3 cursor-pointer text-[14px] font-semibold text-cyan-400/60 hover:text-cyan-400/80 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
+                            <span>The full math: from embeddings to attention to training</span>
+                            <span className="text-[12px] text-white/20 group-open:rotate-180 transition-transform">{"\u25BC"}</span>
+                        </summary>
+                        <div className="border-t border-white/5 px-5 py-6 space-y-8">
+
+                            {/* ──── SECTION 1: Embedding → Q, K, V ──── */}
+                            <div className="space-y-3">
+                                <h4 className="text-[14px] font-bold text-cyan-400/70">
+                                    1. From Embedding to Query, Key, Value
+                                </h4>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    Every token enters the Transformer as an <strong className="text-white/60">embedding vector</strong>{" "}
+                                    <span className="font-mono text-cyan-400/50">x ∈ ℝ<sup>d</sup></span> &mdash; a list of <em>d</em> numbers
+                                    that encode the token&apos;s meaning plus its position. For our model, <em>d</em> = 128.
+                                </p>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    To compute attention, each embedding is projected into three separate vectors through{" "}
+                                    <strong className="text-white/60">learned weight matrices</strong>:
+                                </p>
+                                <div className="rounded-lg px-4 py-3 space-y-1.5 font-mono text-[13px]" style={{ background: "rgba(34,211,238,0.04)", border: "1px solid rgba(34,211,238,0.1)" }}>
+                                    <p><span className="text-cyan-400/70">Q</span> <span className="text-white/20">=</span> <span className="text-white/40">x</span> <span className="text-white/20">·</span> <span className="text-cyan-400/60">W<sub>Q</sub></span> <span className="text-white/15 text-[11px] ml-2">// Query: &quot;what am I looking for?&quot;</span></p>
+                                    <p><span className="text-amber-400/70">K</span> <span className="text-white/20">=</span> <span className="text-white/40">x</span> <span className="text-white/20">·</span> <span className="text-amber-400/60">W<sub>K</sub></span> <span className="text-white/15 text-[11px] ml-2">// Key: &quot;what do I contain?&quot;</span></p>
+                                    <p><span className="text-emerald-400/70">V</span> <span className="text-white/20">=</span> <span className="text-white/40">x</span> <span className="text-white/20">·</span> <span className="text-emerald-400/60">W<sub>V</sub></span> <span className="text-white/15 text-[11px] ml-2">// Value: &quot;what info do I carry?&quot;</span></p>
+                                </div>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    Each <span className="font-mono text-white/50">W</span> is a{" "}
+                                    <span className="font-mono text-cyan-400/50">d × d<sub>k</sub></span> matrix.
+                                    These matrices are the <strong className="text-white/60">learned parameters</strong> of attention &mdash;
+                                    they&apos;re initialized randomly and updated by gradient descent during training.
+                                    The same embedding <span className="font-mono text-white/50">x</span>, multiplied by three different
+                                    matrices, produces three vectors with entirely different roles.
+                                </p>
+
+                                {/* VIZ 1: QKV Projection */}
+                                <Suspense fallback={<div className="h-32" />}>
+                                    <QKVProjectionViz />
+                                </Suspense>
+
+                                <p className="text-[12px] text-white/25 leading-relaxed">
+                                    In multi-head attention with <em>h</em> heads, each head uses its own smaller
+                                    projection matrices of size <span className="font-mono text-white/30">d × d<sub>k</sub></span> where{" "}
+                                    <span className="font-mono text-white/30">d<sub>k</sub> = d / h</span>. With <em>d</em> = 128 and <em>h</em> = 4,
+                                    each head projects to 32-dimensional Q, K, V vectors. The heads run in parallel,
+                                    then their outputs are concatenated and projected back to <em>d</em> dimensions.
+                                </p>
+                            </div>
+
+                            {/* ──── SECTION 2: Attention Score Computation ──── */}
+                            <div className="space-y-3 pt-2 border-t border-white/5">
+                                <h4 className="text-[14px] font-bold text-cyan-400/70">
+                                    2. Computing Attention Scores
+                                </h4>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    Attention scores tell us how much each token should &quot;listen to&quot; every
+                                    other token. The full computation in one equation:
+                                </p>
+                                <div className="rounded-lg px-4 py-3 font-mono text-[13px] text-center" style={{ background: "rgba(34,211,238,0.04)", border: "1px solid rgba(34,211,238,0.1)" }}>
+                                    <span className="text-cyan-400/80">Attention(Q, K, V)</span>
+                                    <span className="text-white/20"> = </span>
+                                    <span className="text-white/50">softmax(</span>
+                                    <span className="text-cyan-400/60">Q</span>
+                                    <span className="text-amber-400/60">K<sup>T</sup></span>
+                                    <span className="text-white/30"> / </span>
+                                    <span className="text-white/40">√d<sub>k</sub></span>
+                                    <span className="text-white/50">)</span>
+                                    <span className="text-white/20"> · </span>
+                                    <span className="text-emerald-400/60">V</span>
+                                </div>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    Let&apos;s break this down step by step:
+                                </p>
+                                <ol className="text-[13px] text-white/40 leading-relaxed space-y-2 list-decimal list-inside">
+                                    <li>
+                                        <strong className="text-white/55">Q × K<sup>T</sup></strong> &mdash;
+                                        Multiply each Query by every Key (transposed). This produces an{" "}
+                                        <span className="font-mono text-white/30">n × n</span> matrix of raw scores,
+                                        where <em>n</em> is the sequence length. Score<sub>ij</sub> measures how relevant
+                                        token <em>j</em> is to token <em>i</em>.
+                                    </li>
+                                    <li>
+                                        <strong className="text-white/55">÷ √d<sub>k</sub></strong> &mdash;
+                                        Without scaling, the dot products grow proportionally to the dimension <em>d<sub>k</sub></em>.
+                                        Large values push softmax into extreme regions where gradients vanish.
+                                        Dividing by <span className="font-mono text-white/30">√d<sub>k</sub></span> keeps
+                                        the scores in a healthy range.
+                                    </li>
+                                    <li>
+                                        <strong className="text-amber-400/60">Mask</strong> &mdash;
+                                        For each position <em>i</em>, set scores for all positions{" "}
+                                        <em>j &gt; i</em> to <strong className="text-amber-400/70">&minus;∞</strong>.
+                                        This ensures no token can see the future.
+                                    </li>
+                                    <li>
+                                        <strong className="text-white/55">Softmax</strong> &mdash;
+                                        Applied row-wise. Converts each row of scores into a probability distribution:
+                                        all values between 0 and 1, summing to 1.{" "}
+                                        <span className="font-mono text-amber-400/40">e<sup>&minus;∞</sup> = 0</span>, so
+                                        masked positions contribute exactly nothing.
+                                    </li>
+                                    <li>
+                                        <strong className="text-emerald-400/60">× V</strong> &mdash;
+                                        Multiply the attention weights by the Value vectors. This produces a weighted sum:
+                                        each token&apos;s output is a blend of the Value vectors it attended to,
+                                        weighted by how much attention it paid.
+                                    </li>
+                                </ol>
+
+                                {/* VIZ 2: Attention Score Matrix */}
+                                <Suspense fallback={<div className="h-32" />}>
+                                    <AttentionScoreViz />
+                                </Suspense>
+                            </div>
+
+                            {/* ──── SECTION 3: The Causal Mask ──── */}
+                            <div className="space-y-3 pt-2 border-t border-white/5">
+                                <h4 className="text-[14px] font-bold text-amber-400/70">
+                                    3. The Causal Mask — Why &minus;∞?
+                                </h4>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    The mask is a <strong className="text-white/55">lower-triangular matrix</strong> of ones
+                                    and zeros. Before softmax, we add the mask (with zeros replaced by &minus;∞)
+                                    to the score matrix:
+                                </p>
+                                <div className="rounded-lg px-4 py-3 font-mono text-[12px]" style={{ background: "rgba(251,191,36,0.04)", border: "1px solid rgba(251,191,36,0.1)" }}>
+                                    <p className="text-white/30">
+                                        <span className="text-amber-400/50">scores_masked</span> = <span className="text-white/40">scores</span> + <span className="text-amber-400/60">mask</span>
+                                    </p>
+                                    <p className="text-white/20 mt-1 text-[11px]">
+                                        where mask[i][j] = 0 if j ≤ i, &minus;∞ if j &gt; i
+                                    </p>
+                                </div>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    Softmax computes <span className="font-mono text-white/30">e<sup>x</sup> / Σe<sup>x</sup></span>.
+                                    When x = &minus;∞, e<sup>&minus;∞</sup> = 0 — that position gets{" "}
+                                    <strong className="text-cyan-400/70">exactly zero weight</strong>.
+                                    Not approximately zero. <em>Mathematically</em> zero. The information at future
+                                    positions is completely invisible.
+                                </p>
+                                <p className="text-[12px] text-white/25 leading-relaxed">
+                                    This is called the <em className="text-white/35">causal mask</em> (or autoregressive mask).
+                                    The name comes from causality: effects (predictions) can only depend on causes
+                                    (past tokens), never the future. GPT, Claude, Gemini, and LLaMA all use this exact mask.
+                                    Encoder-only models like BERT use a <em>bidirectional</em> variant without it &mdash;
+                                    they see the full context but can&apos;t generate text autoregressively.
+                                </p>
+                            </div>
+
+                            {/* ──── SECTION 4: Parallel Training ──── */}
+                            <div className="space-y-3 pt-2 border-t border-white/5">
+                                <h4 className="text-[14px] font-bold text-cyan-400/70">
+                                    4. Training: All Positions at Once
+                                </h4>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    Here&apos;s where the mask gives us a superpower. Because each position can only see
+                                    the past, we can train on <strong className="text-white/55">every position simultaneously</strong>.
+                                    Given a sequence of <em>T</em> tokens, the model makes <em>T</em> predictions in a single forward pass:
+                                </p>
+                                <div className="rounded-lg px-4 py-3 font-mono text-[12px] space-y-1" style={{ background: "rgba(34,211,238,0.04)", border: "1px solid rgba(34,211,238,0.1)" }}>
+                                    <p className="text-white/25">Position 1: sees [x₁] → predicts x₂</p>
+                                    <p className="text-white/25">Position 2: sees [x₁, x₂] → predicts x₃</p>
+                                    <p className="text-white/25">Position 3: sees [x₁, x₂, x₃] → predicts x₄</p>
+                                    <p className="text-white/20">...</p>
+                                    <p className="text-white/25">Position T: sees [x₁, ..., x<sub>T</sub>] → predicts x<sub>T+1</sub></p>
+                                </div>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    Each prediction is compared to the <strong className="text-white/55">actual next token</strong> using{" "}
+                                    <strong className="text-cyan-400/60">cross-entropy loss</strong>:
+                                </p>
+                                <div className="rounded-lg px-4 py-3 font-mono text-[13px] text-center" style={{ background: "rgba(34,211,238,0.04)", border: "1px solid rgba(34,211,238,0.1)" }}>
+                                    <span className="text-cyan-400/70">ℒ</span>
+                                    <span className="text-white/20"> = </span>
+                                    <span className="text-white/30">&minus;(1/T)</span>
+                                    <span className="text-white/40"> Σ<sub>t=1..T</sub></span>
+                                    <span className="text-white/30"> log </span>
+                                    <span className="text-white/40">p(x<sub>t+1</sub> | x<sub>1</sub>, ..., x<sub>t</sub>)</span>
+                                </div>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    In words: at each position, the model outputs a probability distribution over
+                                    the entire vocabulary. Cross-entropy measures how much probability the model
+                                    assigned to the <em>correct</em> next token. The loss is the <strong className="text-white/55">negative
+                                        log of that probability</strong>, averaged over all positions.
+                                </p>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    If the model assigns probability 1.0 to the correct token, log(1.0) = 0 → loss = 0
+                                    (perfect). If it assigns 0.01, log(0.01) ≈ &minus;4.6 → loss = 4.6 (terrible).
+                                    The model learns by minimizing this loss through gradient descent &mdash;
+                                    adjusting every weight matrix (W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub>,
+                                    W<sub>O</sub>, W<sub>1</sub>, W<sub>2</sub>, embeddings, the linear head)
+                                    to push the probability of the correct next token higher.
+                                </p>
+                                <p className="text-[12px] text-white/25 leading-relaxed">
+                                    A sequence of 256 characters = 256 predictions = 256 loss terms = 256 training
+                                    signals from a single forward pass. Compare that to the MLP: it sees 8 characters,
+                                    makes 1 prediction, then slides the window. The Transformer is{" "}
+                                    <strong className="text-white/35">256× more efficient per example</strong>.
+                                </p>
+                            </div>
+
+                            {/* ──── SECTION 5: Parameter Count ──── */}
+                            <div className="space-y-3 pt-2 border-t border-white/5">
+                                <h4 className="text-[14px] font-bold text-white/50">
+                                    5. Where Are All the Parameters?
+                                </h4>
+                                <p className="text-[13px] text-white/40 leading-relaxed">
+                                    For a single attention head with <em>d</em> = 128 and <em>d<sub>k</sub></em> = 32:
+                                </p>
+                                <div className="rounded-lg px-4 py-3 font-mono text-[12px] space-y-1" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                                    <p className="text-white/30">W<sub>Q</sub>: <span className="text-white/40">128 × 32</span> = <span className="text-cyan-400/50">4,096</span> params</p>
+                                    <p className="text-white/30">W<sub>K</sub>: <span className="text-white/40">128 × 32</span> = <span className="text-cyan-400/50">4,096</span> params</p>
+                                    <p className="text-white/30">W<sub>V</sub>: <span className="text-white/40">128 × 32</span> = <span className="text-cyan-400/50">4,096</span> params</p>
+                                    <p className="text-white/20 mt-1">× 4 heads = <span className="text-cyan-400/50">49,152</span></p>
+                                    <p className="text-white/30">W<sub>O</sub>: <span className="text-white/40">128 × 128</span> = <span className="text-cyan-400/50">16,384</span> params</p>
+                                    <p className="text-white/30">FFN W<sub>1</sub>: <span className="text-white/40">128 × 512</span> = <span className="text-amber-400/50">65,536</span> params</p>
+                                    <p className="text-white/30">FFN W<sub>2</sub>: <span className="text-white/40">512 × 128</span> = <span className="text-amber-400/50">65,536</span> params</p>
+                                    <p className="text-white/20 mt-1 border-t border-white/5 pt-1">Total per block ≈ <span className="text-white/45 font-bold">196,608</span> parameters</p>
+                                    <p className="text-white/20">× 4 blocks = <span className="text-white/45 font-bold">~786K</span> trainable params</p>
+                                </div>
+                                <p className="text-[12px] text-white/25 leading-relaxed">
+                                    Add the embedding matrix (vocabulary × <em>d</em>), positional embeddings
+                                    (block_size × <em>d</em>), LayerNorm parameters (4 × 2 × <em>d</em>), and the
+                                    final linear head (vocabulary × <em>d</em>), and our 4-block model totals about{" "}
+                                    <strong className="text-white/35">~1 million parameters</strong>. Every single one
+                                    is updated at every training step.
+                                </p>
+                            </div>
+
+                        </div>
+                    </details>
+                </FadeInView>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 4 — TRAINING A REAL MODEL
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    Theory is done. Let&apos;s do it for real.
+                </P>
+
+                <P>
+                    Our model is about to learn from two very different geniuses:{" "}
+                    <Highlight>Shakespeare</Highlight> and{" "}
+                    <Highlight color="amber">Paul Graham</Highlight>. A 16th-century
+                    playwright and a 21st-century startup essayist &mdash; 1.7 million
+                    characters of English text, from &quot;To be or not to be&quot; to
+                    &quot;Do things that don&apos;t scale.&quot; The result should be...
+                    interesting.
+                </P>
+
+                <P>
+                    But first &mdash; what is a <Highlight>training step</Highlight>?
+                    In each step, the model reads a batch of text sequences. It
+                    processes them in a single forward pass (all positions at once,
+                    thanks to the mask), computes the <Highlight color="amber">loss</Highlight>{" "}
+                    (how wrong its predictions were), and then adjusts every weight
+                    slightly in the direction that reduces that loss. One step =
+                    one batch = one weight update. After 50,000 of these steps, the
+                    model will have seen millions of characters, each time getting a
+                    little better at predicting what comes next.
+                </P>
+
+                {/* ═══ TrainingTimelapseViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <TrainingTimelapseViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    You just watched a machine learn to write. Not because someone
+                    programmed English grammar into it. Not because someone told it
+                    what words mean. It learned from one simple question, asked fifty
+                    thousand times:{" "}
+                    <Highlight color="amber"><em>what comes next?</em></Highlight>
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 5 — THE GENERATION PLAYGROUND
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    Your model is trained. Now it&apos;s yours to control.
+                    Type any starting text and watch it generate, one character at a time.
+                </P>
+
+                {/* ═══ CharGenerationPlayground ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <CharGenerationPlayground />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    Notice what happens with different temperatures. At{" "}
+                    <Highlight>low temperature</Highlight>, the model becomes
+                    deterministic &mdash; it always picks the most likely character.
+                    Coherent, but repetitive. At{" "}
+                    <Highlight color="amber">high temperature</Highlight>, the
+                    probability distribution flattens. Rare characters get a chance.
+                    Creative, but chaotic. The sweet spot &mdash; around 0.8 &mdash;
+                    produces text that feels natural and varied.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 6 — THE BATTLE
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    Let&apos;s put our Transformer to the test. Three models generate
+                    from the same prompt. Same starting text, same number of characters.
+                    Watch what each one does with it.
+                </P>
+
+                {/* ═══ ModelBattleArena ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ModelBattleArena />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    The n-gram gets stuck. It knows what pairs of characters are common,
+                    but it has no sense of a sentence. The MLP does better &mdash;
+                    it learned <em>representations</em>, not just frequencies. But it
+                    can only see a small fixed window. The Transformer sees{" "}
+                    <Highlight>everything</Highlight>, and it shows.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 7 — THE WIDTH CEILING
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    Our four-block Transformer is impressive. But can we make it{" "}
+                    <em>better</em>? The obvious move: more neurons. A bigger
+                    feedforward layer. More dimensions. If a 128-dimensional model
+                    works this well, surely a 512-dimensional model will be
+                    dramatically better?
+                </P>
+
+                {/* ═══ NeuronScalingViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <NeuronScalingViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    The loss barely budges past 256 dimensions. We made the model
+                    sixteen times bigger &mdash; and it actually got{" "}
+                    <Highlight color="amber">worse</Highlight>. Not just diminishing
+                    returns &mdash; negative returns. The 512-dimensional model started
+                    memorizing the training data instead of learning patterns.
+                    Its training loss was great; its validation loss climbed back up.
+                    The ceiling is real.
+                </P>
+
+                <P>
+                    But what if, instead of making the block{" "}
+                    <em>wider</em>&hellip; we made the model{" "}
+                    <Highlight color="amber">deeper</Highlight>?
                 </P>
 
                 <MonsterStatus>
-                    👾 I&apos;m no longer a single block. I&apos;m a tower of blocks, each one
-                    refining my understanding. Layer by layer, I see more.
+                    👾 I can write! But I feel shallow. One round of listening.
+                    One round of thinking. More neurons didn&apos;t help &mdash;
+                    they made things worse. I want to go <em>deeper</em>.
                 </MonsterStatus>
             </Section>
 
             <SectionBreak />
             <MonsterInterlude>
-                The architecture is complete. But there&apos;s a problem hiding in the training process.
-                The model can see the future &mdash; and that&apos;s cheating.
+                More neurons didn&apos;t help. I&apos;m stuck at the ceiling.
+                But what if I could listen again? Think again?
+                Layer upon layer &mdash; what if going deeper changes everything?
             </MonsterInterlude>
 
             {/* ═══════════════════════════════════════════════════
-               §09 — TEACHING IT TO WRITE
+               §09 — SCALING IT UP
                ═══════════════════════════════════════════════════ */}
             <Section id="transformer-09">
-                <SectionLabel number="09" label="Teaching It To Write" />
-                <SectionAnchor id="transformer-09"><Heading>Teaching It To Write</Heading></SectionAnchor>
+                <SectionLabel number="09" label="Scaling It Up" />
+                <SectionAnchor id="transformer-09"><Heading>Scaling It Up</Heading></SectionAnchor>
 
-                {/* ── Beat 1: The cheating problem ── */}
+                {/* ══════════════════════════════════════════════
+                   BEAT 1 — DEPTH BREAKTHROUGH
+                   ══════════════════════════════════════════════ */}
+
                 <Lead>
-                    The architecture is built. Now we need to <Highlight>train</Highlight> it.
-                    But there&apos;s a sneaky problem: during training, the model can see the entire sentence at once.
+                    You already know the idea from &sect;07: stack identical blocks.
+                    But does it <Highlight>actually work</Highlight>? Let&apos;s train
+                    deeper models on the same data and find out.
                 </Lead>
 
                 <P>
-                    Imagine you&apos;re taking a test, and the answer sheet is lying right next to you.
-                    Would you actually <em>think</em> about the questions? Of course not &mdash; you&apos;d just copy.
+                    The width ceiling sat at a validation loss of around 1.40 &mdash;
+                    the best a single block could do no matter how many neurons we added.
+                    What happens when we add a second block?
                 </P>
+
+                {/* ═══ DepthBreakthroughViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <DepthBreakthroughViz />
+                    </Suspense>
+                </FadeInView>
 
                 <P>
-                    That&apos;s exactly what happens here. The model is supposed to predict word 5 based on words 1&ndash;4.
-                    But during training, word 5 is <em>right there</em> in the input. The attention mechanism
-                    can just look at it directly. <Highlight color="rose">100% accuracy, zero learning.</Highlight> It&apos;s cheating.
+                    The ceiling shattered. Two blocks already beat the best single-block
+                    model. Four blocks produced text that&apos;s recognizably{" "}
+                    <em>prose</em>. The validation loss dropped from 1.40 all the way
+                    to 1.30 &mdash; not by adding neurons, but by giving the model
+                    a second chance to look, and a third, and a fourth.
                 </P>
 
-                {/* ═══ V49 — The Cheating Problem ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><CheatingProblemViz /></Suspense></FadeInView>
-
-                <NarrativeDivider />
-
-                {/* ── Beat 2: Discovery — the causal mask ── */}
-                <P>
-                    So how do we stop the cheating? We need a rule:
-                    when processing word N, the model can <em>only</em> see words 1 through N&minus;1.
-                    The future must be invisible.
-                </P>
-
-                <P>
-                    Remember how attention works? Each token computes scores against all other tokens,
-                    then softmax turns those scores into weights. What if, before softmax,
-                    we set all the scores for <Highlight color="amber">future tokens to negative infinity</Highlight>?
-                </P>
-
-                <P>
-                    Softmax turns &minus;∞ into exactly 0. Those future tokens become completely invisible.
-                    The model literally cannot see them. It&apos;s forced to actually <em>predict</em>.
-                </P>
-
-                <Callout icon={Eye} title="The causal mask">
-                    An attention matrix where the upper triangle is blacked out.
-                    Token 1 can only see itself. Token 2 sees tokens 1&ndash;2. Token 5 sees tokens 1&ndash;5.
-                    The mask grows row by row — like a growing triangle of visibility.
+                <Callout icon={Layers} accent="amber" title="Why depth works">
+                    Each additional block receives representations that are already
+                    context-aware &mdash; enriched by every previous block&apos;s
+                    attention and processing. The second block doesn&apos;t re-read
+                    the original text; it reads a{" "}
+                    <em>refined version</em> of it. Each layer asks deeper questions
+                    about richer answers.
                 </Callout>
 
-                {/* ═══ V50 — Causal Mask ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><CausalMaskViz /></Suspense></FadeInView>
-
-                {/* ═══ V51 — Growing Masks ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><GrowingMasksViz /></Suspense></FadeInView>
+                {/* ══════════════════════════════════════════════
+                   BEAT 2 — X-RAY VISION
+                   ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
-                {/* ── Beat 3: Training efficiency ── */}
                 <P>
-                    Here&apos;s the beautiful part. With the mask in place,
-                    <em> every position</em> in the sequence becomes a valid training example.
+                    What is each block actually doing? Let&apos;s look inside.
+                    Every block produces its own attention patterns &mdash; a heatmap
+                    showing which characters each position attended to most.
                 </P>
 
+                {/* ═══ LayerLensViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <LayerLensViz />
+                    </Suspense>
+                </FadeInView>
+
                 <P>
-                    Think about it: position 1 predicts word 2. Position 2 predicts word 3.
-                    Position 99 predicts word 100. One sequence of 100 tokens gives
-                    us <Highlight color="emerald">100 training examples simultaneously</Highlight>.
-                    Compare that to the MLP, where one input = one prediction. The Transformer
-                    is massively more efficient.
+                    Research on real Transformer models reveals a consistent pattern.
+                    Early blocks tend to capture{" "}
+                    <Highlight color="amber">local structure</Highlight> &mdash;
+                    adjacent characters, spacing, punctuation. Middle blocks develop
+                    a sense of{" "}
+                    <Highlight color="amber">word-level relationships</Highlight>.
+                    Deep blocks capture{" "}
+                    <Highlight>abstract patterns</Highlight> that
+                    span the full sequence. Same architecture &mdash; different
+                    specialization emerging purely from training.
                 </P>
 
-                {/* ═══ V52 — Training Efficiency ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><TrainingEfficiencyViz /></Suspense></FadeInView>
-
-                {/* ═══ V53 — Training Dashboard ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><TrainingDashboardViz /></Suspense></FadeInView>
+                {/* ══════════════════════════════════════════════
+                   BEAT 3 — THE DEPTH COMPARISON
+                   ══════════════════════════════════════════════ */}
 
                 <NarrativeDivider />
 
-                {/* ── Beat 4: Generation ── */}
                 <P>
-                    Once trained, generation works step by step.
-                    Give the model a prompt: <Highlight>&quot;The professor&quot;</Highlight>.
-                    It predicts the next word: <Highlight color="amber">&quot;published&quot;</Highlight>.
-                    Add that word to the sequence. Now the input is <em>&quot;The professor published&quot;</em>.
-                    Predict again: <Highlight color="violet">&quot;the&quot;</Highlight>. And again. And again.
+                    See the difference depth makes directly. Same prompt, same
+                    temperature &mdash; only the number of blocks changes.
+                </P>
+
+                {/* ═══ DepthGenerationViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <DepthGenerationViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    One block produces recognizable words but choppy, incoherent
+                    phrases. Four blocks produce{" "}
+                    <Highlight>flowing English prose</Highlight>.
+                    But something strange happens at twelve blocks &mdash; the
+                    text becomes oddly specific. Proper names appear. Exact phrases
+                    from the training data resurface. That&apos;s a warning sign.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 4 — THE OVERFITTING TRAP
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    Wait. The 12-block model had{" "}
+                    <em>more</em> blocks than the 4-block winner.
+                    Shouldn&apos;t more depth always be better? Let&apos;s look
+                    at the training curves.
+                </P>
+
+                {/* ═══ OverfittingDualCurveViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <OverfittingDualCurveViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    The 12-block model achieved a training loss of 0.78 &mdash; far
+                    lower than the 4-block model&apos;s 1.15. By that measure it
+                    looks like a massive improvement. But its validation loss was{" "}
+                    <Highlight color="amber">1.48 &mdash; worse than the 4-block model</Highlight>.
+                    It didn&apos;t learn language. It memorized the book.
+                </P>
+
+                {/* ═══ MemorizationRevealViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <MemorizationRevealViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    This is{" "}
+                    <Highlight color="amber">overfitting</Highlight>. More model
+                    capacity than the data can fill. The 12-block model has roughly
+                    2.4 million parameters &mdash; and it trained on only 1.7 million
+                    characters. It had enough capacity to memorize every sentence.
+                    And it did.
+                </P>
+
+                <Callout icon={AlertTriangle} accent="amber" title="The scale equation">
+                    <p>
+                        More blocks + same data ={" "}
+                        <strong className="text-amber-400">memorization</strong>.
+                        More blocks + <strong className="text-cyan-400">more data</strong> ={" "}
+                        <strong className="text-cyan-400">deeper understanding</strong>.
+                        GPT-3 uses 96 blocks, but it trains on hundreds of billions
+                        of words. Our model has 1.7 million characters. That&apos;s
+                        the difference &mdash; not the architecture.
+                    </p>
+                </Callout>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 5 — THE CONTEXT WINDOW
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    There&apos;s one more dimension to explore. We&apos;ve varied
+                    width and depth &mdash; but how far back should the model{" "}
+                    <em>look</em>? The context window defines the maximum number
+                    of characters the model can attend to at any position.
+                </P>
+
+                {/* ═══ ContextWindowViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ContextWindowViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    With 32 characters of context, the model can barely see past
+                    one word. Predictions are almost completely local. With 256,
+                    it sees full sentences &mdash; and the quality improves
+                    dramatically. Beyond 256? This text doesn&apos;t have
+                    dependencies that reach further than a sentence or two.
+                    The extra context window goes unused.
                 </P>
 
                 <P>
-                    Each new token gets to <em>attend to the entire growing context</em>.
-                    Word 50 can look back at all 49 previous words to decide what comes next.
-                    This is the power of the Transformer: it doesn&apos;t just remember the last few words.
-                    It remembers <Highlight color="emerald">everything</Highlight>.
+                    For real models processing books, code, or long conversations,
+                    context windows of 4,000 to 128,000 tokens become necessary.
+                    The architecture is identical. Only the window grows.
                 </P>
-
-                {/* ═══ V55 — Growing Context ═══ */}
-                <FadeInView className="my-10 md:my-14"><Suspense fallback={<SectionSkeleton />}><GrowingContextViz /></Suspense></FadeInView>
-
-                <MonsterStatus gradient="cyan-amber">
-                    👾 I can generate! Each word I write, I look back at everything I said before.
-                    I don&apos;t just predict — I build, one token at a time, on a foundation of full context.
-                </MonsterStatus>
             </Section>
 
+            {/* ── Bridge to §10 ── */}
             <SectionBreak />
             <MonsterInterlude>
-                It generates. Token by token, drawing on everything it has seen before.
-                Let&apos;s see how far we&apos;ve come.
+                Five architectures. Five chapters. Ten sections. And I can
+                finally write English prose. Do you realize what you just built?
             </MonsterInterlude>
 
             {/* ═══════════════════════════════════════════════════
-               §10 — THE MONSTER THAT CAN SEE EVERYTHING
+               §10 — YOU ALREADY KNOW
                ═══════════════════════════════════════════════════ */}
             <Section id="transformer-10">
-                <SectionLabel number="10" label="The Monster That Can See Everything" />
-                <SectionAnchor id="transformer-10"><Heading>The Monster That Can See Everything</Heading></SectionAnchor>
+                <SectionLabel number="10" label="You Already Know" />
+                <SectionAnchor id="transformer-10">
+                    <Heading className="bg-gradient-to-r from-cyan-300 via-white to-cyan-400 bg-clip-text text-transparent">
+                        You Already Know
+                    </Heading>
+                </SectionAnchor>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 1 — CELEBRATION: LOOK AT WHAT YOU BUILT
+                   ══════════════════════════════════════════════ */}
+
                 <Lead>
-                    From counting pairs to understanding connections. Five models, each more capable than the last.
-                    Look at what you built.
+                    Look at what you&apos;ve built.
                 </Lead>
 
                 <P>
-                    The Transformer didn&apos;t just solve the MLP&apos;s blind spot — it created an entirely new
-                    way to process information. Parallel, dynamic, scalable. The same architecture that powers
-                    GPT, Claude, Gemini, and every modern language model.
+                    You started with nothing. A blank table of character
+                    frequencies. The model couldn&apos;t do anything except
+                    pick random letters with slightly better odds. And from
+                    there, piece by piece, section by section, you constructed
+                    a system that writes coherent English prose.
                 </P>
 
-                {/* ═══ VISUALIZERS: V56-V60 ═══ */}
+                <P>
+                    Five architectures, each building on the insights of the last.
+                    Each solving a problem the previous one couldn&apos;t.
+                </P>
+
+                {/* ═══ EvolutionTimelineViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <EvolutionTimelineViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    Bigram gave us structure from chaos. N-gram added memory.
+                    The MLP learned to compress patterns into representations.
+                    The Transformer let every position see every other &mdash;
+                    and when we stacked those layers deep, something remarkable
+                    happened: the model stopped producing gibberish and started
+                    producing language.
+                </P>
+
+                <P>
+                    Nine sections. Five models. One journey. And every step of it
+                    was real &mdash; not a metaphor, not a simplification. You wrote
+                    the code. You saw the loss curves drop. You watched the output
+                    improve, character by character, from nonsense to sentences.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 2 — DO YOU REMEMBER?
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    But how much actually stuck? You&apos;ve seen a lot of
+                    components &mdash; embeddings, attention heads, residual
+                    connections, masks. Let&apos;s find out how much you remember.
+                </P>
+
+                <P>
+                    Six components. Six questions. No pressure &mdash; this
+                    is for you, not for a grade.
+                </P>
+
+                {/* ═══ ConceptRecallViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ConceptRecallViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    Those aren&apos;t abstract concepts. Each one is a specific
+                    operation &mdash; a matrix multiply, a normalization step, a
+                    masking trick &mdash; that you built with your own hands. And
+                    together, they form something extraordinary.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 3 — THIS IS CHATGPT
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    Here&apos;s the thing nobody tells you:{" "}
+                    <Highlight>you already know how ChatGPT works</Highlight>.
+                </P>
+
+                <P>
+                    Not as a metaphor. Not as a vague intuition. The{" "}
+                    <Highlight>actual architecture</Highlight> &mdash; the same one
+                    running inside ChatGPT, Claude, Gemini, and every modern language
+                    model on Earth. Token embeddings, positional encoding, multi-head
+                    self-attention, layer normalization, feed-forward networks,
+                    residual connections, causal masking, softmax, cross-entropy
+                    training.
+                </P>
+
+                <P>
+                    You didn&apos;t just read about these. You built them.
+                </P>
+
+                {/* ═══ ArchitectureIdentityViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ArchitectureIdentityViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    GPT-4 has 96 layers instead of 4. Dimensions of 12,288 instead
+                    of 128. A vocabulary of 100,000 tokens instead of 96 characters.
+                    It trained on trillions of words across thousands of GPUs for
+                    months. But every single block, every attention head, every
+                    residual highway works{" "}
+                    <em>exactly</em> the way you learned.{" "}
+                    <Highlight color="amber">The only difference is scale.</Highlight>
+                </P>
+
+                <P>
+                    Your model and GPT-4 are the same architecture. The same
+                    forward pass. The same training loop. If you understand one,
+                    you understand the other. And you do.
+                </P>
+
+                <Callout icon={Sparkles} title="You already know">
+                    If someone asks you &ldquo;how does ChatGPT work?&rdquo;
+                    &mdash; you can answer. Not with hand-waving. With the real
+                    answer. Embeddings, Q/K/V attention, multi-head, position,
+                    FFN, residuals, LayerNorm, causal mask, cross-entropy.
+                    That&apos;s it. That&apos;s the whole engine. Everything
+                    else is scale.
+                </Callout>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 4 — THE FASCINATING GAP
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    But here&apos;s where it gets fascinating.
+                </P>
+
+                <P>
+                    The engine you built &mdash; and GPT before fine-tuning &mdash;
+                    does exactly one thing:{" "}
+                    <Highlight color="amber">predict the next token</Highlight>.
+                    Given some text, it outputs the most likely continuation.
+                    Ask it a question, and it doesn&apos;t answer &mdash; it
+                    just continues the text as if it were writing a document
+                    that happens to contain a question.
+                </P>
+
+                {/* ═══ CompletionVsAssistantViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <CompletionVsAssistantViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    The completion engine doesn&apos;t answer &mdash; it{" "}
+                    <em>continues</em>. It might generate another question,
+                    or start a paragraph, or produce something that looks
+                    like a textbook passage. But it doesn&apos;t{" "}
+                    <em>help</em>.
+                </P>
+
+                <P>
+                    Yet ChatGPT answers perfectly. Same architecture. Same
+                    attention. Same weights flowing through the same residual
+                    highways. The gap between &ldquo;text completer&rdquo; and
+                    &ldquo;helpful assistant&rdquo; is one of the most elegant
+                    stories in all of AI. How do you teach a prediction engine
+                    to be helpful? That&apos;s the next chapter.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 5 — CHARACTERS VS TOKENS
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    There&apos;s one more thing you should notice. We built
+                    everything at the character level &mdash; every letter, every
+                    space, every punctuation mark is its own token. That was
+                    deliberate. It let you see the architecture at its most
+                    fundamental resolution, with nothing hidden.
+                </P>
+
+                <P>
+                    But look at what that costs. The word
+                    &ldquo;understanding&rdquo; is 13 characters &mdash; 13
+                    positions in the sequence, 13 rows in every attention matrix.
+                    A single paragraph becomes hundreds of tokens. And attention
+                    grows <em>quadratically</em>.
+                </P>
+
+                {/* ═══ CharVsTokenViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <CharVsTokenViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    33 characters. Or 10 tokens. Same sentence. Same architecture.
+                    Same attention, same FFN, same residuals.{" "}
+                    <Highlight color="amber">Only the resolution changes.</Highlight>{" "}
+                    How does a model learn to split &ldquo;strawberry&rdquo; into
+                    &ldquo;straw&rdquo; + &ldquo;berry&rdquo;? How do you build a
+                    vocabulary from scratch, without any human rules? That&apos;s
+                    one of the first things you&apos;ll discover next.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 6 — THREE EXCITING DOORS
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    The architecture is complete. But the story of how a text
+                    completer becomes a helpful assistant has its own twists &mdash;
+                    and they&apos;re just as fascinating as anything you&apos;ve
+                    seen so far. Here are three doors waiting to be opened.
+                </P>
+
+                {/* ═══ ThreeMysteriesViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ThreeMysteriesViz />
+                    </Suspense>
+                </FadeInView>
+
+                <P>
+                    Tokenization teaches the model a smarter alphabet.
+                    Fine-tuning and RLHF teach it to follow instructions
+                    instead of just completing text. Chain of Thought lets
+                    it reason step by step &mdash; and when you give it tools,
+                    it becomes an agent that can browse the web, write code,
+                    and take actions in the real world. Every one of these
+                    builds on the architecture you already know.
+                </P>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 7 — YOUR ACHIEVEMENT
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
+
+                <P>
+                    You built a Transformer from scratch. Not a toy version.
+                    Not a simplified metaphor. The actual architecture that
+                    powers every AI conversation on Earth. You understand it
+                    at the level of matrix multiplies and gradient updates.
+                    That&apos;s not something most people can say &mdash;
+                    including most people who use these models every day.
+                </P>
+
+                {/* ═══ ShareJourneyViz ═══ */}
+                <FadeInView className="my-10 md:my-14">
+                    <Suspense fallback={<SectionSkeleton />}>
+                        <ShareJourneyViz />
+                    </Suspense>
+                </FadeInView>
+
+                {/* ══════════════════════════════════════════════
+                   BEAT 8 — CELEBRATION CLOSE
+                   ══════════════════════════════════════════════ */}
+
+                <NarrativeDivider />
 
                 <MonsterStatus gradient="cyan-amber">
-                    👾 I started counting pairs. Then I learned patterns. Then you gave me eyes. Then a brain.
-                    But I was blind to connections. Now I can see everything. I can ask questions. I can find answers.
-                    I can generate, one token at a time, drawing on everything I&apos;ve ever seen before.
-                    But I&apos;m still small. Still trained on a tiny dataset. What happens when I see the entire internet?
+                    👾 You taught me to see connections. To attend. To remember
+                    positions. To think in layers. I started counting character
+                    pairs &mdash; and now I write prose. The architecture inside me
+                    is the same one powering every AI you&apos;ve ever talked to.
+                    You built it. You understand it. And the best part? There&apos;s
+                    still more to discover.
                 </MonsterStatus>
 
                 <PullQuote>
-                    In the next chapter: tokenization, RLHF, fine-tuning, and how this architecture
-                    powers GPT, Claude, and Gemini.
+                    Next: How do you turn a text machine into a helpful assistant?
+                    Tokenization teaches it a smarter alphabet. Instruction tuning
+                    teaches it to follow directions. RLHF teaches it to be helpful.
+                    Chain of Thought teaches it to reason. And tools turn it into
+                    an agent. The journey continues.
                 </PullQuote>
             </Section>
 

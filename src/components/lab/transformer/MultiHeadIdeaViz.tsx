@@ -60,11 +60,11 @@ export function MultiHeadIdeaViz() {
                 <div
                     className="px-5 py-2 rounded-xl text-center"
                     style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.1)",
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.15)",
                     }}
                 >
-                    <p className="text-[13px] uppercase tracking-[0.2em] text-white/50 font-semibold mb-1">
+                    <p className="text-[13px] uppercase tracking-[0.2em] text-white/60 font-semibold mb-1">
                         One embedding
                     </p>
                     {/* Feature bar */}
@@ -84,12 +84,12 @@ export function MultiHeadIdeaViz() {
                                     className="rounded-sm"
                                     style={{
                                         width: 28,
-                                        height: Math.round(dim.value * 20 + 8),
-                                        background: `rgba(34, 211, 238, ${0.3 + dim.value * 0.35})`,
-                                        border: `1px solid rgba(34, 211, 238, ${0.15 + dim.value * 0.25})`,
+                                        height: 28,
+                                        background: `rgba(34, 211, 238, ${0.4 + dim.value * 0.4})`,
+                                        border: `1px solid rgba(34, 211, 238, ${0.25 + dim.value * 0.3})`,
                                     }}
                                 />
-                                <span className="text-[13px] text-white/45 mt-0.5 uppercase tracking-wider">
+                                <span className="text-[11px] text-white/60 mt-1 uppercase tracking-wider leading-none">
                                     {dim.label}
                                 </span>
                             </motion.div>
@@ -102,14 +102,14 @@ export function MultiHeadIdeaViz() {
             <div className="flex justify-center">
                 <svg width="400" height="50" viewBox="0 0 400 50" fill="none" className="max-w-full overflow-visible">
                     {/* Vertical stem */}
-                    <line x1="200" y1="0" x2="200" y2="15" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+                    <line x1="200" y1="0" x2="200" y2="15" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
 
                     {/* 4 branches */}
                     {[50, 150, 250, 350].map((endX, i) => {
                         const isActive = activeHead === i;
                         const opacity = activeHead !== null
-                            ? (isActive ? 0.5 : 0.06)
-                            : 0.2;
+                            ? (isActive ? 0.6 : 0.1)
+                            : 0.3;
                         return (
                             <motion.path
                                 key={i}
@@ -128,7 +128,7 @@ export function MultiHeadIdeaViz() {
                     })}
 
                     {/* Center dot */}
-                    <circle cx="200" cy="15" r="2.5" fill="rgba(34, 211, 238, 0.3)" />
+                    <circle cx="200" cy="15" r="2.5" fill="rgba(34, 211, 238, 0.5)" />
                 </svg>
             </div>
 
@@ -145,7 +145,7 @@ export function MultiHeadIdeaViz() {
                             onClick={() => setActiveHead(activeHead === i ? null : i)}
                             className="px-3 py-3 text-left transition-all cursor-pointer"
                             style={{
-                                borderLeft: `2px solid rgba(34, 211, 238, ${isActive ? 0.5 : 0.12})`,
+                                borderLeft: `2px solid rgba(34, 211, 238, ${isActive ? 0.6 : 0.2})`,
                             }}
                             whileTap={{ scale: 0.97 }}
                             animate={{
@@ -157,7 +157,7 @@ export function MultiHeadIdeaViz() {
                             <p
                                 className="text-[13px] uppercase tracking-[0.15em] font-semibold mb-1"
                                 style={{
-                                    color: isActive ? "#22d3ee" : "rgba(255,255,255,0.4)",
+                                    color: isActive ? "#22d3ee" : "rgba(255,255,255,0.5)",
                                 }}
                             >
                                 {head.name}
@@ -167,14 +167,14 @@ export function MultiHeadIdeaViz() {
                             <p
                                 className="text-sm font-semibold mb-1"
                                 style={{
-                                    color: isActive ? "#22d3ee" : "rgba(255,255,255,0.6)",
+                                    color: isActive ? "#22d3ee" : "rgba(255,255,255,0.7)",
                                 }}
                             >
                                 {head.focus}
                             </p>
 
                             {/* Description */}
-                            <p className="text-[13px] text-white/45 leading-snug mb-1.5">
+                            <p className="text-[13px] text-white/55 leading-snug mb-1.5">
                                 {head.desc}
                             </p>
 
@@ -219,7 +219,7 @@ export function MultiHeadIdeaViz() {
                 ) : (
                     <motion.p
                         key="idle"
-                        className="text-center text-[13px] text-white/35 mt-5"
+                        className="text-center text-[13px] text-white/45 mt-5"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.5 }}

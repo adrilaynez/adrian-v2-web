@@ -1,187 +1,267 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 /*
-  V39 — FFNCallbackViz
-  MLP architecture miniaturized: input (d) → hidden (4d, expanded) → ReLU → output (d)
-  Familiar MLP shape: narrow → wide → narrow.
-  Badge: "🛠 You Built This!" — amber accent (callback color).
-  Auto-animate vertical flow. Height: 220px. All text ≥ 13px.
-  NO weight numbers. NO matrix values.
+  FFNCallbackViz — Premium structural comparison v6
+
+  Side-by-side comparison: MLP (blind) vs FFN in Transformer (context-aware).
+  Shows abstract pipeline with animated flowing particles, glassmorphism cards,
+  glowing connectors, and a "same brain" bridge highlight.
+  
+  The point: same processing architecture, but attention feeds it rich context.
 */
 
-const D_MODEL = 4;
-const D_HIDDEN = D_MODEL * 4; // 16
+type Mode = "mlp" | "ffn";
 
-/* Layer definitions */
-const LAYERS = [
-    { id: "input", label: "Input", count: D_MODEL, color: "#22d3ee", sub: `d = ${D_MODEL}` },
-    { id: "hidden", label: "Expand", count: D_HIDDEN, color: "#fbbf24", sub: `4d = ${D_HIDDEN}` },
-    { id: "relu", label: "ReLU ⚡", count: D_HIDDEN, color: "#f472b6", sub: "activate" },
-    { id: "output", label: "Output", count: D_MODEL, color: "#34d399", sub: `d = ${D_MODEL}` },
+interface StageNode {
+    id: string;
+    label: string;
+    sub: string;
+    icon: string;
+    accent: "cyan" | "amber";
+    isCore?: boolean;
+}
+
+const STAGES_FFN: StageNode[] = [
+    { id: "input", label: "Full Sequence", sub: "Every token visible", icon: "\uD83D\uDCE1", accent: "cyan" },
+    { id: "attn", label: "Attention", sub: "Gather context", icon: "\uD83D\uDC42", accent: "cyan" },
+    { id: "ffn", label: "FFN", sub: "Expand \u2192 ReLU \u2192 Compress", icon: "\uD83E\uDDE0", accent: "amber", isCore: true },
+    { id: "out", label: "Prediction", sub: "Next character", icon: "\u2728", accent: "cyan" },
 ];
 
-export function FFNCallbackViz() {
-    const [step, setStep] = useState(0);
-    const [autoPlay, setAutoPlay] = useState(true);
+const STAGES_MLP: StageNode[] = [
+    { id: "input", label: "Fixed Window", sub: "3 characters only", icon: "\uD83D\uDD0D", accent: "amber" },
+    { id: "mlp", label: "MLP", sub: "Expand \u2192 ReLU \u2192 Compress", icon: "\uD83E\uDDE0", accent: "amber", isCore: true },
+    { id: "out", label: "Prediction", sub: "Next character", icon: "\u2728", accent: "amber" },
+];
 
-    /* Auto-animate through steps */
-    useEffect(() => {
-        if (!autoPlay) return;
-        const timer = setInterval(() => {
-            setStep(s => (s + 1) % (LAYERS.length + 1));
-        }, 1200);
-        return () => clearInterval(timer);
-    }, [autoPlay]);
+const ACCENT = {
+    cyan: { color: "#22d3ee", rgb: "34,211,238" },
+    amber: { color: "#fbbf24", rgb: "251,191,36" },
+} as const;
+
+/* ── SVG flowing connector between nodes ── */
+function FlowConnector({ rgb, index }: { rgb: string; index: number }) {
+    const color = `rgba(${rgb}, 0.35)`;
+    const particleColor = `rgba(${rgb}, 0.7)`;
+    return (
+        <div className="flex items-center justify-center h-8 relative">
+            <svg width="2" height="32" viewBox="0 0 2 32" className="overflow-visible">
+                {/* Static line */}
+                <line x1="1" y1="0" x2="1" y2="32" stroke={color} strokeWidth={1} strokeDasharray="3 3" />
+                {/* Animated glow pulse */}
+                <motion.line
+                    x1="1" y1="0" x2="1" y2="32"
+                    stroke={`rgba(${rgb}, 0.15)`}
+                    strokeWidth={6}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 0.6, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: index * 0.3 }}
+                />
+                {/* Traveling dot */}
+                <motion.circle
+                    cx={1}
+                    r={2.5}
+                    fill={particleColor}
+                    style={{ filter: `drop-shadow(0 0 6px rgba(${rgb},0.8))` }}
+                    initial={{ cy: 0, opacity: 0 }}
+                    animate={{ cy: [0, 32], opacity: [0, 1, 1, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: index * 0.3, ease: "easeInOut" }}
+                />
+            </svg>
+        </div>
+    );
+}
+
+/* ── Single stage card ── */
+function StageCard({ stage, index, total }: { stage: StageNode; index: number; total: number }) {
+    const { rgb, color } = ACCENT[stage.accent];
+    const isCore = stage.isCore;
 
     return (
-        <div className="py-6 sm:py-8 px-3 sm:px-6 relative" style={{ minHeight: 220 }}>
-            {/* Badge */}
-            <motion.div
-                className="flex items-center justify-center mb-5"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-            >
-                <div
-                    className="px-4 py-1.5 rounded-full text-[14px] font-bold"
+        <motion.div
+            className="relative w-full"
+            initial={{ opacity: 0, y: 16, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: index * 0.1, duration: 0.35, type: "spring", stiffness: 120, damping: 16 }}
+        >
+            {/* Outer glow for core block */}
+            {isCore && (
+                <motion.div
+                    className="absolute -inset-[1px] rounded-2xl pointer-events-none"
                     style={{
-                        background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.04))",
-                        border: "1.5px solid rgba(251,191,36,0.3)",
-                        color: "#fbbf24",
-                        boxShadow: "0 0 20px -4px rgba(251,191,36,0.2)",
+                        background: `linear-gradient(135deg, rgba(${rgb},0.15), rgba(${rgb},0.05), rgba(${rgb},0.15))`,
+                        filter: `blur(8px)`,
                     }}
-                >
-                    🛠 You Built This!
+                    animate={{ opacity: [0.4, 0.8, 0.4] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                />
+            )}
+
+            <div
+                className="relative rounded-2xl overflow-hidden"
+                style={{
+                    background: isCore
+                        ? `linear-gradient(135deg, rgba(${rgb},0.1), rgba(${rgb},0.04))`
+                        : "rgba(255,255,255,0.015)",
+                    border: `1px solid rgba(${rgb}, ${isCore ? 0.25 : 0.08})`,
+                    backdropFilter: "blur(12px)",
+                }}
+            >
+                {/* Top accent line */}
+                {isCore && (
+                    <motion.div
+                        className="absolute top-0 left-0 right-0 h-[2px]"
+                        style={{ background: `linear-gradient(90deg, transparent 5%, rgba(${rgb},0.6) 50%, transparent 95%)` }}
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                    />
+                )}
+
+                <div className="px-5 py-4 flex items-center gap-3.5">
+                    {/* Icon */}
+                    <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-[18px] shrink-0"
+                        style={{
+                            background: `rgba(${rgb}, ${isCore ? 0.12 : 0.05})`,
+                            boxShadow: isCore ? `0 0 16px rgba(${rgb},0.1)` : "none",
+                        }}
+                    >
+                        {stage.icon}
+                    </div>
+
+                    {/* Text */}
+                    <div className="min-w-0">
+                        <div
+                            className="text-[14px] sm:text-[15px] font-bold tracking-[-0.01em]"
+                            style={{ color: `rgba(${rgb}, ${isCore ? 0.9 : 0.6})` }}
+                        >
+                            {stage.label}
+                        </div>
+                        <div
+                            className="text-[11px] sm:text-[12px] mt-0.5"
+                            style={{ color: `rgba(${rgb}, ${isCore ? 0.4 : 0.25})` }}
+                        >
+                            {stage.sub}
+                        </div>
+                    </div>
+
+                    {/* Core badge */}
+                    {isCore && (
+                        <motion.div
+                            className="ml-auto shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+                            style={{
+                                background: `rgba(${rgb},0.08)`,
+                                color: `rgba(${rgb},0.6)`,
+                                border: `1px solid rgba(${rgb},0.15)`,
+                            }}
+                            animate={{ opacity: [0.7, 1, 0.7] }}
+                            transition={{ duration: 2.5, repeat: Infinity }}
+                        >
+                            Same brain
+                        </motion.div>
+                    )}
                 </div>
-            </motion.div>
+            </div>
+        </motion.div>
+    );
+}
 
-            {/* Vertical flow */}
-            <div className="flex flex-col items-center gap-3">
-                {LAYERS.map((layer, li) => {
-                    const isActive = step > li;
-                    const isCurrent = step === li + 1;
-                    /* Scale node count for visual width */
-                    const nodeCount = Math.min(layer.count, 12);
-                    const nodeSize = layer.count > D_MODEL ? 10 : 14;
+export function FFNCallbackViz() {
+    const [mode, setMode] = useState<Mode>("ffn");
 
+    const stages = mode === "ffn" ? STAGES_FFN : STAGES_MLP;
+    const mainAccent = ACCENT[mode === "ffn" ? "cyan" : "amber"];
+    const verdict = mode === "ffn"
+        ? "Same brain, now fed by attention \u2014 sees the entire sequence."
+        : "Powerful brain, but almost blind \u2014 only sees a tiny window.";
+
+    return (
+        <div className="py-6 sm:py-8 px-2 sm:px-4">
+            {/* Mode toggle */}
+            <div className="flex items-center justify-center gap-2 mb-8">
+                {(["ffn", "mlp"] as const).map((m) => {
+                    const on = mode === m;
+                    const a = ACCENT[m === "ffn" ? "cyan" : "amber"];
+                    const label = m === "ffn" ? "FFN in Transformer" : "MLP (Chapter 3)";
                     return (
-                        <div key={layer.id} className="flex flex-col items-center">
-                            {/* Connector arrow */}
-                            {li > 0 && (
+                        <motion.button key={m}
+                            onClick={() => setMode(m)}
+                            className="relative px-5 py-2.5 rounded-xl text-[12px] sm:text-[13px] font-semibold cursor-pointer transition-all overflow-hidden"
+                            style={{
+                                background: on ? `rgba(${a.rgb},0.08)` : "rgba(255,255,255,0.02)",
+                                color: on ? a.color : "rgba(255,255,255,0.2)",
+                                border: `1.5px solid ${on ? `rgba(${a.rgb},0.3)` : "rgba(255,255,255,0.05)"}`,
+                                boxShadow: on ? `0 0 20px rgba(${a.rgb},0.08)` : "none",
+                            }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            {on && (
                                 <motion.div
-                                    className="w-px mb-2"
-                                    style={{ height: 16 }}
-                                    animate={{
-                                        background: isActive
-                                            ? `linear-gradient(180deg, ${LAYERS[li - 1].color}50, ${layer.color}50)`
-                                            : "rgba(255,255,255,0.06)",
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                        background: `radial-gradient(ellipse at center, rgba(${a.rgb},0.06), transparent 70%)`,
                                     }}
-                                    transition={{ duration: 0.3 }}
+                                    layoutId="toggle-glow"
+                                    transition={{ type: "spring", stiffness: 200, damping: 25 }}
                                 />
                             )}
-
-                            {/* Layer card — expand/contract breathing */}
-                            <motion.div
-                                className="rounded-xl px-4 py-3 flex flex-col items-center gap-1.5 relative"
-                                style={{
-                                    backdropFilter: "blur(8px)",
-                                }}
-                                animate={{
-                                    width: isCurrent
-                                        ? (layer.count > D_MODEL ? 320 : 140)
-                                        : isActive
-                                            ? (layer.count > D_MODEL ? 300 : 160)
-                                            : (layer.count > D_MODEL ? 260 : 160),
-                                    background: isCurrent
-                                        ? `linear-gradient(135deg, ${layer.color}15, ${layer.color}08)`
-                                        : isActive
-                                            ? `${layer.color}08`
-                                            : "rgba(255,255,255,0.02)",
-                                    borderColor: isCurrent
-                                        ? `${layer.color}45`
-                                        : isActive ? `${layer.color}20` : "rgba(255,255,255,0.05)",
-                                    boxShadow: isCurrent
-                                        ? `0 0 24px -4px ${layer.color}30`
-                                        : "none",
-                                }}
-                                transition={{ type: "spring", stiffness: 100, damping: 16 }}
-                            >
-                                {/* Glow ring */}
-                                {isCurrent && (
-                                    <motion.div
-                                        className="absolute -inset-1 rounded-xl"
-                                        style={{
-                                            border: `1px solid ${layer.color}30`,
-                                        }}
-                                        animate={{ opacity: [0.2, 0.5, 0.2] }}
-                                        transition={{ duration: 1.5, repeat: Infinity }}
-                                    />
-                                )}
-
-                                {/* Label */}
-                                <span
-                                    className="text-[14px] font-bold"
-                                    style={{ color: isActive ? layer.color : "rgba(255,255,255,0.2)" }}
-                                >
-                                    {layer.label}
-                                </span>
-
-                                {/* Nodes */}
-                                <div className="flex items-center justify-center gap-1 flex-wrap">
-                                    {Array.from({ length: nodeCount }, (_, ni) => (
-                                        <motion.div
-                                            key={ni}
-                                            className="rounded-full"
-                                            style={{
-                                                width: nodeSize,
-                                                height: nodeSize,
-                                                background: layer.color,
-                                            }}
-                                            animate={{
-                                                opacity: isActive ? [0.25, 0.6, 0.25] : 0.08,
-                                                scale: isCurrent ? [1, 1.15, 1] : 1,
-                                            }}
-                                            transition={{
-                                                duration: isCurrent ? 1.5 : 0.4,
-                                                repeat: isCurrent ? Infinity : 0,
-                                                delay: ni * 0.03,
-                                            }}
-                                        />
-                                    ))}
-                                    {layer.count > 12 && (
-                                        <span className="text-[13px] font-mono" style={{ color: `${layer.color}50` }}>
-                                            +{layer.count - 12}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Sub label */}
-                                <span
-                                    className="text-[13px] font-mono"
-                                    style={{ color: isActive ? `${layer.color}60` : "rgba(255,255,255,0.08)" }}
-                                >
-                                    {layer.sub}
-                                </span>
-                            </motion.div>
-                        </div>
+                            <span className="relative z-10">{label}</span>
+                        </motion.button>
                     );
                 })}
             </div>
 
-            {/* Play/pause */}
-            <div className="flex items-center justify-center mt-4">
-                <button
-                    onClick={() => { setAutoPlay(p => !p); if (!autoPlay) setStep(0); }}
-                    className="text-[13px] font-semibold transition-all"
-                    style={{ color: "rgba(255,255,255,0.25)" }}
+            {/* Pipeline flow */}
+            <AnimatePresence mode="wait">
+                <motion.div key={mode}
+                    className="flex flex-col items-center gap-0 max-w-[320px] sm:max-w-[360px] mx-auto"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                 >
-                    {autoPlay ? "⏸ Pause" : "▶ Play"}
-                </button>
-            </div>
+                    {stages.map((stage, i) => {
+                        const { rgb } = ACCENT[stage.accent];
+                        return (
+                            <div key={`${mode}-${stage.id}`} className="w-full flex flex-col items-center">
+                                {i > 0 && <FlowConnector rgb={rgb} index={i} />}
+                                <StageCard stage={stage} index={i} total={stages.length} />
+                            </div>
+                        );
+                    })}
+                </motion.div>
+            </AnimatePresence>
+
+            {/* Verdict */}
+            <AnimatePresence mode="wait">
+                <motion.div key={mode}
+                    className="mt-6 flex items-center justify-center gap-2.5"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35, duration: 0.3 }}
+                >
+                    <motion.div
+                        className="w-2 h-2 rounded-full"
+                        style={{ background: `rgba(${mainAccent.rgb},0.5)`, boxShadow: `0 0 8px rgba(${mainAccent.rgb},0.3)` }}
+                        animate={{ scale: [1, 1.3, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <p className="text-[12px] sm:text-[13px] font-medium"
+                        style={{ color: `rgba(${mainAccent.rgb},0.5)` }}>
+                        {verdict}
+                    </p>
+                </motion.div>
+            </AnimatePresence>
+
+            {/* Subtle footer */}
+            <p className="text-center text-[10px] mt-2"
+                style={{ color: "rgba(255,255,255,0.08)" }}>
+                Same processing architecture {"\u2014"} the only difference is what comes before it
+            </p>
         </div>
     );
 }

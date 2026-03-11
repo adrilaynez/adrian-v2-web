@@ -1,34 +1,109 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
-import { AnimatePresence, motion } from "framer-motion";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 /*
-  V38 — CommunicationVsProcessingViz
-  Two phases: Listening (attention — words share info via arcs) vs
-  Thinking (FFN — each word processes privately, no connections).
-  Manual toggle, no auto-loop. All text ≥ 13px. No filters. Premium.
+  V38 — CommunicationVsProcessingViz (Redesign v4)
+  Listening: SpotlightViz-style arcs connecting all words with glows.
+  Thinking: Each word isolated in dashed box, processing alone.
+  Uses the same arc style as §03 SpotlightViz.
 */
 
-const TOKENS = ["The", "cat", "sat", "on", "the", "mat"];
+const WORDS = ["The", "cat", "sat", "on", "mat"];
 
-const ARCS: { from: number; to: number; w: number }[] = [
-    { from: 1, to: 0, w: 0.5 }, { from: 1, to: 2, w: 0.8 },
-    { from: 2, to: 1, w: 0.7 }, { from: 3, to: 1, w: 0.4 },
-    { from: 5, to: 1, w: 0.9 }, { from: 5, to: 2, w: 0.5 },
-    { from: 4, to: 5, w: 0.6 }, { from: 0, to: 1, w: 0.5 },
+/* Simplified attention weights — each word attends to others */
+const ATTENTION: number[][] = [
+    [0.05, 0.35, 0.25, 0.15, 0.20],
+    [0.10, 0.05, 0.30, 0.15, 0.40],
+    [0.15, 0.40, 0.05, 0.20, 0.20],
+    [0.10, 0.15, 0.30, 0.05, 0.40],
+    [0.10, 0.35, 0.20, 0.30, 0.05],
 ];
+
+const ARC_THRESHOLD = 0.12;
+const AMBER_THRESHOLD = 0.35;
 
 type Phase = "listening" | "thinking";
 
+/* Bezier arc — matches §03 SpotlightViz */
+function arcPath(from: { x: number; y: number }, to: { x: number; y: number }): string {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const curvature = Math.min(dist * 0.35, 70);
+    const midX = (from.x + to.x) / 2;
+    const midY = Math.min(from.y, to.y) - curvature;
+    return `M ${from.x} ${from.y} Q ${midX} ${midY} ${to.x} ${to.y}`;
+}
+
 export function CommunicationVsProcessingViz() {
     const [phase, setPhase] = useState<Phase>("listening");
+
+    return (
+        <div className="py-6 sm:py-8 px-3 sm:px-6">
+            {/* Toggle */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+                {([
+                    { k: "listening" as Phase, l: "Listening", c: "#22d3ee", r: "34,211,238" },
+                    { k: "thinking" as Phase, l: "Thinking", c: "#fbbf24", r: "251,191,36" },
+                ]).map(({ k, l, c, r }) => {
+                    const on = phase === k;
+                    return (
+                        <motion.button key={k} onClick={() => setPhase(k)} whileTap={{ scale: 0.95 }}
+                            className="px-5 py-2 rounded-xl text-[14px] font-semibold cursor-pointer"
+                            style={{
+                                background: on ? `linear-gradient(135deg, rgba(${r},0.15), rgba(${r},0.05))` : "rgba(255,255,255,0.04)",
+                                color: on ? c : "rgba(255,255,255,0.3)",
+                                border: on ? `1.5px solid rgba(${r},0.3)` : "1px solid rgba(255,255,255,0.08)",
+                            }}>{l}</motion.button>
+                    );
+                })}
+            </div>
+
+            {/* Main viz */}
+            <AnimatePresence mode="wait">
+                {phase === "listening" ? (
+                    <motion.div key="listening"
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}>
+                        <ListeningView />
+                    </motion.div>
+                ) : (
+                    <motion.div key="thinking"
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}>
+                        <ThinkingView />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Caption */}
+            <AnimatePresence mode="wait">
+                <motion.p key={phase}
+                    className="text-center text-[13px] mt-4 max-w-sm mx-auto leading-relaxed"
+                    style={{ color: phase === "listening" ? "rgba(34,211,238,0.4)" : "rgba(251,191,36,0.4)" }}
+                    initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                    {phase === "listening"
+                        ? "Each token gathers context from the others. The output? Still embeddings \u2014 same shape, enriched with context."
+                        : "Each token sits alone and processes what it heard. Private, independent \u2014 no more communication."}
+                </motion.p>
+            </AnimatePresence>
+        </div>
+    );
+}
+
+/* ── Listening: SpotlightViz-style with arcs, glows, hover ── */
+function ListeningView() {
+    const [hovered, setHovered] = useState<number | null>(null);
+    const [positions, setPositions] = useState<{ x: number; y: number }[]>([]);
     const containerRef = useRef<HTMLDivElement>(null);
     const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
-    const [positions, setPositions] = useState<{ x: number; y: number }[]>([]);
 
-    const isListening = phase === "listening";
+    const active = hovered;
+    const weights = active !== null ? ATTENTION[active] : null;
+    const isIdle = active === null;
 
     const measure = useCallback(() => {
         if (!containerRef.current) return;
@@ -37,115 +112,213 @@ export function CommunicationVsProcessingViz() {
             wordRefs.current.map((el) => {
                 if (!el) return { x: 0, y: 0 };
                 const r = el.getBoundingClientRect();
-                return { x: r.left + r.width / 2 - cRect.left, y: r.top - cRect.top };
+                return { x: r.left + r.width / 2 - cRect.left, y: r.top + r.height / 2 - cRect.top };
             })
         );
     }, []);
 
     useEffect(() => {
         measure();
+        const t = setTimeout(measure, 300);
         window.addEventListener("resize", measure);
-        return () => window.removeEventListener("resize", measure);
+        return () => { window.removeEventListener("resize", measure); clearTimeout(t); };
     }, [measure]);
 
+    /* Idle: show ALL arcs as ghost web. Active: show only that word's arcs */
+    const arcsToShow: { from: number; to: number; w: number }[] = [];
+    if (isIdle) {
+        for (let i = 0; i < WORDS.length; i++) {
+            for (let j = i + 1; j < WORDS.length; j++) {
+                const avg = (ATTENTION[i][j] + ATTENTION[j][i]) / 2;
+                if (avg >= ARC_THRESHOLD) arcsToShow.push({ from: i, to: j, w: avg });
+            }
+        }
+    } else if (active !== null && weights) {
+        for (let j = 0; j < WORDS.length; j++) {
+            if (j === active) continue;
+            if (weights[j] >= ARC_THRESHOLD) arcsToShow.push({ from: active, to: j, w: weights[j] });
+        }
+    }
+
     return (
-        <div className="py-6 sm:py-8 px-2 sm:px-4" style={{ minHeight: 200 }}>
-            {/* Phase toggle */}
-            <div className="flex items-center justify-center gap-2 mb-6">
-                {([
-                    { key: "listening" as Phase, label: "Listening", color: "#22d3ee" },
-                    { key: "thinking" as Phase, label: "Thinking", color: "#fbbf24" },
-                ] as const).map(({ key, label, color }) => {
-                    const active = phase === key;
+        <div ref={containerRef} className="relative" style={{ minHeight: 120 }}>
+            <svg
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                style={{ overflow: "visible", zIndex: 1 }}
+            >
+                <defs>
+                    <filter id="cvp-glow">
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+                        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                </defs>
+
+                <AnimatePresence>
+                    {positions.length === WORDS.length && arcsToShow.map((arc, idx) => {
+                        const from = positions[arc.from];
+                        const to = positions[arc.to];
+                        if (!from || !to) return null;
+                        const opacity = isIdle ? Math.max(0.04, arc.w * 0.3) : Math.max(0.08, arc.w * 0.7);
+                        const width = isIdle ? 0.3 + arc.w * 1 : 0.5 + arc.w * 2.5;
+                        const isAmber = !isIdle && arc.w >= AMBER_THRESHOLD;
+                        const arcRgb = isAmber ? "251, 191, 36" : "34, 211, 238";
+                        return (
+                            <motion.path
+                                key={`${arc.from}-${arc.to}-${isIdle ? "idle" : "active"}`}
+                                d={arcPath(from, to)}
+                                fill="none"
+                                stroke={`rgba(${arcRgb}, ${opacity})`}
+                                strokeWidth={width}
+                                strokeLinecap="round"
+                                filter="url(#cvp-glow)"
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 1 }}
+                                exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                                transition={{
+                                    pathLength: { duration: 0.5, delay: idx * 0.03, ease: "easeOut" },
+                                    opacity: { duration: 0.3, delay: idx * 0.03 },
+                                }}
+                            />
+                        );
+                    })}
+                </AnimatePresence>
+            </svg>
+
+            {/* Words — SpotlightViz style */}
+            <div
+                className="flex items-baseline gap-x-[0.6em] sm:gap-x-[0.8em] flex-wrap justify-center relative z-10 py-10 sm:py-14 leading-[2.4]"
+                style={{ fontSize: "clamp(1.15rem, 2.8vw, 1.5rem)" }}
+                onMouseLeave={() => setHovered(null)}
+            >
+                {WORDS.map((word, i) => {
+                    const isActive = active === i;
+                    const isTarget = active !== null && weights !== null && i !== active;
+                    const w = isTarget ? weights[i] : 0;
+                    const isStrong = w > 0.15;
+                    const isAmber = isStrong && w >= AMBER_THRESHOLD;
+                    const accentRgb = isAmber ? "251, 191, 36" : "34, 211, 238";
+
+                    const color = isActive
+                        ? "#67e8f9"
+                        : isAmber
+                            ? `rgba(251, 191, 36, ${0.7 + w * 0.6})`
+                            : isStrong
+                                ? `rgba(165, 243, 252, ${0.5 + w * 0.8})`
+                                : active !== null
+                                    ? "rgba(255,255,255,0.25)"
+                                    : "rgba(255,255,255,0.6)";
+
+                    const textShadow = isActive
+                        ? "0 0 20px rgba(34,211,238,0.4), 0 0 40px rgba(34,211,238,0.15)"
+                        : isStrong
+                            ? `0 0 ${8 + w * 30}px rgba(${accentRgb}, ${(w * 0.5).toFixed(2)})`
+                            : "none";
+
                     return (
-                        <button
-                            key={key}
-                            onClick={() => setPhase(key)}
-                            className="px-4 py-1.5 text-[14px] font-semibold transition-all cursor-pointer"
-                            style={{
-                                borderBottom: active ? `2px solid ${color}` : "2px solid transparent",
-                                color: active ? color : "rgba(255,255,255,0.25)",
-                                background: "transparent",
+                        <motion.span
+                            key={i}
+                            ref={(el) => { wordRefs.current[i] = el; }}
+                            className="relative cursor-pointer select-none font-medium tracking-[-0.01em]"
+                            style={{ color, textShadow, transition: "color 0.35s ease, text-shadow 0.4s ease" }}
+                            onMouseEnter={() => { setHovered(i); requestAnimationFrame(measure); }}
+                            animate={{
+                                scale: isActive ? 1.08 : 1,
+                                y: isIdle ? [0, -1.5, 0] : 0,
                             }}
+                            transition={
+                                isIdle
+                                    ? { y: { duration: 3 + i * 0.5, repeat: Infinity, ease: "easeInOut" }, scale: { duration: 0.3 } }
+                                    : { duration: 0.3, ease: "easeOut" }
+                            }
                         >
-                            {label}
-                        </button>
+                            {isStrong && (
+                                <motion.span
+                                    className="absolute -inset-x-2 -inset-y-1 rounded-full pointer-events-none"
+                                    style={{
+                                        background: `radial-gradient(ellipse, rgba(${accentRgb}, ${(w * 0.15).toFixed(3)}), transparent 70%)`,
+                                        filter: "blur(6px)",
+                                    }}
+                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.4 }}
+                                />
+                            )}
+                            {isActive && (
+                                <motion.span
+                                    className="absolute -bottom-1 left-0 right-0 h-[1.5px] rounded-full pointer-events-none"
+                                    style={{ background: "linear-gradient(90deg, transparent, rgba(34,211,238,0.5), transparent)" }}
+                                    initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                />
+                            )}
+                            <span className="relative z-10">{word}</span>
+                        </motion.span>
                     );
                 })}
             </div>
 
-            {/* Words + arcs */}
-            <div ref={containerRef} className="relative max-w-md mx-auto">
-                {/* SVG arcs (listening only) */}
-                <svg
-                    className="absolute inset-0 w-full h-full pointer-events-none"
-                    style={{ overflow: "visible", zIndex: 1 }}
-                >
-                    {isListening && positions.length === TOKENS.length &&
-                        ARCS.map(({ from, to, w }, i) => {
-                            const pFrom = positions[from];
-                            const pTo = positions[to];
-                            if (!pFrom || !pTo) return null;
-                            const mx = (pFrom.x + pTo.x) / 2;
-                            const my = Math.min(pFrom.y, pTo.y) - Math.min(Math.abs(pFrom.x - pTo.x) * 0.3, 40);
-                            return (
-                                <motion.path
-                                    key={i}
-                                    d={`M ${pFrom.x} ${pFrom.y} Q ${mx} ${my} ${pTo.x} ${pTo.y}`}
-                                    fill="none"
-                                    stroke="rgba(34,211,238,0.25)"
-                                    strokeWidth={0.5 + w * 2}
-                                    strokeLinecap="round"
-                                    initial={{ pathLength: 0, opacity: 0 }}
-                                    animate={{ pathLength: 1, opacity: 1 }}
-                                    transition={{ duration: 0.5, delay: i * 0.05 }}
-                                />
-                            );
-                        })}
-                </svg>
+            {/* Hover hint */}
+            <AnimatePresence mode="wait">
+                {isIdle ? (
+                    <motion.p key="idle"
+                        className="text-center text-[12px] text-white/20"
+                        initial={{ opacity: 0 }} animate={{ opacity: [0.15, 0.3, 0.15] }}
+                        transition={{ duration: 3, repeat: Infinity }}
+                        exit={{ opacity: 0, transition: { duration: 0.15 } }}>
+                        Hover a word to see its attention
+                    </motion.p>
+                ) : (
+                    <motion.p key="label"
+                        className="text-center text-[12px] text-cyan-400/30 font-semibold"
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, transition: { duration: 0.15 } }}>
+                        Everyone hears everyone
+                    </motion.p>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
 
-                {/* Token words */}
-                <div className="flex items-baseline gap-x-3 flex-wrap justify-center relative z-10 py-8 leading-[2.6]">
-                    {TOKENS.map((token, i) => (
-                        <motion.span
-                            key={i}
-                            ref={(el) => { wordRefs.current[i] = el; }}
-                            className="font-semibold select-none"
+/* ── Thinking: tokens isolated ── */
+function ThinkingView() {
+    return (
+        <div className="flex flex-col items-center py-6" style={{ minHeight: 120 }}>
+            <div className="flex items-center justify-center gap-2.5 sm:gap-4">
+                {WORDS.map((w, i) => (
+                    <motion.div key={i}
+                        className="flex flex-col items-center gap-1.5"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.06 }}>
+                        <motion.div
+                            className="px-3.5 py-3 rounded-xl flex flex-col items-center gap-1.5 relative"
                             style={{
-                                fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)",
-                                color: isListening ? "#22d3ee" : "#fbbf24",
-                            }}
-                            animate={{
-                                opacity: 1,
-                                scale: 1,
-                                textShadow: !isListening
-                                    ? "0 0 16px rgba(251,191,36,0.3)"
-                                    : "0 0 0px transparent",
-                            }}
-                            transition={{ duration: 0.4, delay: i * 0.04 }}
-                        >
-                            {token}
-                        </motion.span>
-                    ))}
-                </div>
+                                background: "rgba(251,191,36,0.04)",
+                                border: "1.5px dashed rgba(251,191,36,0.2)",
+                                minWidth: 54,
+                            }}>
+                            <span
+                                className="text-[14px] sm:text-[15px] font-semibold"
+                                style={{ color: "rgba(251,191,36,0.7)" }}
+                            >{w}</span>
+                            <div className="flex gap-1">
+                                {[0, 1, 2].map(d => (
+                                    <motion.div key={d}
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ background: "rgba(251,191,36,0.3)" }}
+                                        animate={{ opacity: [0.2, 0.8, 0.2] }}
+                                        transition={{ duration: 1.2, repeat: Infinity, delay: d * 0.3 + i * 0.15 }}
+                                    />
+                                ))}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                ))}
             </div>
 
-            {/* Caption */}
-            <AnimatePresence mode="wait">
-                <motion.p
-                    key={phase}
-                    className="text-center text-[13px] mt-2 max-w-sm mx-auto leading-relaxed"
-                    style={{ color: isListening ? "rgba(34,211,238,0.45)" : "rgba(251,191,36,0.45)" }}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                >
-                    {isListening
-                        ? "Tokens share information with each other"
-                        : "Each token processes privately — no connections"}
-                </motion.p>
-            </AnimatePresence>
+            <p className="text-[12px] text-amber-400/30 mt-4 font-semibold">
+                Each token processes alone
+            </p>
         </div>
     );
 }
