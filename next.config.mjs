@@ -92,6 +92,11 @@ const nextConfig = {
                 destination: '/latent-space/mind/:slug',
                 permanent: true,
             },
+            // The lab moved to its own site, lm0.dev (the /lab prefix is dropped there).
+            { source: '/lab', destination: 'https://lm0.dev', permanent: true },
+            { source: '/lab/:path*', destination: 'https://lm0.dev/:path*', permanent: true },
+            { source: '/es/lab', destination: 'https://lm0.dev/es', permanent: true },
+            { source: '/es/lab/:path*', destination: 'https://lm0.dev/es/:path*', permanent: true },
         ];
     },
     images: {
