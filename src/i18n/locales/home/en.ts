@@ -15,7 +15,7 @@ export const home = {
     },
     about: {
       back: "Back",
-      p1: "I'm pursuing a double degree in <strong>Mathematics and Computer Science</strong> at the Universidad Complutense de Madrid. I research neural networks at their deepest level: from gradient dynamics to low-level optimization.",
+      p1: "I'm studying for a double degree in <strong>Mathematics and Computer Engineering</strong> at the Complutense University of Madrid.",
       p2: "I want to understand language models from the inside: that's why I made lm0. My final-year thesis studies how a model can be copied when all you can do is ask it questions.",
     },
   },

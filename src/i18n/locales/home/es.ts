@@ -15,7 +15,7 @@ export const home = {
     },
     about: {
       back: "Volver",
-      p1: "Curso el doble grado en <strong>Matemáticas e Ingeniería Informática</strong> en la Universidad Complutense de Madrid. Investigo las redes neuronales desde su nivel más profundo: de la dinámica del gradiente a la optimización a bajo nivel.",
+      p1: "Estudio el doble grado en <strong>Matemáticas e Ingeniería Informática</strong> en la Complutense.",
       p2: "Me interesa entender los modelos de lenguaje por dentro: por eso hice lm0. Mi TFG estudia cómo se copia un modelo cuando solo puedes hacerle preguntas.",
     },
   },
