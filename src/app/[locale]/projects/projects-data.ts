@@ -361,11 +361,9 @@ export const PROJECTS: Project[] = [
       overview: {
         en: [
           "<b>titan-engine</b> is an inference engine for language models focused on performance: custom CUDA kernels, careful memory management and a lightweight C++ runtime.",
-          "[Draft] Tell me more details and I'll fill out this sheet.",
         ],
         es: [
           "<b>titan-engine</b> es un motor de inferencia para modelos de lenguaje centrado en el rendimiento: kernels CUDA a medida, gestión de memoria cuidada y un runtime ligero en C++.",
-          "[Borrador] Cuéntame más detalles y completo esta ficha.",
         ],
       },
       features: {
