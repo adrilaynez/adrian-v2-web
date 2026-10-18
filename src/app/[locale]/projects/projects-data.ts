@@ -64,8 +64,8 @@ export const PROJECTS: Project[] = [
     featured: true,
     color: { a: "#34d399", d: "#10b981", ink: "#06120c" },
     mock: "dash",
-    image: "/lab/chill/hero-facility.webp",
-    href: "/lab",
+    image: "/projects/lm0-bigram.webp", // real capture of lm0.dev/es/bigram (18 oct 2026)
+    href: "https://lm0.dev",
     repo: GITHUB,
     tags: { en: ["Next.js", "AI"], es: ["Next.js", "AI"] },
     kind: { en: "Interactive notebook", es: "Cuaderno interactivo" },
