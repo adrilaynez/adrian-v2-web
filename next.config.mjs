@@ -92,6 +92,11 @@ const nextConfig = {
                 destination: '/latent-space/mind/:slug',
                 permanent: true,
             },
+            // Projects taken down (no repo or demo behind them): send old links to the list.
+            { source: '/projects/fourier-draw', destination: '/projects', permanent: false },
+            { source: '/es/projects/fourier-draw', destination: '/es/projects', permanent: false },
+            { source: '/projects/automata', destination: '/projects', permanent: false },
+            { source: '/es/projects/automata', destination: '/es/projects', permanent: false },
             // The lab moved to its own site, lm0.dev (the /lab prefix is dropped there).
             { source: '/lab', destination: 'https://lm0.dev', permanent: true },
             { source: '/lab/:path*', destination: 'https://lm0.dev/:path*', permanent: true },
