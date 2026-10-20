@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 
 import { routing } from "@/i18n/routing";
-import { getEssays, getMindNotes } from "@/lib/mdx";
 
 import { getProjectSlugs } from "./[locale]/projects/projects-data";
 
@@ -25,22 +24,11 @@ function entry(path: string): MetadataRoute.Sitemap[number] {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPaths = [
-    "",
-    "/projects",
-    "/lab",
-    "/lab/bigram",
-    "/lab/ngram",
-    "/lab/neural-networks",
-    "/lab/mlp",
-    "/lab/transformer",
-    "/latent-space",
-    "/latent-space/mind",
-  ];
+  // Only the home page and the projects are indexed: /lab moved to lm0.dev and
+  // /latent-space is noindex (see next.config.mjs and the latent-space layout).
+  const staticPaths = ["", "/projects"];
 
   const projectPaths = getProjectSlugs().map((slug) => `/projects/${slug}`);
-  const essayPaths = getEssays().map((n) => `/latent-space/essays/${n.slug}`);
-  const mindPaths = getMindNotes().map((n) => `/latent-space/mind/${n.slug}`);
 
-  return [...staticPaths, ...projectPaths, ...essayPaths, ...mindPaths].map(entry);
+  return [...staticPaths, ...projectPaths].map(entry);
 }

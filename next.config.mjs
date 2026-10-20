@@ -63,7 +63,16 @@ const nextConfig = {
             { key: 'Content-Security-Policy-Report-Only', value: csp },
         ];
 
-        return [{ source: '/(.*)', headers: securityHeaders }];
+        // Only the home page and /projects are indexed. /lab redirects to lm0.dev and
+        // /latent-space stays online but out of search results.
+        const noindex = [{ key: 'X-Robots-Tag', value: 'noindex' }];
+        const unindexed = ['/lab', '/lab/:path*', '/latent-space', '/latent-space/:path*'].flatMap((p) => [
+            { source: p, headers: noindex },
+            { source: `/es${p}`, headers: noindex },
+            { source: `/en${p}`, headers: noindex },
+        ]);
+
+        return [{ source: '/(.*)', headers: securityHeaders }, ...unindexed];
     },
     async rewrites() {
         return [
