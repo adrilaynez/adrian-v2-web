@@ -6,7 +6,7 @@ import type { Metadata } from "next";
    app/[locale]/layout.tsx, which has the resolved locale. Next requires a root layout
    to exist, but with i18n routing the locale segment owns the document shell. */
 export const metadata: Metadata = {
-  title: "Adrian Laynez | Research & Engineering",
+  title: "Adrián Laynez Ortiz | Research & Engineering",
   description: "Personal website and research lab of Adrian Laynez.",
 };
 

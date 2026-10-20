@@ -118,7 +118,7 @@ export async function generateMetadata({
     routing.locales.map((l) => [l, l === routing.defaultLocale ? SITE_URL : `${SITE_URL}/${l}`]),
   );
   languages["x-default"] = SITE_URL;
-  const title = "Adrián Laynez | Research & Engineering";
+  const title = "Adrián Laynez Ortiz | Research & Engineering";
   const description = t("siteDescription");
   return {
     metadataBase: new URL(SITE_URL),
@@ -160,14 +160,15 @@ export default async function LocaleLayout({
     "@graph": [
       {
         "@type": "Person",
-        name: "Adrián Laynez",
+        name: "Adrián Laynez Ortiz",
+        alternateName: "Adrián Laynez",
         url: SITE_URL,
         jobTitle: "Research & Engineering",
-        sameAs: ["https://github.com/adrilaynez"],
+        sameAs: ["https://github.com/adrilaynez", "https://www.linkedin.com/in/adrian-laynez/"],
       },
       {
         "@type": "WebSite",
-        name: "Adrián Laynez | Research & Engineering",
+        name: "Adrián Laynez Ortiz | Research & Engineering",
         url: SITE_URL,
         inLanguage: locale,
       },
