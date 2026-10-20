@@ -12,7 +12,7 @@ const EMAIL = "adrilaynezortiz@gmail.com";
 
 const SOCIALS = [
   { key: "github", href: "https://github.com/adrilaynez", Icon: Github },
-  { key: "linkedin", href: "https://www.linkedin.com/in/adrian-laynez-ortiz", Icon: Linkedin },
+  { key: "linkedin", href: "https://www.linkedin.com/in/adrian-laynez/", Icon: Linkedin },
   { key: "cv", href: "/cv.pdf", Icon: FileText },
 ] as const;
 
@@ -33,7 +33,9 @@ export function ProjectContactFooter() {
       <div className="grid gap-12 md:grid-cols-[1fr_auto] md:items-end">
         {/* Left: heading + email */}
         <div>
-          <span className={`${MONO} text-[11px] uppercase tracking-[0.26em] text-[color:var(--proj-dim)]`}>
+          <span
+            className={`${MONO} text-[11px] uppercase tracking-[0.26em] text-[color:var(--proj-dim)]`}
+          >
             {t("projects.contact.eyebrow")}
           </span>
           <h2

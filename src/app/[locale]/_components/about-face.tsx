@@ -11,18 +11,12 @@ import { FadeUp } from "./fade-up";
 
 const SOCIALS = [
   { label: "GitHub", href: "https://github.com/adrilaynez", Icon: Github },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/adrian-laynez-ortiz", Icon: Linkedin },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/adrian-laynez/", Icon: Linkedin },
   { label: "Email", href: "mailto:adrilaynezortiz@gmail.com", Icon: Mail },
   { label: "CV", href: "/cv.pdf", Icon: FileText },
 ];
 
-export function AboutFace({
-  onClose,
-  active,
-}: {
-  onClose: () => void;
-  active: boolean;
-}) {
+export function AboutFace({ onClose, active }: { onClose: () => void; active: boolean }) {
   const { t } = useI18n();
 
   return (
