@@ -51,9 +51,6 @@ export function AboutFace({ onClose, active }: { onClose: () => void; active: bo
             <div className="mt-8 max-w-[34rem] space-y-5 text-[16px] leading-[1.75] text-[#3a3430] font-light lg:text-[18px] [&_strong]:font-normal [&_strong]:text-[#1a1714] [&_em]:not-italic [&_em]:text-[#1a1714]">
               <p dangerouslySetInnerHTML={{ __html: t("home.about.p1") }} />
               <p dangerouslySetInnerHTML={{ __html: t("home.about.p2") }} />
-              <p className="border-l-2 border-[#2d5016] pl-4 italic text-[#6b6560]">
-                {t("home.about.mission")}
-              </p>
             </div>
           </FadeUp>
 
